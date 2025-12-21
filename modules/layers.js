@@ -79,18 +79,45 @@ export class LayerNorm {
     }
 
     backward(gradOutput) {
+        // dL/dgamma = sum(dL/dy * x_hat)
+        // dL/dbeta = sum(dL/dy)
         this.gamma.zeroGrad();
         this.beta.zeroGrad();
         const rows = gradOutput.data.length / this.dim;
         const gradInput = Tensor.zeros(gradOutput.shape);
 
+        // N = dim
+        const N = this.dim;
+
         for (let r = 0; r < rows; r++) {
             const offset = r * this.dim;
+            const invStd = this.lastInvStd[r];
+
+            let sumDxHat = 0.0;
+            let sumDxHatXHat = 0.0;
+
+            // 1. Compute gradients for Gamma/Beta and intermediate sums
             for (let i = 0; i < this.dim; i++) {
                 const dout = gradOutput.data[offset + i];
+                // Accumulate parameter gradients
                 this.gamma.grad[i] += dout * this.lastXHat[offset + i];
                 this.beta.grad[i] += dout;
-                gradInput.data[offset + i] = dout * this.gamma.data[i] * this.lastInvStd[r];
+
+                // dx_hat = dout * gamma
+                const dxHat = dout * this.gamma.data[i];
+                sumDxHat += dxHat;
+                sumDxHatXHat += dxHat * this.lastXHat[offset + i];
+            }
+
+            // 2. Compute gradient wrt Input X
+            // Formula: dx = (1/N) * invStd * (N * dxHat - sum(dxHat) - xHat * sum(dxHat * xHat))
+            for (let i = 0; i < this.dim; i++) {
+                const dout = gradOutput.data[offset + i];
+                const dxHat = dout * this.gamma.data[i];
+                const xHat = this.lastXHat[offset + i];
+
+                const term = (N * dxHat - sumDxHat - xHat * sumDxHatXHat);
+                gradInput.data[offset + i] = (1.0 / N) * invStd * term;
             }
         }
         return gradInput;
@@ -254,7 +281,7 @@ export class BayesianLinear {
         // 2. Distribute gradients to weight parameters (Mu and Rho)
         for (let i = 0; i < this.w_mu.data.length; i++) {
             const dW = gradWeightsSample.data[i];
-            
+
             // Gradient wrt Mu: ∂L/∂μ = ∂L/∂w
             this.w_mu.grad[i] += dW;
 
@@ -268,15 +295,15 @@ export class BayesianLinear {
         // 3. Distribute gradients to bias parameters (Mu and Rho)
         const outDim = this.bias_mu.shape[0];
         const rows = gradOutput.data.length / outDim;
-        
+
         for (let r = 0; r < rows; r++) {
             const offset = r * outDim;
             for (let i = 0; i < outDim; i++) {
                 const dB = gradOutput.data[offset + i];
-                
+
                 // Gradient wrt bias Mu
                 this.bias_mu.grad[i] += dB;
-                
+
                 // Gradient wrt bias Rho
                 const rho = this.bias_rho.data[i];
                 const sigmoid = 1.0 / (1.0 + Math.exp(-rho));
@@ -557,10 +584,10 @@ export class MultiHeadAttention {
                 // This is equivalent to 10000^(-2i/d)
                 const exponent = (2.0 * i) / d;
                 const theta = 1.0 / Math.pow(10000, exponent);
-                
+
                 // Position-dependent angle
                 const angle = t * theta;
-                
+
                 // For backward pass, negate the angle (inverse rotation)
                 const finalAngle = inverse ? -angle : angle;
                 const cos = Math.cos(finalAngle);
@@ -568,7 +595,7 @@ export class MultiHeadAttention {
 
                 const idx1 = t * d + 2 * i;
                 const idx2 = t * d + 2 * i + 1;
-                
+
                 const val1 = tensor.data[idx1];
                 const val2 = tensor.data[idx2];
 
@@ -576,7 +603,7 @@ export class MultiHeadAttention {
                 out.data[idx1] = val1 * cos - val2 * sin;
                 out.data[idx2] = val1 * sin + val2 * cos;
             }
-            
+
             // Handle odd dimensions: RoPE operates on pairs of dimensions (2D rotations)
             // If d is odd, the last dimension cannot be paired, so copy it unchanged
             if (d % 2 === 1) {

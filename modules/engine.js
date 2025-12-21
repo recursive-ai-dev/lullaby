@@ -102,7 +102,8 @@ export class ResonanceEngine {
     // If you change model architecture, update this list accordingly.
     getSafetensorsParamNames() {
         return [
-            "token_emb.weight", "pos_emb.weight",
+            "token_emb.weight",
+            // pos_emb removed
             "ln1.gamma", "ln1.beta",
             // MHA
             "mha.wQ.factorA", "mha.wQ.coreG", "mha.wQ.factorB", "mha.wQ.bias",

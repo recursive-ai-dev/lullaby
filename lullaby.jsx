@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { LineChart, Line, ResponsiveContainer, YAxis, Tooltip } from 'recharts';
-import { MessageCircle, Activity, Cpu, Database, Wifi, Zap, Heart, Sparkles, Lock, Unlock, Eye, Moon, Save, Layers, Download, Upload, Star, Flame, ChevronDown, ChevronUp, Eraser } from 'lucide-react';
+import { MessageCircle, Activity, Cpu, Database, Wifi, Zap, Heart, Sparkles, Lock, Unlock, Eye, Moon, Save, Layers, Download, Upload, Star, Flame, ChevronDown, ChevronUp, Eraser, Fingerprint, X } from 'lucide-react';
 import { createConversationStore } from './modules/conversation_store.js';
 
 /**
@@ -21,7 +21,7 @@ const STARS = Array.from({ length: 120 }, (_, i) => {
     const r3 = seededRandom(i * 11 + 3);
     const r4 = seededRandom(i * 13 + 4);
     const r5 = seededRandom(i * 17 + 5);
-    
+
     return {
         id: i,
         left: r1 * 98 + 1,
@@ -49,8 +49,8 @@ const StarField = () => (
                     borderRadius: '50%',
                     backgroundColor: star.isWarm ? '#fef3c7' : '#ffffff',
                     opacity: star.baseOpacity,
-                    boxShadow: star.size > 2.5 
-                        ? `0 0 ${star.size * 4}px rgba(255,255,255,0.4)` 
+                    boxShadow: star.size > 2.5
+                        ? `0 0 ${star.size * 4}px rgba(255,255,255,0.4)`
                         : `0 0 ${star.size * 2}px rgba(255,255,255,0.3)`,
                     animation: `starTwinkle ${star.duration}s ease-in-out ${star.delay}s infinite alternate`
                 }}
@@ -109,7 +109,7 @@ const Evergreen = () => (
 // Campfire glow effect - using fixed positioning
 const CampfireGlow = ({ isActive }) => (
     <div style={{ position: 'fixed', bottom: '-260px', left: '50%', transform: 'translateX(-50%)', pointerEvents: 'none', zIndex: 3 }}>
-        <div 
+        <div
             style={{
                 width: '700px',
                 height: '400px',
@@ -222,6 +222,8 @@ export default function NeuralTerminal() {
     const datasetTrainEpochRef = useRef(0);
     const datasetTrainTotalRef = useRef(0);
     const [datasetTraining, setDatasetTraining] = useState({ active: false, name: '', done: 0, total: 0 });
+    const [showDevTools, setShowDevTools] = useState(false);
+    const [devTrainText, setDevTrainText] = useState('');
 
     const [memoriesStatus, setMemoriesStatus] = useState('');
     const setMemoriesStatusTransient = (text, ms = 3500) => {
@@ -443,7 +445,7 @@ export default function NeuralTerminal() {
                 case 'PROFILE_SET':
                     if (payload?.profileKey) {
                         setProfileKey(payload.profileKey);
-                        try { localStorage.setItem('lullaby.profileKey', payload.profileKey); } catch {}
+                        try { localStorage.setItem('lullaby.profileKey', payload.profileKey); } catch { }
                     }
                     addLog('sys', `PROFILE SET: ${payload?.profileKey || 'latest'} (${payload?.loaded ? 'LOADED' : 'EMPTY'})`);
                     break;
@@ -451,7 +453,7 @@ export default function NeuralTerminal() {
                 case 'PROFILE_RESET':
                     if (payload?.profileKey) {
                         setProfileKey(payload.profileKey);
-                        try { localStorage.setItem('lullaby.profileKey', payload.profileKey); } catch {}
+                        try { localStorage.setItem('lullaby.profileKey', payload.profileKey); } catch { }
                     }
                     addLog('sys', `PROFILE RESET: ${payload?.profileKey || 'latest'} (${payload?.deleted ? 'CLEARED' : 'NOOP'})`);
                     break;
@@ -543,7 +545,7 @@ export default function NeuralTerminal() {
 
     const restartCore = () => {
         pushToast('info', 'Restarting AI core…', { ms: 1800 });
-        try { workerRef.current?.terminate(); } catch {}
+        try { workerRef.current?.terminate(); } catch { }
         setIsBooting(true);
         setIsComputing(false);
         lastGenerateRequestIdRef.current = null;
@@ -555,19 +557,19 @@ export default function NeuralTerminal() {
     };
 
     useEffect(() => {
-        try { localStorage.setItem('lullaby.customDatasets', JSON.stringify(customDatasets)); } catch {}
+        try { localStorage.setItem('lullaby.customDatasets', JSON.stringify(customDatasets)); } catch { }
     }, [customDatasets]);
 
     useEffect(() => {
-        try { localStorage.setItem('lullaby.selectedDatasetId', selectedDatasetId || ''); } catch {}
+        try { localStorage.setItem('lullaby.selectedDatasetId', selectedDatasetId || ''); } catch { }
     }, [selectedDatasetId]);
 
     useEffect(() => {
-        try { localStorage.setItem('lullaby.seedTargetName', seedTargetName || ''); } catch {}
+        try { localStorage.setItem('lullaby.seedTargetName', seedTargetName || ''); } catch { }
     }, [seedTargetName]);
 
     useEffect(() => {
-        try { localStorage.setItem('lullaby.datasetsPanelOpen', String(Boolean(datasetsPanelOpen))); } catch {}
+        try { localStorage.setItem('lullaby.datasetsPanelOpen', String(Boolean(datasetsPanelOpen))); } catch { }
     }, [datasetsPanelOpen]);
 
     const parseDatasetLines = (text) => {
@@ -661,7 +663,7 @@ export default function NeuralTerminal() {
     const handleDatasetImportFile = async (e) => {
         const file = e.target.files?.[0];
         // Allow importing the same file twice.
-        try { e.target.value = ''; } catch {}
+        try { e.target.value = ''; } catch { }
         if (!file) return;
 
         try {
@@ -839,7 +841,7 @@ export default function NeuralTerminal() {
 
     // Persist UI settings
     useEffect(() => {
-        try { localStorage.setItem('lullaby.dbMode', dbMode); } catch {}
+        try { localStorage.setItem('lullaby.dbMode', dbMode); } catch { }
     }, [dbMode]);
 
     // --- AUTO-SCROLL ---
@@ -872,7 +874,7 @@ export default function NeuralTerminal() {
         if ((source === 'user' || source === 'ai') && (dbMode === 'local' || dbMode === 'idb')) {
             const { store, db, conversationId } = conversationRef.current;
             if (store && conversationId) {
-                store.appendMessage(db, conversationId, { role: source, text, createdAt: ts }).catch(() => {});
+                store.appendMessage(db, conversationId, { role: source, text, createdAt: ts }).catch(() => { });
             }
         }
 
@@ -1094,24 +1096,24 @@ export default function NeuralTerminal() {
 
     return (
         <div className="min-h-screen text-amber-100 font-sans p-4 overflow-hidden flex flex-col relative"
-             style={{ background: 'linear-gradient(to bottom, #0a0a1a 0%, #0d1526 30%, #1a1a2e 60%, #16213e 100%)' }}>
-            
+            style={{ background: 'linear-gradient(to bottom, #0a0a1a 0%, #0d1526 30%, #1a1a2e 60%, #16213e 100%)' }}>
+
             {/* NIGHT SKY WITH STARS */}
             <StarField />
-            
+
             {/* MOUNTAIN SILHOUETTES */}
             <Mountains />
 
             {/* EVERGREEN SILHOUETTE */}
             <Evergreen />
-            
+
             {/* CAMPFIRE GLOW */}
             <CampfireGlow isActive={isComputing || isRehearsing} />
-            
+
             {/* SUBTLE AURORA EFFECT */}
             <div className="absolute top-0 left-0 right-0 h-48 pointer-events-none opacity-20"
-                 style={{ background: 'linear-gradient(180deg, rgba(100, 200, 150, 0.1) 0%, transparent 100%)' }} />
-            
+                style={{ background: 'linear-gradient(180deg, rgba(100, 200, 150, 0.1) 0%, transparent 100%)' }} />
+
             {/* DREAMING OVERLAY */}
             {isRehearsing && (
                 <div className="absolute inset-0 pointer-events-none z-40 bg-purple-900/10 animate-pulse" />
@@ -1123,11 +1125,10 @@ export default function NeuralTerminal() {
                     {toasts.map((t) => (
                         <div
                             key={t.id}
-                            className={`max-w-[min(24rem,90vw)] px-4 py-3 rounded-2xl border backdrop-blur-md shadow-lg shadow-black/30 ${
-                                t.kind === 'error'
-                                    ? 'bg-black/45 border-amber-400/30 ring-1 ring-amber-400/30'
-                                    : 'bg-black/35 border-amber-200/10 ring-1 ring-amber-400/10'
-                            }`}
+                            className={`max-w-[min(24rem,90vw)] px-4 py-3 rounded-2xl border backdrop-blur-md shadow-lg shadow-black/30 ${t.kind === 'error'
+                                ? 'bg-black/45 border-amber-400/30 ring-1 ring-amber-400/30'
+                                : 'bg-black/35 border-amber-200/10 ring-1 ring-amber-400/10'
+                                }`}
                         >
                             <div className="text-sm text-amber-100/90 font-light whitespace-pre-wrap">{t.text}</div>
                         </div>
@@ -1181,11 +1182,10 @@ export default function NeuralTerminal() {
                             onClick={() => setThreadsOpen((v) => !v)}
                             disabled={!threadsEnabled}
                             title={threadsEnabled ? 'Threads' : 'Threads require LOCAL or IDB mode'}
-                            className={`flex items-center gap-1 transition-colors p-2 rounded-full ${
-                                threadsEnabled
-                                    ? 'hover:text-amber-300 cursor-pointer hover:bg-amber-900/20'
-                                    : 'text-amber-200/20 cursor-not-allowed'
-                            }`}
+                            className={`flex items-center gap-1 transition-colors p-2 rounded-full ${threadsEnabled
+                                ? 'hover:text-amber-300 cursor-pointer hover:bg-amber-900/20'
+                                : 'text-amber-200/20 cursor-not-allowed'
+                                }`}
                             aria-expanded={threadsOpen}
                         >
                             <MessageCircle className="w-4 h-4" />
@@ -1213,11 +1213,10 @@ export default function NeuralTerminal() {
                                         return (
                                             <div
                                                 key={t.id}
-                                                className={`w-full px-3 py-2 rounded-xl ring-1 transition-all ${
-                                                    isActive
-                                                        ? 'ring-amber-400/50 bg-amber-500/10 text-amber-100'
-                                                        : 'ring-amber-400/10 bg-black/10 text-amber-200/70'
-                                                }`}
+                                                className={`w-full px-3 py-2 rounded-xl ring-1 transition-all ${isActive
+                                                    ? 'ring-amber-400/50 bg-amber-500/10 text-amber-100'
+                                                    : 'ring-amber-400/10 bg-black/10 text-amber-200/70'
+                                                    }`}
                                                 title={t.id}
                                             >
                                                 {isRenaming ? (
@@ -1283,29 +1282,39 @@ export default function NeuralTerminal() {
                         ) : null}
                     </div>
 
+
+                    <button
+                        onClick={() => setShowDevTools(!showDevTools)}
+                        title="Dev Console"
+                        className={`flex items-center gap-1 cursor-pointer p-2 rounded-full transition-all hover:bg-amber-900/20 hover:ring-amber-400/30 ${showDevTools
+                            ? 'text-amber-200 ring-1 ring-amber-400/50 bg-amber-500/15'
+                            : 'text-amber-200/40 ring-1 ring-amber-400/10 bg-black/10'
+                            }`}
+                    >
+                        <Layers className="w-4 h-4" />
+                    </button>
+
                     <button
                         onClick={cycleDbMode}
                         title={`DB: ${dbMode.toUpperCase()} (click to cycle: OFF → LOCAL → IDB → CHECKPOINTS)`}
                         aria-pressed={dbIsOn}
-                        className={`relative flex items-center gap-1 cursor-pointer p-2 rounded-full transition-all hover:bg-amber-900/20 hover:ring-amber-400/30 ${
-                            dbIsOff
-                                ? 'text-amber-200/40 ring-1 ring-amber-400/10 bg-black/10'
-                                : 'text-amber-200 ring-1 ring-amber-400/50 bg-amber-500/15 shadow-sm shadow-amber-500/10'
-                        }`}
+                        className={`relative flex items-center gap-1 cursor-pointer p-2 rounded-full transition-all hover:bg-amber-900/20 hover:ring-amber-400/30 ${dbIsOff
+                            ? 'text-amber-200/40 ring-1 ring-amber-400/10 bg-black/10'
+                            : 'text-amber-200 ring-1 ring-amber-400/50 bg-amber-500/15 shadow-sm shadow-amber-500/10'
+                            }`}
                     >
                         <Database className={`w-4 h-4 ${dbIsOff ? 'text-amber-100/45' : 'text-amber-300'}`} />
                         <span
-                            className={`absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full ${
-                                dbIsOff
-                                    ? 'bg-amber-200/15'
-                                    : dbIsLocal
-                                        ? 'bg-amber-400/45'
-                                        : dbIsIdb
-                                            ? 'bg-amber-400/60'
-                                            : dbIsCheckpoints
-                                                ? 'bg-amber-400/75'
-                                                : 'bg-amber-400/60'
-                            }`}
+                            className={`absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full ${dbIsOff
+                                ? 'bg-amber-200/15'
+                                : dbIsLocal
+                                    ? 'bg-amber-400/45'
+                                    : dbIsIdb
+                                        ? 'bg-amber-400/60'
+                                        : dbIsCheckpoints
+                                            ? 'bg-amber-400/75'
+                                            : 'bg-amber-400/60'
+                                }`}
                         />
                     </button>
                     <button onClick={handleManualSave} className="flex items-center gap-1 hover:text-amber-300 transition-colors cursor-pointer p-2 rounded-full hover:bg-amber-900/20">
@@ -1363,13 +1372,12 @@ export default function NeuralTerminal() {
                 {visibleLogs.map((log, i) => (
                     <div
                         key={i}
-                        className={`w-full flex ${
-                            log.source === 'sys'
-                                ? 'justify-center'
-                                : log.source === 'user'
-                                    ? 'justify-end'
-                                    : 'justify-start'
-                        }`}
+                        className={`w-full flex ${log.source === 'sys'
+                            ? 'justify-center'
+                            : log.source === 'user'
+                                ? 'justify-end'
+                                : 'justify-start'
+                            }`}
                     >
                         {log.source === 'sys' ? (
                             SHOW_SYSTEM_MESSAGES ? (
@@ -1378,12 +1386,11 @@ export default function NeuralTerminal() {
                                 </div>
                             ) : null
                         ) : (
-                            <div className={`max-w-[75%] px-4 py-3 rounded-3xl backdrop-blur-sm border ${
-                                log.source === 'user' 
-                                    ? 'bg-amber-500/10 text-amber-100 rounded-br-xl border-amber-200/[0.06]' 
-                                    : 'bg-white/[0.035] text-amber-50 rounded-bl-xl border-amber-200/[0.06]'
-                            }`}
-                            style={log.source === 'ai' ? { boxShadow: '0 0 20px rgba(251, 191, 36, 0.05)' } : {}}>
+                            <div className={`max-w-[75%] px-4 py-3 rounded-3xl backdrop-blur-sm border ${log.source === 'user'
+                                ? 'bg-amber-500/10 text-amber-100 rounded-br-xl border-amber-200/[0.06]'
+                                : 'bg-white/[0.035] text-amber-50 rounded-bl-xl border-amber-200/[0.06]'
+                                }`}
+                                style={log.source === 'ai' ? { boxShadow: '0 0 20px rgba(251, 191, 36, 0.05)' } : {}}>
                                 <span className="whitespace-pre-wrap leading-relaxed font-light text-[15px] text-amber-50/95">{log.text}</span>
                             </div>
                         )}
@@ -1409,8 +1416,8 @@ export default function NeuralTerminal() {
                         <div
                             key={i}
                             className="flex-1 rounded-t-sm transition-all duration-300"
-                            style={{ 
-                                height: `${w * 100}%`, 
+                            style={{
+                                height: `${w * 100}%`,
                                 background: `linear-gradient(to top, rgba(251, 191, 36, ${w * 0.8}), rgba(249, 115, 22, ${w * 0.4}))`,
                                 boxShadow: w > 0.5 ? '0 0 10px rgba(251, 191, 36, 0.3)' : 'none'
                             }}
@@ -1454,11 +1461,10 @@ export default function NeuralTerminal() {
                                     <button
                                         onClick={handleDatasetImportClick}
                                         disabled={isBooting}
-                                        className={`px-3 py-1 rounded-full ring-1 transition-all ${
-                                            isBooting
-                                                ? 'text-amber-200/20 ring-amber-400/10 bg-black/10 cursor-not-allowed'
-                                                : 'text-amber-200 ring-amber-400/30 bg-black/10 hover:bg-white/5 hover:ring-amber-400/50'
-                                        }`}
+                                        className={`px-3 py-1 rounded-full ring-1 transition-all ${isBooting
+                                            ? 'text-amber-200/20 ring-amber-400/10 bg-black/10 cursor-not-allowed'
+                                            : 'text-amber-200 ring-amber-400/30 bg-black/10 hover:bg-white/5 hover:ring-amber-400/50'
+                                            }`}
                                         title="Import a .jsonl file"
                                     >
                                         import
@@ -1466,11 +1472,10 @@ export default function NeuralTerminal() {
                                     <button
                                         onClick={startTeachingSelectedDataset}
                                         disabled={!selectedDatasetId || isBooting || datasetTraining.active}
-                                        className={`px-3 py-1 rounded-full ring-1 transition-all ${
-                                            (!selectedDatasetId || isBooting || datasetTraining.active)
-                                                ? 'text-amber-200/20 ring-amber-400/10 bg-black/10 cursor-not-allowed'
-                                                : 'text-amber-200 ring-amber-400/40 bg-amber-500/10 hover:bg-amber-500/15 hover:ring-amber-400/60'
-                                        }`}
+                                        className={`px-3 py-1 rounded-full ring-1 transition-all ${(!selectedDatasetId || isBooting || datasetTraining.active)
+                                            ? 'text-amber-200/20 ring-amber-400/10 bg-black/10 cursor-not-allowed'
+                                            : 'text-amber-200 ring-amber-400/40 bg-amber-500/10 hover:bg-amber-500/15 hover:ring-amber-400/60'
+                                            }`}
                                         title="Teach from selected memories"
                                     >
                                         teach
@@ -1478,11 +1483,10 @@ export default function NeuralTerminal() {
                                     <button
                                         onClick={seedFromSelectedDataset}
                                         disabled={!selectedDatasetId || isBooting}
-                                        className={`px-3 py-1 rounded-full ring-1 transition-all ${
-                                            (!selectedDatasetId || isBooting)
-                                                ? 'text-amber-200/20 ring-amber-400/10 bg-black/10 cursor-not-allowed'
-                                                : 'text-amber-200 ring-amber-400/40 bg-amber-500/10 hover:bg-amber-500/15 hover:ring-amber-400/60'
-                                        }`}
+                                        className={`px-3 py-1 rounded-full ring-1 transition-all ${(!selectedDatasetId || isBooting)
+                                            ? 'text-amber-200/20 ring-amber-400/10 bg-black/10 cursor-not-allowed'
+                                            : 'text-amber-200 ring-amber-400/40 bg-amber-500/10 hover:bg-amber-500/15 hover:ring-amber-400/60'
+                                            }`}
                                         title="Use selected memories"
                                     >
                                         use
@@ -1522,11 +1526,10 @@ export default function NeuralTerminal() {
                                 <button
                                     onClick={addCustomDataset}
                                     disabled={isBooting}
-                                    className={`px-3 py-2 rounded-xl ring-1 text-sm transition-all ${
-                                        isBooting
-                                            ? 'text-amber-200/20 ring-amber-400/10 bg-black/10 cursor-not-allowed'
-                                            : 'text-amber-200 ring-amber-400/40 bg-amber-500/10 hover:bg-amber-500/15 hover:ring-amber-400/60'
-                                    }`}
+                                    className={`px-3 py-2 rounded-xl ring-1 text-sm transition-all ${isBooting
+                                        ? 'text-amber-200/20 ring-amber-400/10 bg-black/10 cursor-not-allowed'
+                                        : 'text-amber-200 ring-amber-400/40 bg-amber-500/10 hover:bg-amber-500/15 hover:ring-amber-400/60'
+                                        }`}
                                 >
                                     save
                                 </button>
@@ -1545,11 +1548,10 @@ export default function NeuralTerminal() {
                                     {customDatasets.slice(0, 12).map((d) => (
                                         <div
                                             key={d.id}
-                                            className={`flex items-center gap-2 px-3 py-1 rounded-full ring-1 text-xs ${
-                                                selectedDatasetId === d.id
-                                                    ? 'text-amber-200 ring-amber-400/50 bg-amber-500/10'
-                                                    : 'text-amber-200/40 ring-amber-400/10 bg-black/10'
-                                            }`}
+                                            className={`flex items-center gap-2 px-3 py-1 rounded-full ring-1 text-xs ${selectedDatasetId === d.id
+                                                ? 'text-amber-200 ring-amber-400/50 bg-amber-500/10'
+                                                : 'text-amber-200/40 ring-amber-400/10 bg-black/10'
+                                                }`}
                                         >
                                             <button
                                                 className="hover:text-amber-200"
@@ -1580,11 +1582,10 @@ export default function NeuralTerminal() {
                                     <button
                                         onClick={seedFromSelectedDataset}
                                         disabled={isBooting}
-                                        className={`px-3 py-1 rounded-full ring-1 transition-all ${
-                                            (isBooting)
-                                                ? 'text-amber-200/20 ring-amber-400/10 bg-black/10 cursor-not-allowed'
-                                                : 'text-amber-200 ring-amber-400/30 bg-black/10 hover:bg-white/5 hover:ring-amber-400/50'
-                                        }`}
+                                        className={`px-3 py-1 rounded-full ring-1 transition-all ${(isBooting)
+                                            ? 'text-amber-200/20 ring-amber-400/10 bg-black/10 cursor-not-allowed'
+                                            : 'text-amber-200 ring-amber-400/30 bg-black/10 hover:bg-white/5 hover:ring-amber-400/50'
+                                            }`}
                                         title="Use selected memories"
                                     >
                                         use
@@ -1598,49 +1599,175 @@ export default function NeuralTerminal() {
                 {/* Small loss indicator */}
                 <div className="flex items-center justify-center gap-4 mb-3 text-xs text-amber-300/30">
                     <span className="flex items-center gap-1">
-                        <Sparkles className="w-3 h-3" /> {stats.epochs} memories
+                        <Activity className="w-3 h-3" />
+                        <span>loss: {stats.loss.toFixed(4)}</span>
                     </span>
                     <span className="flex items-center gap-1">
-                        <Activity className="w-3 h-3" /> {stats.loss.toFixed(3)}
+                        <Cpu className="w-3 h-3" />
+                        <span>epoch: {stats.epochs}</span>
+                    </span>
+                    <span className="flex items-center gap-1" title="KL Divergence (Identity retention)">
+                        <Fingerprint className="w-3 h-3" />
+                        <span>kl: {Math.max(0, stats.klLoss).toFixed(4)}</span>
                     </span>
                 </div>
 
-                <div className="flex items-center gap-3 bg-white/5 backdrop-blur-md p-4 rounded-2xl border border-amber-200/10 focus-within:border-amber-400/30 focus-within:bg-white/10 transition-all duration-300"
-                     style={{ boxShadow: '0 4px 30px rgba(0, 0, 0, 0.3), 0 0 40px rgba(251, 191, 36, 0.05)' }}>
-                    <MessageCircle className="w-5 h-5 text-amber-400/50" />
+                {/* MAIN INPUT */}
+                <div className="relative max-w-3xl mx-auto w-full">
                     <input
                         type="text"
                         value={inputVal}
                         onChange={(e) => setInputVal(e.target.value)}
                         onKeyDown={handleCommand}
-                        className="bg-transparent border-none outline-none flex-1 text-amber-100 placeholder-amber-200/30 text-base"
                         placeholder={
                             isBooting
-                                ? 'warming up by the fire...'
-                                : (workerStatus !== 'ONLINE'
-                                    ? 'core offline — restart core'
-                                    : (isComputing ? 'thinking…' : 'say something...'))
+                                ? "waking up..."
+                                : isComputing
+                                    ? "listening..."
+                                    : "say something..."
                         }
                         disabled={inputDisabled}
-                        autoFocus
+                        className={`w-full bg-white/5 backdrop-blur-xl border border-amber-200/10 rounded-br-2xl rounded-bl-2xl rounded-t-2xl px-6 py-4 text-amber-100 placeholder-amber-200/20 outline-none transition-all shadow-lg shadow-black/20 ${isComputing ? 'ring-1 ring-amber-400/30' : 'focus:ring-1 focus:ring-amber-400/30'
+                            }`}
+                        style={{ fontSize: '16px' }}
                     />
-                    {workerStatus !== 'ONLINE' ? (
-                        <span className="text-xs text-amber-200/30 flex items-center gap-1">
-                            <Wifi className="w-4 h-4" />
-                            {workerStatus === 'ERROR' ? 'offline' : 'connecting'}
-                        </span>
-                    ) : (isComputing ? (
-                        <span className="text-xs text-amber-200/30">generating…</span>
-                    ) : null)}
-                    {isRehearsing && <Star className="w-4 h-4 text-amber-400 animate-spin" />}
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2 opacity-50">
+                        {isComputing && <Star className="w-4 h-4 text-amber-400 animate-spin" />}
+                        {isRehearsing && !isComputing && <Star className="w-4 h-4 text-amber-400 animate-pulse" />}
+                    </div>
                 </div>
-                
+
                 {/* Subtle profile indicator */}
                 <div className="text-center mt-3 text-xs text-amber-300/20">
                     {profileKey !== 'latest' && <span>~ {profileKey} ~</span>}
                 </div>
             </div>
-            
+
+            {/* DEV TOOLS MODAL */}
+            {showDevTools && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                    <div className="bg-[#0f172a] border border-amber-500/20 rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+                        <div className="flex items-center justify-between px-6 py-4 border-b border-amber-500/10 bg-black/20">
+                            <div className="flex items-center gap-2">
+                                <Layers className="w-5 h-5 text-amber-400" />
+                                <h2 className="text-lg font-light text-amber-100">Dev Console</h2>
+                            </div>
+                            <button
+                                onClick={() => setShowDevTools(false)}
+                                className="p-2 hover:bg-white/5 rounded-full text-amber-200/50 hover:text-amber-100 transition-colors"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        <div className="p-6 overflow-y-auto space-y-6">
+                            {/* STATUS PANEL */}
+                            <div className="grid grid-cols-3 gap-4">
+                                <div className="bg-black/20 rounded-xl p-3 border border-amber-500/10">
+                                    <div className="text-[10px] uppercase tracking-wider text-amber-500/50 mb-1">Loss</div>
+                                    <div className="text-xl font-mono text-amber-100">{stats.loss.toFixed(6)}</div>
+                                </div>
+                                <div className="bg-black/20 rounded-xl p-3 border border-amber-500/10">
+                                    <div className="text-[10px] uppercase tracking-wider text-amber-500/50 mb-1">KL Div</div>
+                                    <div className="text-xl font-mono text-amber-100">{Math.max(0, stats.klLoss).toFixed(6)}</div>
+                                </div>
+                                <div className="bg-black/20 rounded-xl p-3 border border-amber-500/10">
+                                    <div className="text-[10px] uppercase tracking-wider text-amber-500/50 mb-1">Epochs</div>
+                                    <div className="text-xl font-mono text-amber-100">{stats.epochs}</div>
+                                </div>
+                            </div>
+
+                            {/* RAW TRAINING */}
+                            <div className="space-y-3">
+                                <div className="flex items-center justify-between">
+                                    <h3 className="text-sm font-medium text-amber-200/70">Raw Training Data</h3>
+                                    <div className="text-xs text-amber-500/40">Paste text to train model directly</div>
+                                </div>
+                                <textarea
+                                    value={devTrainText}
+                                    onChange={(e) => setDevTrainText(e.target.value)}
+                                    className="w-full h-40 bg-black/30 border border-amber-500/10 rounded-xl p-4 text-sm font-mono text-amber-100/80 resize-none focus:outline-none focus:border-amber-500/30"
+                                    placeholder="Enter raw text here...&#10;Line 1&#10;Line 2"
+                                />
+                                <div className="flex gap-3">
+                                    <button
+                                        onClick={() => {
+                                            if (!devTrainText.trim()) return;
+                                            addLog('sys', 'DEV: SINGLE SHOT TRAIN START');
+                                            postToWorker('TRAIN', { text: devTrainText, epoch: 0, totalEpochs: 1, isGameplay: false });
+                                        }}
+                                        className="flex-1 py-2 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-200 text-sm font-medium transition-colors border border-amber-500/10"
+                                    >
+                                        Train Single Block
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            const lines = devTrainText.split('\n').filter(l => l.trim());
+                                            if (!lines.length) return;
+
+                                            addLog('sys', `DEV: BATCH TRAIN START (${lines.length} lines)`);
+
+                                            // Hack: Inject into existing queue system
+                                            datasetTrainQueueRef.current = [...lines];
+                                            datasetTrainEpochRef.current = 0;
+                                            datasetTrainTotalRef.current = lines.length;
+
+                                            if (!datasetTrainingRef.current.active) {
+                                                datasetTrainingRef.current = { active: true };
+                                                setDatasetTraining({ active: true, name: 'dev-batch', done: 0, total: lines.length });
+                                                setIsComputing(true);
+
+                                                const first = datasetTrainQueueRef.current.shift();
+                                                if (first) {
+                                                    postToWorker('TRAIN', { text: first, epoch: 0, totalEpochs: lines.length, isGameplay: false });
+                                                }
+                                            }
+                                        }}
+                                        className="flex-1 py-2 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-200 text-sm font-medium transition-colors border border-amber-500/10"
+                                    >
+                                        Train Line-by-Line
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* ADVANCED CONTROLS */}
+                            <div className="pt-4 border-t border-amber-500/10 space-y-3">
+                                <h3 className="text-sm font-medium text-amber-200/70">Danger Zone</h3>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <button
+                                        onClick={() => {
+                                            handleManualSave();
+                                            pushToast('info', 'Checkpoint saved');
+                                        }}
+                                        className="py-2 px-4 rounded-lg bg-emerald-900/20 hover:bg-emerald-900/30 text-emerald-200/80 border border-emerald-500/20 text-xs font-medium transition-colors flex items-center justify-center gap-2"
+                                    >
+                                        <Save className="w-3 h-3" /> Force Save Status
+                                    </button>
+                                    <button
+                                        onClick={handleWipe}
+                                        className="py-2 px-4 rounded-lg bg-red-900/20 hover:bg-red-900/30 text-red-200/80 border border-red-500/20 text-xs font-medium transition-colors flex items-center justify-center gap-2"
+                                    >
+                                        <Eraser className="w-3 h-3" /> Reset Profile
+                                    </button>
+                                    <button
+                                        onClick={handleExport}
+                                        className="py-2 px-4 rounded-lg bg-blue-900/20 hover:bg-blue-900/30 text-blue-200/80 border border-blue-500/20 text-xs font-medium transition-colors flex items-center justify-center gap-2"
+                                    >
+                                        <Download className="w-3 h-3" /> Export Safetensors
+                                    </button>
+                                    <button
+                                        onClick={handleImportClick}
+                                        className="py-2 px-4 rounded-lg bg-blue-900/20 hover:bg-blue-900/30 text-blue-200/80 border border-blue-500/20 text-xs font-medium transition-colors flex items-center justify-center gap-2"
+                                    >
+                                        <Upload className="w-3 h-3" /> Import Safetensors
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* CUSTOM ANIMATIONS */}
             <style>{`
                 @keyframes fireFlicker {
