@@ -29,10 +29,10 @@ export class Tensor {
     static randn(shape, mean = 0.0, std = 0.02) {
         const size = shape.reduce((a, b) => a * b, 1);
         const data = new Float32Array(size);
-        
+
         // Numerical stability threshold for Box-Muller transform
         const MIN_UNIFORM_VALUE = 1e-10;
-        
+
         // Improved Box-Muller transform - generates two samples per iteration
         for (let i = 0; i < size; i += 2) {
             let u1, u2;
@@ -41,12 +41,12 @@ export class Tensor {
                 u1 = Math.random();
                 u2 = Math.random();
             } while (u1 <= MIN_UNIFORM_VALUE);
-            
+
             // Box-Muller transform: generates two independent standard normal samples
             const mag = Math.sqrt(-2.0 * Math.log(u1));
             const z0 = mag * Math.cos(2.0 * Math.PI * u2);
             const z1 = mag * Math.sin(2.0 * Math.PI * u2);
-            
+
             // Apply mean and std
             data[i] = mean + z0 * std;
             if (i + 1 < size) {
@@ -71,7 +71,14 @@ export class Tensor {
         const dimB = B.shape.length;
         const M = A.shape[dimA - 2];
         const K = A.shape[dimA - 1];
+        const K_B = B.shape[dimB - 2];
         const N = B.shape[dimB - 1];
+
+        // Validate dimension compatibility (CRITICAL FIX #5)
+        if (K !== K_B) {
+            throw new Error(`Matmul dimension mismatch: A[..., ${M}, ${K}] @ B[..., ${K_B}, ${N}]`);
+        }
+
         const batchSize = dimA > 2 ? A.shape[0] : 1;
         const resultShape = dimA > 2 ? [batchSize, M, N] : [M, N];
         const C = Tensor.zeros(resultShape);
@@ -180,6 +187,8 @@ export class Tensor {
         const K = this.shape[this.shape.length - 1];
         const rows = this.data.length / K;
         const res = new Float32Array(this.data.length);
+        const epsilon = 1e-10; // Numerical stability guard
+
         for (let r = 0; r < rows; r++) {
             const offset = r * K;
             let maxVal = -Infinity;
@@ -190,7 +199,8 @@ export class Tensor {
                 res[offset + i] = e;
                 sum += e;
             }
-            for (let i = 0; i < K; i++) res[offset + i] /= sum;
+            // Guard against division by zero
+            for (let i = 0; i < K; i++) res[offset + i] /= (sum + epsilon);
         }
         return new Tensor(res, [...this.shape]);
     }

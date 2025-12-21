@@ -216,7 +216,8 @@ export class BayesianLinear {
             } else if (x < -20) {
                 res[i] = Math.exp(x); // softplus(x) ≈ e^x for x < -20
             } else {
-                res[i] = Math.log(1 + Math.exp(x));
+                // Use log1p for better numerical stability (HIGH FIX #6)
+                res[i] = Math.log1p(Math.exp(x)); // log1p(y) = log(1 + y)
             }
         }
         return new Tensor(res, tensor.shape);
@@ -239,22 +240,22 @@ export class BayesianLinear {
         const sigmaB = this.computeSoftplus(this.bias_rho);
 
         let kl = 0.0;
-        // For weights
+        // For weights (HIGH FIX #7: Improved numerical stability)
         for (let i = 0; i < this.w_mu.data.length; i++) {
             const mu = this.w_mu.data[i];
-            const sigma = Math.max(sigmaW.data[i], 1e-8); // Prevent log(0)
-            const sigma2 = sigma * sigma;
+            const sigma = Math.max(sigmaW.data[i], 1e-6); // Increased epsilon
+            const logSigma = Math.log(sigma); // Compute once
             const mu2 = mu * mu;
-            // KL divergence: 0.5 * (σ² + μ² - 1 - log(σ²))
-            kl += 0.5 * (sigma2 + mu2 - 1.0 - Math.log(sigma2));
+            // KL = 0.5 * (σ² + μ² - 1 - 2*log(σ))
+            kl += 0.5 * (sigma * sigma + mu2 - 1.0 - 2.0 * logSigma);
         }
         // For bias
         for (let i = 0; i < this.bias_mu.data.length; i++) {
             const mu = this.bias_mu.data[i];
-            const sigma = Math.max(sigmaB.data[i], 1e-8); // Prevent log(0)
-            const sigma2 = sigma * sigma;
+            const sigma = Math.max(sigmaB.data[i], 1e-6); // Increased epsilon
+            const logSigma = Math.log(sigma);
             const mu2 = mu * mu;
-            kl += 0.5 * (sigma2 + mu2 - 1.0 - Math.log(sigma2));
+            kl += 0.5 * (sigma * sigma + mu2 - 1.0 - 2.0 * logSigma);
         }
         return kl;
     }
@@ -577,6 +578,12 @@ export class MultiHeadAttention {
     applyRoPE(tensor, seqLen, inverse = false) {
         const out = Tensor.zeros(tensor.shape);
         const d = this.dHead;
+
+        // Validate tensor size (HIGH FIX #8)
+        const expectedSize = seqLen * d;
+        if (tensor.data.length !== expectedSize) {
+            throw new Error(`RoPE: Expected tensor size ${expectedSize}, got ${tensor.data.length}`);
+        }
 
         for (let t = 0; t < seqLen; t++) {
             for (let i = 0; i < Math.floor(d / 2); i++) {

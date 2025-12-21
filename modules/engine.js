@@ -132,6 +132,9 @@ export class ResonanceEngine {
     }
 
     generate(seedText, steps = 10, temperature = 0.5) {
+        // Clamp temperature to safe range (CRITICAL FIX #21)
+        const safeTemp = Math.max(temperature, 0.01);
+
         const conditionedSeed = (this.useVibeTriggerForGenerate && this.vibeTriggerText)
             ? `${this.vibeTriggerText}\n${seedText}`
             : seedText;
@@ -164,7 +167,7 @@ export class ResonanceEngine {
             let sumExp = 0;
             for (let v = 0; v < vocabSize; v++) {
                 const val = logits.data[lastLogitOffset + v];
-                const e = Math.exp((val - maxVal) / temperature);
+                const e = Math.exp((val - maxVal) / safeTemp);
                 probs.push(e);
                 sumExp += e;
             }
@@ -252,17 +255,15 @@ export class ResonanceEngine {
         const memory = this.replayBuffer.sample();
         if (!memory) return 0;
 
-        // Calculate importance weight
-        // We need total priority from the buffer. 
-        // PrioritizedReplayBuffer doesn't expose it directly, but we can calculate or add a getter.
-        // For now, let's access the buffer directly if needed, or just assume uniform for simplicity 
-        // if we can't easily get it.
-        // Actually, let's calculate it from the buffer array.
+        // Calculate importance weight with bounds checking (CRITICAL FIX #5)
         const buffer = this.replayBuffer.buffer;
         const totalPriority = buffer.reduce((sum, item) => sum + item.priority, 0);
 
-        const prob = memory.priority / totalPriority;
-        const importanceWeight = Math.pow(buffer.length * prob, -this.beta);
+        // Guard against zero priority
+        const prob = Math.max(memory.priority / (totalPriority + 1e-10), 1e-10);
+        const rawWeight = Math.pow(buffer.length * prob, -this.beta);
+        // Clamp to prevent extreme values that cause NaN propagation
+        const importanceWeight = Math.min(rawWeight, 100.0);
 
         return this.trainStep(memory.text, 0, 1, true, importanceWeight);
     }
@@ -270,7 +271,11 @@ export class ResonanceEngine {
     // MODIFIED: Include KL divergence and consolidation
     trainStep(text, epoch = 0, totalEpochs = 1, isGameplay = false, importanceWeight = 1.0) {
         const tokens = this.tokenize(text);
-        if (tokens.length < 2) return 0;
+        // Validate sequence length before processing (CRITICAL FIX #20)
+        if (tokens.length < 2) {
+            // Don't update optimizer state for invalid inputs
+            return 0;
+        }
 
         this.optimizer.zeroGrad();
 
@@ -496,29 +501,37 @@ export class ResonanceEngine {
 
         const key = String(profileKey || '').trim() || 'latest';
 
-        const dbRequest = indexedDB.open('lullaby-memory', 1);
+        return new Promise((resolve, reject) => {
+            const dbRequest = indexedDB.open('lullaby-memory', 1);
 
-        dbRequest.onupgradeneeded = (event) => {
-            const db = event.target.result;
-            if (!db.objectStoreNames.contains('checkpoints')) {
-                db.createObjectStore('checkpoints');
-            }
-        };
+            dbRequest.onupgradeneeded = (event) => {
+                const db = event.target.result;
+                if (!db.objectStoreNames.contains('checkpoints')) {
+                    db.createObjectStore('checkpoints');
+                }
+            };
 
-        dbRequest.onsuccess = (event) => {
-            const db = event.target.result;
-            const transaction = db.transaction(['checkpoints'], 'readwrite');
-            const store = transaction.objectStore('checkpoints');
+            dbRequest.onsuccess = (event) => {
+                const db = event.target.result;
+                const transaction = db.transaction(['checkpoints'], 'readwrite');
+                const store = transaction.objectStore('checkpoints');
 
-            // Serialize weights
-            const weights = this.model.parameters().map(p => p.data);
+                // Serialize weights
+                const weights = this.model.parameters().map(p => p.data);
 
-            store.put({
-                weights: weights,
-                buffer: this.replayBuffer.buffer, // Save the inner array
-                timestamp: Date.now()
-            }, key);
-        };
+                const putRequest = store.put({
+                    weights: weights,
+                    buffer: this.replayBuffer.buffer, // Save the inner array
+                    timestamp: Date.now()
+                }, key);
+
+                // HIGH FIX #13: Properly await transaction completion
+                putRequest.onsuccess = () => resolve();
+                putRequest.onerror = () => reject(putRequest.error);
+            };
+
+            dbRequest.onerror = () => reject(dbRequest.error);
+        });
     }
 
     async loadCheckpoint(profileKey = this.profileKey) {

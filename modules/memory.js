@@ -23,6 +23,14 @@ export class PrioritizedReplayBuffer {
 
         // Proportional sampling based on priority
         const totalPriority = this.buffer.reduce((sum, m) => sum + m.priority, 0);
+
+        // Guard against zero priority (CRITICAL FIX #4)
+        if (totalPriority <= 1e-10) {
+            // Uniform sampling fallback when all priorities are zero
+            const idx = Math.floor(Math.random() * this.buffer.length);
+            return this.buffer[idx];
+        }
+
         let r = Math.random() * totalPriority;
 
         for (const memory of this.buffer) {

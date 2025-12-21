@@ -126,9 +126,15 @@ self.onmessage = async (e) => {
                 const loss = engine.trainStep(payload.text, payload.epoch, payload.totalEpochs, payload.isGameplay);
                 engine.addToReplay(payload.text);
 
+                // HIGH FIX #14: Properly handle checkpoint save errors
                 if (persistenceEnabled && Math.random() < 0.1) {
-                    // Fire and forget.
-                    engine.saveCheckpoint().catch?.(() => {});
+                    engine.saveCheckpoint().catch((err) => {
+                        // Report error to main thread instead of silently ignoring
+                        post('SAVE_ERROR', {
+                            message: err?.message || 'Checkpoint save failed',
+                            context: 'background_save'
+                        }, null, v);
+                    });
                 }
 
                 if (isCanceled(requestId)) return;
