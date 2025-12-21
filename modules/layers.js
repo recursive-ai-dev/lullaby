@@ -24,7 +24,9 @@ export class Linear {
         this.weights.zeroGrad();
         this.bias.zeroGrad();
 
-        for (let i = 0; i < this.weights.grad.length; i++) this.weights.grad[i] += gradWeights.data[i];
+        const len = this.weights.grad.length;
+        const totalLen = gradWeights.data.length;
+        for (let i = 0; i < totalLen; i++) this.weights.grad[i % len] += gradWeights.data[i];
 
         const outDim = this.bias.shape[0];
         const rows = gradOutput.data.length / outDim;
@@ -280,17 +282,23 @@ export class BayesianLinear {
         this.bias_rho.zeroGrad();
 
         // 2. Distribute gradients to weight parameters (Mu and Rho)
-        for (let i = 0; i < this.w_mu.data.length; i++) {
+        // 2. Distribute gradients to weight parameters (Mu and Rho)
+        // BUG FIX: Handle batched gradients by accumulating over total length
+        const paramLen = this.w_mu.data.length;
+        const totalLen = gradWeightsSample.data.length;
+
+        for (let i = 0; i < totalLen; i++) {
+            const idx = i % paramLen;
             const dW = gradWeightsSample.data[i];
 
             // Gradient wrt Mu: ∂L/∂μ = ∂L/∂w
-            this.w_mu.grad[i] += dW;
+            this.w_mu.grad[idx] += dW;
 
             // Gradient wrt Rho: ∂L/∂ρ = ∂L/∂w * ε * ∂σ/∂ρ
             // where ∂σ/∂ρ = sigmoid(ρ) for softplus
-            const rho = this.w_rho.data[i];
+            const rho = this.w_rho.data[idx];
             const sigmoid = 1.0 / (1.0 + Math.exp(-rho));
-            this.w_rho.grad[i] += dW * this.lastEpsilonW.data[i] * sigmoid;
+            this.w_rho.grad[idx] += dW * this.lastEpsilonW.data[idx] * sigmoid;
         }
 
         // 3. Distribute gradients to bias parameters (Mu and Rho)

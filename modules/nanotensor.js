@@ -91,8 +91,8 @@ export class NanoTensor extends Tensor {
      * - Underflow to 0 (which can cause division by zero)
      */
     exp() {
-        const MAX_EXP_INPUT = 700;  // exp(700) ≈ 1e304, safely finite
-        const MIN_EXP_INPUT = -700; // exp(-700) ≈ 1e-304, safely non-zero
+        const MAX_EXP_INPUT = 88.0;  // exp(88) ≈ 1.65e38, safely within Float32
+        const MIN_EXP_INPUT = -88.0; // exp(-88) ≈ 6e-39, safely non-zero
 
         const res = new Float32Array(this.data.length);
         for (let i = 0; i < this.data.length; i++) {
