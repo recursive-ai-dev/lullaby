@@ -3,125 +3,23 @@ import { LineChart, Line, ResponsiveContainer, YAxis, Tooltip } from 'recharts';
 import { MessageCircle, Activity, Cpu, Database, Wifi, Zap, Heart, Sparkles, Lock, Unlock, Eye, Moon, Save, Layers, Download, Upload, Star, Flame, ChevronDown, ChevronUp, Eraser, Fingerprint, X } from 'lucide-react';
 import { createConversationStore } from './modules/conversation_store.js';
 
+// Immersive environment components
+import NightSky from './src/components/NightSky';
+import Mountains from './src/components/Mountains';
+import Campfire from './src/components/Campfire';
+import Evergreen from './src/components/Evergreen';
+
 /**
- * LULLABY CORE - 3AM CAMPFIRE EDITION
- * Like meeting your girlfriend at a campfire in Jasper at 3am ✨
+ * LULLABY CORE - 3AM CAMPFIRE EDITION ✨
+ * Like meeting your girlfriend at a campfire in Jasper at 3am
+ * 
+ * Now featuring:
+ * - Dancing aurora borealis
+ * - Rare shooting stars (dopamine triggers)
+ * - Floating campfire embers
+ * - Multi-layer mountain depth
+ * - Atmospheric moon and mist
  */
-
-// Seeded random for consistent but natural-looking stars
-const seededRandom = (seed) => {
-    const x = Math.sin(seed * 9999) * 10000;
-    return x - Math.floor(x);
-};
-
-// Pre-generate stars with natural scatter
-const STARS = Array.from({ length: 120 }, (_, i) => {
-    const r1 = seededRandom(i * 3 + 1);
-    const r2 = seededRandom(i * 7 + 2);
-    const r3 = seededRandom(i * 11 + 3);
-    const r4 = seededRandom(i * 13 + 4);
-    const r5 = seededRandom(i * 17 + 5);
-
-    return {
-        id: i,
-        left: r1 * 98 + 1,
-        top: r2 * 55 + 2,
-        size: 1 + r3 * 2.5,
-        delay: r4 * 4,
-        duration: 1.5 + r5 * 3,
-        baseOpacity: 0.3 + r3 * 0.6,
-        isWarm: r5 > 0.8 // Some stars have warm tint
-    };
-});
-
-// Twinkling stars background component
-const StarField = () => (
-    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, pointerEvents: 'none', zIndex: 1, overflow: 'hidden' }}>
-        {STARS.map(star => (
-            <div
-                key={star.id}
-                style={{
-                    position: 'absolute',
-                    left: `${star.left}%`,
-                    top: `${star.top}%`,
-                    width: `${star.size}px`,
-                    height: `${star.size}px`,
-                    borderRadius: '50%',
-                    backgroundColor: star.isWarm ? '#fef3c7' : '#ffffff',
-                    opacity: star.baseOpacity,
-                    boxShadow: star.size > 2.5
-                        ? `0 0 ${star.size * 4}px rgba(255,255,255,0.4)`
-                        : `0 0 ${star.size * 2}px rgba(255,255,255,0.3)`,
-                    animation: `starTwinkle ${star.duration}s ease-in-out ${star.delay}s infinite alternate`
-                }}
-            />
-        ))}
-    </div>
-);
-
-// Mountain silhouette component - using fixed positioning
-const Mountains = () => (
-    <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, height: '35%', pointerEvents: 'none', zIndex: 2 }}>
-        <svg viewBox="0 0 1440 320" style={{ position: 'absolute', bottom: 0, width: '100%', height: '100%' }} preserveAspectRatio="none">
-            {/* Back mountain range - lighter */}
-            <path
-                fill="#1e293b"
-                d="M0,200L60,180C120,160,240,120,360,130C480,140,600,200,720,210C840,220,960,180,1080,160C1200,140,1320,140,1380,140L1440,140L1440,320L1380,320C1320,320,1200,320,1080,320C960,320,840,320,720,320C600,320,480,320,360,320C240,320,120,320,60,320L0,320Z"
-            />
-            {/* Front mountain range - darker */}
-            <path
-                fill="#0f172a"
-                d="M0,260L48,245C96,230,192,200,288,195C384,190,480,210,576,220C672,230,768,230,864,240C960,250,1056,270,1152,275C1248,280,1344,270,1392,265L1440,260L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
-            />
-        </svg>
-    </div>
-);
-
-// Evergreen silhouette on the right
-const Evergreen = () => (
-    <div
-        style={{
-            position: 'fixed',
-            right: '4%',
-            bottom: '6%',
-            width: '120px',
-            height: '220px',
-            pointerEvents: 'none',
-            zIndex: 2,
-            opacity: 0.9,
-        }}
-    >
-        <svg viewBox="0 0 120 220" width="100%" height="100%" preserveAspectRatio="xMidYMax meet">
-            {/* trunk */}
-            <path
-                d="M56 170 C55 188 54 199 52 214 L68 214 C66 199 65 188 64 170 Z"
-                fill="#0b1220"
-            />
-            {/* tree body */}
-            <path
-                d="M60 12 L32 58 L45 58 L25 92 L39 92 L18 126 L36 126 L12 160 L48 160 L40 176 L80 176 L72 160 L108 160 L84 126 L102 126 L81 92 L95 92 L75 58 L88 58 Z"
-                fill="#0f172a"
-            />
-        </svg>
-    </div>
-);
-
-// Campfire glow effect - using fixed positioning
-const CampfireGlow = ({ isActive }) => (
-    <div style={{ position: 'fixed', bottom: '-260px', left: '50%', transform: 'translateX(-50%)', pointerEvents: 'none', zIndex: 3 }}>
-        <div
-            style={{
-                width: '700px',
-                height: '400px',
-                borderRadius: '50%',
-                background: 'radial-gradient(ellipse at center, rgba(255,140,50,0.8) 0%, rgba(255,100,30,0.5) 20%, rgba(200,60,10,0.25) 40%, transparent 60%)',
-                filter: 'blur(50px)',
-                opacity: isActive ? 0.8 : 0.6,
-                animation: 'fireFlicker 2s ease-in-out infinite'
-            }}
-        />
-    </div>
-);
 
 export default function NeuralTerminal() {
     const SHOW_SYSTEM_MESSAGES = false;
@@ -1096,27 +994,27 @@ export default function NeuralTerminal() {
 
     return (
         <div className="min-h-screen text-amber-100 font-sans p-4 overflow-hidden flex flex-col relative"
-            style={{ background: 'linear-gradient(to bottom, #0a0a1a 0%, #0d1526 30%, #1a1a2e 60%, #16213e 100%)' }}>
+            style={{ background: 'linear-gradient(to bottom, #050810 0%, #0a0f1a 20%, #0d1526 50%, #1a1a2e 80%, #16213e 100%)' }}>
 
-            {/* NIGHT SKY WITH STARS */}
-            <StarField />
+            {/* IMMERSIVE NIGHT SKY - Stars, Aurora, Shooting Stars, Moon, Embers */}
+            <NightSky isActive={isComputing || isRehearsing} />
 
-            {/* MOUNTAIN SILHOUETTES */}
+            {/* MOUNTAIN SILHOUETTES - Multi-layer depth */}
             <Mountains />
 
-            {/* EVERGREEN SILHOUETTE */}
+            {/* EVERGREEN FOREST FRAMING */}
             <Evergreen />
 
-            {/* CAMPFIRE GLOW */}
-            <CampfireGlow isActive={isComputing || isRehearsing} />
+            {/* CAMPFIRE GLOW - Dynamic flickering */}
+            <Campfire isActive={isComputing || isRehearsing} intensity={isComputing ? 1.3 : 1} />
 
-            {/* SUBTLE AURORA EFFECT */}
-            <div className="absolute top-0 left-0 right-0 h-48 pointer-events-none opacity-20"
-                style={{ background: 'linear-gradient(180deg, rgba(100, 200, 150, 0.1) 0%, transparent 100%)' }} />
-
-            {/* DREAMING OVERLAY */}
+            {/* DREAMING OVERLAY - Subtle purple wash during rehearsal */}
             {isRehearsing && (
-                <div className="absolute inset-0 pointer-events-none z-40 bg-purple-900/10 animate-pulse" />
+                <div className="absolute inset-0 pointer-events-none z-40"
+                    style={{
+                        background: 'radial-gradient(ellipse at center, rgba(139, 92, 246, 0.08) 0%, transparent 70%)',
+                        animation: 'dreamPulse 3s ease-in-out infinite'
+                    }} />
             )}
 
             {/* TOASTS (non-blocking) */}
@@ -1770,15 +1668,9 @@ export default function NeuralTerminal() {
 
             {/* CUSTOM ANIMATIONS */}
             <style>{`
-                @keyframes fireFlicker {
-                    0%, 100% { opacity: 0.6; transform: translateX(-50%) scale(1); }
-                    25% { opacity: 0.7; transform: translateX(-50%) scale(1.02); }
-                    50% { opacity: 0.5; transform: translateX(-50%) scale(0.98); }
-                    75% { opacity: 0.75; transform: translateX(-50%) scale(1.03); }
-                }
-                @keyframes starTwinkle {
-                    0% { opacity: 0.3; }
-                    100% { opacity: 0.9; }
+                @keyframes dreamPulse {
+                    0%, 100% { opacity: 0.6; transform: scale(1); }
+                    50% { opacity: 1; transform: scale(1.02); }
                 }
             `}</style>
         </div>

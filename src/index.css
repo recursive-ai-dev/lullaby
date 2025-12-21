@@ -1,21 +1,53 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* 3AM Campfire in Jasper - Cozy night theme */
+/**
+ * 3AM CAMPFIRE IN JASPER - Immersive Night Theme
+ * A magical interface that feels like meeting someone special
+ * by a fire in the Canadian Rockies at 3am
+ */
 
 :root {
   color-scheme: dark;
+  
+  /* Campfire palette */
+  --fire-core: #fcd34d;
+  --fire-mid: #f97316;
+  --fire-edge: #dc2626;
+  --ember-glow: rgba(251, 191, 36, 0.3);
+  
+  /* Night sky palette */
+  --sky-zenith: #050810;
+  --sky-mid: #0a0f1a;
+  --sky-horizon: #16213e;
+  --aurora-green: rgba(74, 222, 128, 0.15);
+  --aurora-purple: rgba(139, 92, 246, 0.1);
+  
+  /* UI colors */
+  --text-warm: #fef3c7;
+  --text-soft: rgba(254, 243, 199, 0.7);
+  --text-muted: rgba(254, 243, 199, 0.4);
+  --glass-bg: rgba(255, 255, 255, 0.03);
+  --glass-border: rgba(254, 243, 199, 0.08);
 }
 
 html, body {
   margin: 0;
   padding: 0;
   height: 100%;
-  background: linear-gradient(to bottom, #0a0a1a 0%, #0d1526 30%, #1a1a2e 60%, #16213e 100%);
+  background: linear-gradient(
+    to bottom, 
+    var(--sky-zenith) 0%, 
+    var(--sky-mid) 30%, 
+    #0d1526 60%, 
+    var(--sky-horizon) 100%
+  );
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-weight: 300;
+  letter-spacing: 0.01em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
@@ -25,7 +57,7 @@ html, body {
   height: 100%;
 }
 
-/* Hide scrollbars used by the UI's className `scrollbar-hide` */
+/* Hide scrollbars */
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
@@ -34,18 +66,160 @@ html, body {
   scrollbar-width: none;
 }
 
-/* Smooth selection colors */
+/* Warm selection colors - like firelight highlighting */
 ::selection {
-  background: rgba(251, 191, 36, 0.3);
+  background: rgba(251, 191, 36, 0.35);
   color: #fef3c7;
 }
 
-/* Input focus glow */
-input:focus {
-  box-shadow: 0 0 30px rgba(251, 191, 36, 0.1);
+/* Input focus glow - warm campfire feel */
+input:focus,
+textarea:focus {
+  box-shadow: 0 0 40px rgba(251, 191, 36, 0.08), 
+              0 0 20px rgba(251, 191, 36, 0.05);
 }
 
 /* Smooth transitions globally */
 * {
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Glass morphism utilities */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+}
+
+.glass-panel-warm {
+  background: rgba(251, 191, 36, 0.03);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(251, 191, 36, 0.1);
+  box-shadow: 0 0 30px rgba(251, 191, 36, 0.03);
+}
+
+/* Warm glow for active elements */
+.warm-glow {
+  box-shadow: 0 0 20px rgba(251, 191, 36, 0.15),
+              0 0 40px rgba(251, 191, 36, 0.05);
+}
+
+.warm-glow-intense {
+  box-shadow: 0 0 30px rgba(251, 191, 36, 0.25),
+              0 0 60px rgba(251, 191, 36, 0.1),
+              0 0 100px rgba(251, 191, 36, 0.05);
+}
+
+/* Text utilities */
+.text-firelight {
+  color: var(--text-warm);
+  text-shadow: 0 0 20px rgba(251, 191, 36, 0.15);
+}
+
+.text-ember {
+  color: var(--fire-mid);
+  text-shadow: 0 0 15px rgba(249, 115, 22, 0.3);
+}
+
+/* Breathing animation for subtle life */
+@keyframes breathe {
+  0%, 100% { opacity: 0.8; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.02); }
+}
+
+.animate-breathe {
+  animation: breathe 4s ease-in-out infinite;
+}
+
+/* Gentle float for aurora-like movement */
+@keyframes gentleFloat {
+  0%, 100% { transform: translateY(0) translateX(0); }
+  25% { transform: translateY(-3px) translateX(2px); }
+  50% { transform: translateY(-5px) translateX(-1px); }
+  75% { transform: translateY(-2px) translateX(-3px); }
+}
+
+.animate-float {
+  animation: gentleFloat 8s ease-in-out infinite;
+}
+
+/* Chat bubble entrance */
+@keyframes bubbleIn {
+  0% { 
+    opacity: 0; 
+    transform: translateY(10px) scale(0.95); 
+  }
+  100% { 
+    opacity: 1; 
+    transform: translateY(0) scale(1); 
+  }
+}
+
+.bubble-enter {
+  animation: bubbleIn 0.3s ease-out forwards;
+}
+
+/* Warm pulse for computing states */
+@keyframes warmPulse {
+  0%, 100% { 
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.1);
+  }
+  50% { 
+    box-shadow: 0 0 40px rgba(251, 191, 36, 0.2),
+                0 0 60px rgba(249, 115, 22, 0.1);
+  }
+}
+
+.animate-warm-pulse {
+  animation: warmPulse 2s ease-in-out infinite;
+}
+
+/* Input placeholder styling */
+input::placeholder,
+textarea::placeholder {
+  color: rgba(254, 243, 199, 0.25);
+  font-weight: 200;
+}
+
+/* Custom scrollbar for when needed */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(251, 191, 36, 0.15);
+  border-radius: 2px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(251, 191, 36, 0.25);
+}
+
+/* Button hover states */
+button:not(:disabled):hover {
+  transition: all 0.2s ease-out;
+}
+
+/* Focus visible for accessibility */
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid rgba(251, 191, 36, 0.4);
+  outline-offset: 2px;
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
