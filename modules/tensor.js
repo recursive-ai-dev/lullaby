@@ -78,6 +78,13 @@ export class Tensor {
         if (K !== K_B) {
             throw new Error(`Matmul dimension mismatch: A[..., ${M}, ${K}] @ B[..., ${K_B}, ${N}]`);
         }
+        if (dimA > 3 || dimB > 3) {
+            // CRITICAL FIX: Prevent silent data loss for 4D+ tensors (e.g. [Batch, Heads, Seq, Dim])
+            // The current implementation treats everything before the last 2 dims as a single batch dim,
+            // but only iterates A.shape[0] times. For 4D, A.shape[0] is Batch (not Batch*Heads).
+            // Full N-D broadcasting requires a more complex implementation.
+            throw new Error(`Matmul currently only supports up to 3 dimensions. Got A:${dimA}D, B:${dimB}D`);
+        }
 
         const batchSize = dimA > 2 ? A.shape[0] : 1;
         const resultShape = dimA > 2 ? [batchSize, M, N] : [M, N];

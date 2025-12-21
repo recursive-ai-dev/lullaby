@@ -153,8 +153,12 @@ export class ResonanceEngine {
             const vocabSize = logits.shape[2];
             const lastLogitOffset = (seqLen - 1) * vocabSize;
 
-            for (let v = 0; v < vocabSize; v++) {
-                if (currentIds.includes(v)) logits.data[lastLogitOffset + v] -= 2.0;
+            // Optimized Repetition Penalty (O(Seq) instead of O(Vocab*Seq))
+            const uniqueIds = new Set(currentIds);
+            for (const id of uniqueIds) {
+                if (id >= 0 && id < vocabSize) {
+                    logits.data[lastLogitOffset + id] -= 2.0;
+                }
             }
 
             let maxVal = -Infinity;
