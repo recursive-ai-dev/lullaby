@@ -80,12 +80,25 @@ export class NanoTensor extends Tensor {
     }
 
     /**
-     * Apply element-wise exponential
+     * Apply element-wise exponential with numerical stability
+     * 
+     * Mathematical bounds for IEEE 754 double-precision:
+     * - exp(709.78) ≈ 1.79e308 (max finite float64)
+     * - exp(-745.13) ≈ 5e-324 (min subnormal)
+     * 
+     * Using conservative bounds [-700, 700] to prevent:
+     * - Overflow to Infinity (which causes NaN when multiplied by 0)
+     * - Underflow to 0 (which can cause division by zero)
      */
     exp() {
+        const MAX_EXP_INPUT = 700;  // exp(700) ≈ 1e304, safely finite
+        const MIN_EXP_INPUT = -700; // exp(-700) ≈ 1e-304, safely non-zero
+
         const res = new Float32Array(this.data.length);
         for (let i = 0; i < this.data.length; i++) {
-            res[i] = Math.exp(this.data[i]);
+            // Clamp input to prevent overflow/underflow
+            const clamped = Math.max(MIN_EXP_INPUT, Math.min(MAX_EXP_INPUT, this.data[i]));
+            res[i] = Math.exp(clamped);
         }
         return new NanoTensor(res, [...this.shape]);
     }
@@ -157,7 +170,7 @@ export class NanoTensor extends Tensor {
     static randn(shape, mean = 0.0, std = 0.02) {
         const size = shape.reduce((a, b) => a * b, 1);
         const data = new Float32Array(size);
-        
+
         for (let i = 0; i < size; i += 2) {
             // Box-Muller transform - generate two independent normal samples
             let u1, u2;
@@ -165,17 +178,17 @@ export class NanoTensor extends Tensor {
                 u1 = Math.random();
                 u2 = Math.random();
             } while (u1 <= 1e-10); // Ensure u1 > 0 to avoid log(0)
-            
+
             const mag = std * Math.sqrt(-2.0 * Math.log(u1));
             const z0 = mag * Math.cos(2.0 * Math.PI * u2) + mean;
             const z1 = mag * Math.sin(2.0 * Math.PI * u2) + mean;
-            
+
             data[i] = z0;
             if (i + 1 < size) {
                 data[i + 1] = z1;
             }
         }
-        
+
         return new NanoTensor(data, shape);
     }
 
@@ -205,24 +218,24 @@ export class GradientChecker {
      */
     static numericalGradient(fn, tensor, epsilon = 1e-5) {
         const grad = new Float32Array(tensor.data.length);
-        
+
         for (let i = 0; i < tensor.data.length; i++) {
             // f(x + epsilon)
             const original = tensor.data[i];
             tensor.data[i] = original + epsilon;
             const fPlus = fn(tensor);
-            
+
             // f(x - epsilon)
             tensor.data[i] = original - epsilon;
             const fMinus = fn(tensor);
-            
+
             // Restore original value
             tensor.data[i] = original;
-            
+
             // Central difference: (f(x+h) - f(x-h)) / (2h)
             grad[i] = (fPlus - fMinus) / (2.0 * epsilon);
         }
-        
+
         return new Tensor(grad, [...tensor.shape]);
     }
 
@@ -239,24 +252,24 @@ export class GradientChecker {
 
         let maxRelativeError = 0.0;
         let errorCount = 0;
-        
+
         for (let i = 0; i < analytical.data.length; i++) {
             const a = analytical.data[i];
             const n = numerical.data[i];
-            
+
             // Relative error: |a - n| / (|a| + |n| + epsilon)
             const relativeError = Math.abs(a - n) / (Math.abs(a) + Math.abs(n) + 1e-8);
-            
+
             if (relativeError > threshold) {
                 errorCount++;
             }
-            
+
             maxRelativeError = Math.max(maxRelativeError, relativeError);
         }
-        
+
         const errorRate = errorCount / analytical.data.length;
         const passed = errorRate < 0.01 && maxRelativeError < threshold * 10;
-        
+
         return {
             passed,
             maxRelativeError,
@@ -286,7 +299,7 @@ export class GradientClipper {
             }
         }
         globalNorm = Math.sqrt(globalNorm);
-        
+
         // Clip if necessary
         if (globalNorm > maxNorm) {
             const clipCoef = maxNorm / (globalNorm + 1e-6);
@@ -298,7 +311,7 @@ export class GradientClipper {
                 }
             }
         }
-        
+
         return globalNorm;
     }
 
