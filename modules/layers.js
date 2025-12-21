@@ -316,107 +316,7 @@ export class BayesianLinear {
     }
 }
 
-export class TuckerLinear {
-    constructor(inFeat, outFeat, rank = 16) {
-        this.inFeat = inFeat;
-        this.outFeat = outFeat;
-        this.rank = rank;
 
-        // Decomposed Factors
-        // Factor A: Compresses Input -> Rank
-        this.factorA = Tensor.randn([inFeat, rank], 0.0, 0.05);
-
-        // Core G: Interaction Tensor (Rank x Rank)
-        this.coreG = Tensor.randn([rank, rank], 0.0, 0.05);
-
-        // Factor B: Expands Rank -> Output
-        this.factorB = Tensor.randn([rank, outFeat], 0.0, 0.05);
-
-        this.bias = Tensor.zeros([outFeat]);
-
-        // Cache for backward pass
-        this.lastInput = null;
-        this.lastAOut = null;
-        this.lastGOut = null;
-    }
-
-    parameters() {
-        return [this.factorA, this.coreG, this.factorB, this.bias];
-    }
-
-    forward(x) {
-        this.lastInput = x;
-
-        // 1. Compress: X [B, In] @ A [In, R] -> [B, R]
-        const a_out = x.matmul(this.factorA);
-        this.lastAOut = a_out;
-
-        // 2. Interact: [B, R] @ G [R, R] -> [B, R]
-        const g_out = a_out.matmul(this.coreG);
-        this.lastGOut = g_out;
-
-        // 3. Expand: [B, R] @ B [R, Out] -> [B, Out]
-        const b_out = g_out.matmul(this.factorB);
-
-        return b_out.addBroadcast(this.bias);
-    }
-
-    backward(gradOutput) {
-        // Chain rule flows backwards through B -> G -> A
-
-        // 1. Gradients for Factor B
-        // dLoss/dB = G_out^T @ GradOutput
-        const gradB = this.lastGOut.transpose().matmul(gradOutput);
-
-        // Propagate grad to G
-        // dLoss/dG_out = GradOutput @ B^T
-        const gradGOut = gradOutput.matmul(this.factorB.transpose());
-
-        // 2. Gradients for Core G
-        // dLoss/dG = A_out^T @ GradGOut
-        const gradG = this.lastAOut.transpose().matmul(gradGOut);
-
-        // Propagate grad to A
-        // dLoss/dA_out = GradGOut @ G^T
-        const gradAOut = gradGOut.matmul(this.coreG.transpose());
-
-        // 3. Gradients for Factor A
-        // dLoss/dA = Input^T @ GradAOut
-        const gradA = this.lastInput.transpose().matmul(gradAOut);
-
-        // 4. Gradients for Input (to pass to previous layer)
-        // dLoss/dInput = GradAOut @ A^T
-        const gradInput = gradAOut.matmul(this.factorA.transpose());
-
-        // Apply gradients
-        this.factorB.zeroGrad();
-        this.coreG.zeroGrad();
-        this.factorA.zeroGrad();
-        this.bias.zeroGrad();
-
-        this.accumulateGrad(this.factorB, gradB);
-        this.accumulateGrad(this.coreG, gradG);
-        this.accumulateGrad(this.factorA, gradA);
-
-        // Bias gradient (sum over batch)
-        const outDim = this.bias.shape[0];
-        const rows = gradOutput.data.length / outDim;
-        for (let r = 0; r < rows; r++) {
-            const offset = r * outDim;
-            for (let i = 0; i < outDim; i++) {
-                this.bias.grad[i] += gradOutput.data[offset + i];
-            }
-        }
-
-        return gradInput;
-    }
-
-    accumulateGrad(param, gradTensor) {
-        for (let i = 0; i < param.grad.length; i++) {
-            param.grad[i] += gradTensor.data[i];
-        }
-    }
-}
 
 export class MultiHeadAttention {
     constructor(dModel, numHeads) {
@@ -424,11 +324,17 @@ export class MultiHeadAttention {
         this.numHeads = numHeads;
         this.dHead = Math.floor(dModel / numHeads);
 
-        this.wQ = new TuckerLinear(dModel, dModel, 16); // Rank 16 compression
-        this.wK = new TuckerLinear(dModel, dModel, 16);
-        this.wV = new TuckerLinear(dModel, dModel, 16);
+        this.wQ = new Linear(dModel, dModel);
+        this.wK = new Linear(dModel, dModel);
+        this.wV = new Linear(dModel, dModel);
         this.wO = new Linear(dModel, dModel);
         this.scale = 1.0 / Math.sqrt(this.dHead);
+
+        // Precompute RoPE frequencies
+        this.cacheTheta = new Float32Array(this.dHead / 2);
+        for (let i = 0; i < this.dHead / 2; i++) {
+            this.cacheTheta[i] = 1.0 / Math.pow(10000, (2.0 * i) / this.dHead);
+        }
 
         // Cache for backward pass
         this.lastAttnWeights = null;
@@ -578,30 +484,27 @@ export class MultiHeadAttention {
     applyRoPE(tensor, seqLen, inverse = false) {
         const out = Tensor.zeros(tensor.shape);
         const d = this.dHead;
+        const halfD = Math.floor(d / 2);
 
-        // Validate tensor size (HIGH FIX #8)
+        // Validate tensor size
         const expectedSize = seqLen * d;
         if (tensor.data.length !== expectedSize) {
             throw new Error(`RoPE: Expected tensor size ${expectedSize}, got ${tensor.data.length}`);
         }
 
         for (let t = 0; t < seqLen; t++) {
-            for (let i = 0; i < Math.floor(d / 2); i++) {
-                // Corrected formula: theta_i = 1 / (10000^(2i/d))
-                // This is equivalent to 10000^(-2i/d)
-                const exponent = (2.0 * i) / d;
-                const theta = 1.0 / Math.pow(10000, exponent);
-
-                // Position-dependent angle
+            const offset = t * d;
+            for (let i = 0; i < halfD; i++) {
+                // Use cached theta
+                const theta = this.cacheTheta[i];
                 const angle = t * theta;
-
-                // For backward pass, negate the angle (inverse rotation)
                 const finalAngle = inverse ? -angle : angle;
+
                 const cos = Math.cos(finalAngle);
                 const sin = Math.sin(finalAngle);
 
-                const idx1 = t * d + 2 * i;
-                const idx2 = t * d + 2 * i + 1;
+                const idx1 = offset + 2 * i;
+                const idx2 = offset + 2 * i + 1;
 
                 const val1 = tensor.data[idx1];
                 const val2 = tensor.data[idx2];
@@ -611,10 +514,9 @@ export class MultiHeadAttention {
                 out.data[idx2] = val1 * sin + val2 * cos;
             }
 
-            // Handle odd dimensions: RoPE operates on pairs of dimensions (2D rotations)
-            // If d is odd, the last dimension cannot be paired, so copy it unchanged
+            // Handle odd dimensions
             if (d % 2 === 1) {
-                out.data[t * d + d - 1] = tensor.data[t * d + d - 1];
+                out.data[offset + d - 1] = tensor.data[offset + d - 1];
             }
         }
         return out;

@@ -8,11 +8,13 @@ ios/
 *.log
 npm-debug.log*
 dev-tools/
-*.md
-! README.md
+!README.md
+!TESTING-ANALYSIS.md
 .toolignore
 .agent/*
 .agent
 bug_sweeper_report.md
 training_platform_handoff.md
 .agent/bug_sweeper_report.md
+.agent/workflows/script-reaper.md
+TRAINING_PLATFORM_SUMMARY.md
