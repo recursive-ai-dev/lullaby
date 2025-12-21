@@ -1,0 +1,6 @@
+total 4
+drwxr-xr-x. 1 chencebrensen chencebrensen  40 Dec 21 04:19 .
+drwxrwxr-x. 1 chencebrensen chencebrensen 644 Dec 21 04:19 ..
+drwxr-xr-x. 1 chencebrensen chencebrensen 122 Dec 21 04:19 assets
+drwxr-xr-x. 1 chencebrensen chencebrensen   0 Dec 21 04:19 emma
+-rw-r--r--. 1 chencebrensen chencebrensen 464 Dec 21 04:19 index.html
