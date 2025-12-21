@@ -136,6 +136,19 @@ export default function NeuralTerminal() {
     const [attentionWeights, setAttentionWeights] = useState(null); // UPGRADE #14: Attention Visualization
     const [workerStatus, setWorkerStatus] = useState('OFFLINE');
 
+    // Non-blocking toast notifications (errors, status).
+    const [toasts, setToasts] = useState([]);
+    const toastIdRef = useRef(0);
+    const pushToast = (kind, text, { ms = 4500 } = {}) => {
+        const message = String(text || '').trim();
+        if (!message) return;
+        const id = `${Date.now()}_${toastIdRef.current++}`;
+        setToasts((prev) => [...prev, { id, kind: kind || 'info', text: message }].slice(-4));
+        window.setTimeout(() => {
+            setToasts((prev) => prev.filter((t) => t.id !== id));
+        }, Math.max(1200, Number(ms) || 0));
+    };
+
     // Conversation threads (only when dbMode is local/idb)
     const [threadsOpen, setThreadsOpen] = useState(false);
     const [threads, setThreads] = useState([]);
@@ -284,6 +297,7 @@ export default function NeuralTerminal() {
             await refreshThreads();
         } catch {
             addLog('sys', 'FAILED TO RENAME CONVERSATION.');
+            pushToast('error', 'Failed to rename conversation.');
         }
     };
 
@@ -320,6 +334,7 @@ export default function NeuralTerminal() {
             await refreshThreads();
         } catch {
             addLog('sys', 'FAILED TO DELETE CONVERSATION.');
+            pushToast('error', 'Failed to delete conversation.');
         }
     };
 
@@ -346,6 +361,7 @@ export default function NeuralTerminal() {
             await refreshThreads();
         } catch {
             addLog('sys', 'FAILED TO SWITCH CONVERSATIONS.');
+            pushToast('error', 'Failed to switch conversations.');
         }
     };
 
@@ -363,6 +379,7 @@ export default function NeuralTerminal() {
             await refreshThreads();
         } catch {
             addLog('sys', 'FAILED TO CREATE CONVERSATION.');
+            pushToast('error', 'Failed to create conversation.');
         }
     };
 
@@ -376,6 +393,165 @@ export default function NeuralTerminal() {
         const requestId = typeof opts.requestId === 'string' && opts.requestId ? opts.requestId : makeRequestId(type.toLowerCase());
         worker.postMessage({ v: protocolRef.current.v, requestId, type, payload });
         return requestId;
+    };
+
+    const createAndWireWorker = () => {
+        // Initialize Web Worker as module so ESM imports load correctly.
+        const worker = new Worker(new URL('./lullaby.worker.js', import.meta.url), { type: 'module' });
+        workerRef.current = worker;
+        setWorkerStatus('CONNECTING');
+
+        worker.onerror = () => {
+            setWorkerStatus('ERROR');
+            setIsBooting(false);
+            setIsComputing(false);
+            pushToast('error', 'AI core crashed. Click “restart core” to recover.');
+            addLog('sys', 'AI CORE CRASHED. CLICK “RESTART CORE” TO RECOVER.');
+        };
+
+        worker.onmessageerror = () => {
+            setWorkerStatus('ERROR');
+            setIsBooting(false);
+            setIsComputing(false);
+            pushToast('error', 'AI core sent an invalid message. Click “restart core” to recover.');
+            addLog('sys', 'AI CORE MESSAGE ERROR. CLICK “RESTART CORE” TO RECOVER.');
+        };
+
+        worker.onmessage = (e) => {
+            const { type, payload, requestId } = e.data || {};
+
+            switch (type) {
+                case 'WORKER_ERROR':
+                    setWorkerStatus('ERROR');
+                    setIsBooting(false);
+                    setIsComputing(false);
+                    pushToast('error', payload?.message || 'AI core error. Please try again.');
+                    addLog('sys', `${payload?.message || 'AI core error. Please try again.'}`);
+                    break;
+
+                case 'INIT_COMPLETE':
+                    setWorkerStatus('ONLINE');
+                    setIsBooting(false);
+                    if (payload?.profileKey) setProfileKey(payload.profileKey);
+                    addLog('sys', `CORE ONLINE. PROFILE: ${payload?.profileKey || 'latest'}. PERSISTENCE: ${payload?.persistenceEnabled ? (payload.loaded ? 'RESTORED' : 'NEW') : 'OFF'}`);
+                    break;
+
+                case 'PERSISTENCE_SET':
+                    addLog('sys', `CORE PERSISTENCE: ${payload?.enabled ? (payload?.loaded ? 'ON (LOADED)' : 'ON (EMPTY)') : 'OFF'}`);
+                    break;
+
+                case 'PROFILE_SET':
+                    if (payload?.profileKey) {
+                        setProfileKey(payload.profileKey);
+                        try { localStorage.setItem('lullaby.profileKey', payload.profileKey); } catch {}
+                    }
+                    addLog('sys', `PROFILE SET: ${payload?.profileKey || 'latest'} (${payload?.loaded ? 'LOADED' : 'EMPTY'})`);
+                    break;
+
+                case 'PROFILE_RESET':
+                    if (payload?.profileKey) {
+                        setProfileKey(payload.profileKey);
+                        try { localStorage.setItem('lullaby.profileKey', payload.profileKey); } catch {}
+                    }
+                    addLog('sys', `PROFILE RESET: ${payload?.profileKey || 'latest'} (${payload?.deleted ? 'CLEARED' : 'NOOP'})`);
+                    break;
+
+                case 'SEED_COMPLETE':
+                    if (typeof payload?.klLoss === 'number') {
+                        setStats(prev => ({ ...prev, klLoss: payload.klLoss }));
+                    }
+                    addLog('sys', `SEEDED ${payload?.count ?? 0} LINES FOR: ${payload?.vars?.name || 'UNKNOWN'} (PROFILE: ${payload?.profileKey || 'latest'})`);
+                    setMemoriesStatusTransient(`memories added (${payload?.count ?? 0})`, 4500);
+                    break;
+
+                case 'TRAIN_COMPLETE':
+                    // Ignore stale training completions if multiple are in-flight.
+                    if (lastTrainRequestIdRef.current && requestId && requestId !== lastTrainRequestIdRef.current) break;
+                    updateStats(payload.loss, payload.klLoss);
+                    if (datasetTrainingRef.current?.active) {
+                        const next = datasetTrainQueueRef.current.shift();
+                        const done = datasetTrainTotalRef.current - datasetTrainQueueRef.current.length;
+                        setDatasetTraining((prev) => ({ ...prev, done, total: datasetTrainTotalRef.current }));
+
+                        if (next) {
+                            datasetTrainEpochRef.current = done;
+                            const reqId = postToWorker('TRAIN', { text: next, epoch: datasetTrainEpochRef.current, totalEpochs: datasetTrainTotalRef.current, isGameplay: false });
+                            lastTrainRequestIdRef.current = reqId;
+                        } else {
+                            datasetTrainingRef.current = { active: false };
+                            setDatasetTraining({ active: false, name: '', done: 0, total: 0 });
+                            setIsComputing(false);
+                            addLog('sys', 'MEMORIES SETTLED.');
+                        }
+                    } else {
+                        setIsComputing(false);
+                    }
+                    break;
+
+                case 'GENERATE_COMPLETE':
+                    // Ignore stale generation results.
+                    if (lastGenerateRequestIdRef.current && requestId && requestId !== lastGenerateRequestIdRef.current) break;
+                    addLog('ai', payload.text);
+                    if (payload.attention) {
+                        setAttentionWeights(payload.attention);
+                    }
+                    if (typeof payload.klLoss === 'number') {
+                        setStats(prev => ({ ...prev, klLoss: payload.klLoss }));
+                    }
+                    setIsComputing(false);
+                    break;
+
+                case 'REHEARSE_COMPLETE':
+                    setIsRehearsing(false);
+                    break;
+
+                case 'SAVE_COMPLETE':
+                    addLog('sys', 'MEMORY SAVED TO DISK.');
+                    setMemoriesStatusTransient('saved');
+                    break;
+
+                case 'EXPORT_COMPLETE':
+                    // Create download link
+                    {
+                        const blob = payload;
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `lullaby_model_${Date.now()}.safetensors`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                        addLog('sys', 'MODEL EXPORTED SUCCESSFULLY.');
+                    }
+                    break;
+
+                case 'IMPORT_COMPLETE':
+                    addLog('sys', `MODEL IMPORTED. LOADED: ${payload.loaded}/${payload.total}`);
+                    setMemoriesStatusTransient('model loaded');
+                    break;
+
+                case 'IMPORT_ERROR':
+                    pushToast('error', payload?.message || 'Import failed');
+                    addLog('sys', `IMPORT FAILED: ${payload.message}`);
+                    break;
+            }
+        };
+
+        return worker;
+    };
+
+    const restartCore = () => {
+        pushToast('info', 'Restarting AI core…', { ms: 1800 });
+        try { workerRef.current?.terminate(); } catch {}
+        setIsBooting(true);
+        setIsComputing(false);
+        lastGenerateRequestIdRef.current = null;
+        lastTrainRequestIdRef.current = null;
+        createAndWireWorker();
+
+        // Re-init core without reloading conversations.
+        postToWorker('INIT', { profileKey, persistenceEnabled: dbMode === 'checkpoints' }, { requestId: makeRequestId('init') });
     };
 
     useEffect(() => {
@@ -494,6 +670,7 @@ export default function NeuralTerminal() {
             if (!templates.length) {
                 addLog('sys', `DATASET IMPORT FAILED: no usable lines found in ${file.name}`);
                 setMemoriesStatusTransient('nothing usable in that file');
+                pushToast('error', `No usable lines found in “${file.name}”.`);
                 return;
             }
             const id = `${Date.now()}_${Math.random().toString(16).slice(2)}`;
@@ -503,8 +680,10 @@ export default function NeuralTerminal() {
             addLog('sys', `DATASET IMPORTED: ${name} (${templates.length} LINES)`);
             setMemoriesStatusTransient(`imported “${name}” (${templates.length})`, 4500);
         } catch (err) {
-            addLog('sys', `DATASET IMPORT FAILED: ${err?.message || String(err)}`);
+            const msg = err?.message || String(err);
+            addLog('sys', `DATASET IMPORT FAILED: ${msg}`);
             setMemoriesStatusTransient('import failed');
+            pushToast('error', `Dataset import failed: ${msg}`);
         }
     };
 
@@ -603,143 +782,7 @@ export default function NeuralTerminal() {
 
     // --- WORKER INITIALIZATION ---
     useEffect(() => {
-        // Initialize Web Worker as module so ESM imports load correctly
-        workerRef.current = new Worker(new URL('./lullaby.worker.js', import.meta.url), { type: 'module' });
-        setWorkerStatus('CONNECTING');
-
-        workerRef.current.onerror = (err) => {
-            setWorkerStatus('ERROR');
-            setIsBooting(false);
-            setIsComputing(false);
-            addLog('sys', 'AI CORE CRASHED. YOU CAN KEEP TYPING, BUT GENERATION MAY NOT WORK UNTIL RELOAD.');
-        };
-
-        workerRef.current.onmessageerror = () => {
-            setWorkerStatus('ERROR');
-            setIsBooting(false);
-            setIsComputing(false);
-            addLog('sys', 'AI CORE SENT AN INVALID MESSAGE. PLEASE RELOAD.');
-        };
-
-        workerRef.current.onmessage = (e) => {
-            const { type, payload, requestId } = e.data || {};
-
-            switch (type) {
-                case 'WORKER_ERROR':
-                    setWorkerStatus('ERROR');
-                    setIsBooting(false);
-                    setIsComputing(false);
-                    addLog('sys', `${payload?.message || 'AI core error. Please try again.'}`);
-                    break;
-
-                case 'INIT_COMPLETE':
-                    setWorkerStatus('ONLINE');
-                    setIsBooting(false);
-                    if (payload?.profileKey) setProfileKey(payload.profileKey);
-                    addLog('sys', `CORE ONLINE. PROFILE: ${payload?.profileKey || 'latest'}. PERSISTENCE: ${payload?.persistenceEnabled ? (payload.loaded ? 'RESTORED' : 'NEW') : 'OFF'}`);
-                    break;
-
-                case 'PERSISTENCE_SET':
-                    addLog('sys', `CORE PERSISTENCE: ${payload?.enabled ? (payload?.loaded ? 'ON (LOADED)' : 'ON (EMPTY)') : 'OFF'}`);
-                    break;
-
-                case 'PROFILE_SET':
-                    if (payload?.profileKey) {
-                        setProfileKey(payload.profileKey);
-                        try { localStorage.setItem('lullaby.profileKey', payload.profileKey); } catch {}
-                    }
-                    addLog('sys', `PROFILE SET: ${payload?.profileKey || 'latest'} (${payload?.loaded ? 'LOADED' : 'EMPTY'})`);
-                    break;
-
-                case 'PROFILE_RESET':
-                    if (payload?.profileKey) {
-                        setProfileKey(payload.profileKey);
-                        try { localStorage.setItem('lullaby.profileKey', payload.profileKey); } catch {}
-                    }
-                    addLog('sys', `PROFILE RESET: ${payload?.profileKey || 'latest'} (${payload?.deleted ? 'CLEARED' : 'NOOP'})`);
-                    break;
-
-                case 'SEED_COMPLETE':
-                    if (typeof payload?.klLoss === 'number') {
-                        setStats(prev => ({ ...prev, klLoss: payload.klLoss }));
-                    }
-                    addLog('sys', `SEEDED ${payload?.count ?? 0} LINES FOR: ${payload?.vars?.name || 'UNKNOWN'} (PROFILE: ${payload?.profileKey || 'latest'})`);
-                    setMemoriesStatusTransient(`memories added (${payload?.count ?? 0})`, 4500);
-                    break;
-
-                case 'TRAIN_COMPLETE':
-                    // Ignore stale training completions if multiple are in-flight.
-                    if (lastTrainRequestIdRef.current && requestId && requestId !== lastTrainRequestIdRef.current) break;
-                    updateStats(payload.loss, payload.klLoss);
-                    if (datasetTrainingRef.current?.active) {
-                        const next = datasetTrainQueueRef.current.shift();
-                        const done = datasetTrainTotalRef.current - datasetTrainQueueRef.current.length;
-                        setDatasetTraining((prev) => ({ ...prev, done, total: datasetTrainTotalRef.current }));
-
-                        if (next) {
-                            datasetTrainEpochRef.current = done;
-                            {
-                                const reqId = postToWorker('TRAIN', { text: next, epoch: datasetTrainEpochRef.current, totalEpochs: datasetTrainTotalRef.current, isGameplay: false });
-                                lastTrainRequestIdRef.current = reqId;
-                            }
-                        } else {
-                            datasetTrainingRef.current = { active: false };
-                            setDatasetTraining({ active: false, name: '', done: 0, total: 0 });
-                            setIsComputing(false);
-                            addLog('sys', 'MEMORIES SETTLED.');
-                        }
-                    } else {
-                        setIsComputing(false);
-                    }
-                    break;
-
-                case 'GENERATE_COMPLETE':
-                    // Ignore stale generation results.
-                    if (lastGenerateRequestIdRef.current && requestId && requestId !== lastGenerateRequestIdRef.current) break;
-                    addLog('ai', payload.text);
-                    if (payload.attention) {
-                        setAttentionWeights(payload.attention);
-                    }
-                    if (typeof payload.klLoss === 'number') {
-                        setStats(prev => ({ ...prev, klLoss: payload.klLoss }));
-                    }
-                    setIsComputing(false);
-                    break;
-
-                case 'REHEARSE_COMPLETE':
-                    setIsRehearsing(false);
-                    // Optional: visualize rehearsal
-                    break;
-
-                case 'SAVE_COMPLETE':
-                    addLog('sys', 'MEMORY SAVED TO DISK.');
-                    setMemoriesStatusTransient('saved');
-                    break;
-
-                case 'EXPORT_COMPLETE':
-                    // Create download link
-                    const blob = payload;
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `lullaby_model_${Date.now()}.safetensors`;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(url);
-                    addLog('sys', 'MODEL EXPORTED SUCCESSFULLY.');
-                    break;
-
-                case 'IMPORT_COMPLETE':
-                    addLog('sys', `MODEL IMPORTED. LOADED: ${payload.loaded}/${payload.total}`);
-                    setMemoriesStatusTransient('model loaded');
-                    break;
-
-                case 'IMPORT_ERROR':
-                    addLog('sys', `IMPORT FAILED: ${payload.message}`);
-                    break;
-            }
-        };
+        createAndWireWorker();
 
         // Start Boot Sequence
         const bootSequence = async () => {
@@ -784,12 +827,7 @@ export default function NeuralTerminal() {
             }
 
             // Tell worker to init (checkpoint persistence only in checkpoints mode)
-            workerRef.current.postMessage({
-                v: protocolRef.current.v,
-                requestId: makeRequestId('init'),
-                type: 'INIT',
-                payload: { profileKey, persistenceEnabled: dbMode === 'checkpoints' }
-            });
+            postToWorker('INIT', { profileKey, persistenceEnabled: dbMode === 'checkpoints' }, { requestId: makeRequestId('init') });
         };
 
         bootSequence();
@@ -886,7 +924,7 @@ export default function NeuralTerminal() {
         const nextKey = profileKey || 'latest';
 
         // Reset the model/profile in the worker (and delete persisted checkpoint if enabled).
-        workerRef.current?.postMessage({ type: 'RESET_PROFILE', payload: { profileKey: nextKey } });
+        postToWorker('RESET_PROFILE', { profileKey: nextKey });
         // Cancel any pending generate/train.
         if (lastGenerateRequestIdRef.current) postToWorker('CANCEL', { requestId: lastGenerateRequestIdRef.current });
         if (lastTrainRequestIdRef.current) postToWorker('CANCEL', { requestId: lastTrainRequestIdRef.current });
@@ -963,6 +1001,7 @@ export default function NeuralTerminal() {
     };
 
     const handleCommand = async (e) => {
+        if (isBooting || isComputing || workerStatus !== 'ONLINE') return;
         if (e.key === 'Enter' && inputVal.trim()) {
             const text = inputVal.trim();
             setInputVal('');
@@ -1035,11 +1074,15 @@ export default function NeuralTerminal() {
             // Transfer the ArrayBuffer to the worker to avoid copying.
             workerRef.current.postMessage({ v: protocolRef.current.v, requestId: makeRequestId('import'), type: 'IMPORT', payload: { buffer } }, [buffer]);
         } catch (err) {
-            addLog('sys', `IMPORT FAILED: ${err?.message || String(err)}`);
+            const msg = err?.message || String(err);
+            addLog('sys', `IMPORT FAILED: ${msg}`);
+            pushToast('error', `Import failed: ${msg}`);
         }
     };
 
     const visibleLogs = SHOW_SYSTEM_MESSAGES ? logs : logs.filter(l => l.source !== 'sys');
+
+    const inputDisabled = isBooting || isComputing || workerStatus !== 'ONLINE';
 
     const trainingIsOn = true;
     const dbIsOn = dbMode !== 'off';
@@ -1073,6 +1116,24 @@ export default function NeuralTerminal() {
             {isRehearsing && (
                 <div className="absolute inset-0 pointer-events-none z-40 bg-purple-900/10 animate-pulse" />
             )}
+
+            {/* TOASTS (non-blocking) */}
+            {toasts.length ? (
+                <div className="fixed top-4 right-4 z-[70] space-y-2 pointer-events-none">
+                    {toasts.map((t) => (
+                        <div
+                            key={t.id}
+                            className={`max-w-[min(24rem,90vw)] px-4 py-3 rounded-2xl border backdrop-blur-md shadow-lg shadow-black/30 ${
+                                t.kind === 'error'
+                                    ? 'bg-black/45 border-amber-400/30 ring-1 ring-amber-400/30'
+                                    : 'bg-black/35 border-amber-200/10 ring-1 ring-amber-400/10'
+                            }`}
+                        >
+                            <div className="text-sm text-amber-100/90 font-light whitespace-pre-wrap">{t.text}</div>
+                        </div>
+                    ))}
+                </div>
+            ) : null}
 
             {/* HEADER - Cozy minimal */}
             <header className="pb-4 mb-4 flex flex-col sm:flex-row sm:justify-between items-start gap-3 z-50 relative">
@@ -1258,6 +1319,23 @@ export default function NeuralTerminal() {
                     </button>
                 </div>
             </header>
+
+            {/* CORE OFFLINE/ERROR BANNER */}
+            {workerStatus !== 'ONLINE' ? (
+                <div className="max-w-3xl mx-auto w-full mb-4 z-50 relative">
+                    <div className="flex items-center justify-between gap-3 px-4 py-3 rounded-2xl border border-amber-200/10 bg-black/35 backdrop-blur-md">
+                        <div className="text-xs text-amber-200/70 font-light">
+                            AI core is {isBooting || workerStatus === 'CONNECTING' ? 'starting…' : 'offline.'}
+                        </div>
+                        <button
+                            onClick={restartCore}
+                            className="px-4 py-2 rounded-full ring-1 ring-amber-400/30 bg-black/10 text-xs text-amber-200 hover:bg-white/5 hover:ring-amber-400/50 transition-all"
+                        >
+                            restart core
+                        </button>
+                    </div>
+                </div>
+            ) : null}
 
             {/* Hidden file input for import */}
             <input
@@ -1536,10 +1614,24 @@ export default function NeuralTerminal() {
                         onChange={(e) => setInputVal(e.target.value)}
                         onKeyDown={handleCommand}
                         className="bg-transparent border-none outline-none flex-1 text-amber-100 placeholder-amber-200/30 text-base"
-                        placeholder={isBooting ? "warming up by the fire..." : "say something..."}
-                        disabled={isBooting}
+                        placeholder={
+                            isBooting
+                                ? 'warming up by the fire...'
+                                : (workerStatus !== 'ONLINE'
+                                    ? 'core offline — restart core'
+                                    : (isComputing ? 'thinking…' : 'say something...'))
+                        }
+                        disabled={inputDisabled}
                         autoFocus
                     />
+                    {workerStatus !== 'ONLINE' ? (
+                        <span className="text-xs text-amber-200/30 flex items-center gap-1">
+                            <Wifi className="w-4 h-4" />
+                            {workerStatus === 'ERROR' ? 'offline' : 'connecting'}
+                        </span>
+                    ) : (isComputing ? (
+                        <span className="text-xs text-amber-200/30">generating…</span>
+                    ) : null)}
                     {isRehearsing && <Star className="w-4 h-4 text-amber-400 animate-spin" />}
                 </div>
                 
