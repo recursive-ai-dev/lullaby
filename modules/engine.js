@@ -522,6 +522,7 @@ export class ResonanceEngine {
                 const putRequest = store.put({
                     weights: weights,
                     buffer: this.replayBuffer.buffer, // Save the inner array
+                    optimizer: this.optimizer.serialize(),
                     timestamp: Date.now()
                 }, key);
 
@@ -572,6 +573,11 @@ export class ResonanceEngine {
                         // Restore buffer
                         if (data.buffer) {
                             this.replayBuffer.buffer = data.buffer; // Restore the inner array
+                        }
+
+                        // Restore optimizer state
+                        if (data.optimizer && this.optimizer) {
+                            this.optimizer.loadState(data.optimizer);
                         }
                         resolve(true);
                     } else {

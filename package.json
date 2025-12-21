@@ -12,7 +12,8 @@
     "desktop:build": "npm run build && electron-builder",
     "mobile:sync": "npm run build && cap sync",
     "mobile:android": "npm run mobile:sync && cap open android",
-    "mobile:ios": "npm run mobile:sync && cap open ios"
+    "mobile:ios": "npm run mobile:sync && cap open ios",
+    "training": "cd dev-tools && npx -y http-server -p 8000 -o"
   },
   "dependencies": {
     "lucide-react": "^0.542.0",

@@ -131,7 +131,7 @@ export default function NeuralTerminal() {
     const [isBooting, setIsBooting] = useState(true);
     const [isComputing, setIsComputing] = useState(false);
     const [stats, setStats] = useState({ loss: 5.0, klLoss: 0.0, bootProgress: 0, currentPhase: 'INIT', epochs: 0 });
-    const [lossHistory, setLossHistory] = useState(new Array(20).fill({ val: 5.0 }));
+    const [lossHistory, setLossHistory] = useState(() => Array.from({ length: 20 }, () => ({ val: 5.0 })));
     const [isRehearsing, setIsRehearsing] = useState(false);
     const [attentionWeights, setAttentionWeights] = useState(null); // UPGRADE #14: Attention Visualization
     const [workerStatus, setWorkerStatus] = useState('OFFLINE');

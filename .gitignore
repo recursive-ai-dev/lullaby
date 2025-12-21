@@ -7,3 +7,12 @@ ios/
 .vite/
 *.log
 npm-debug.log*
+dev-tools/
+*.md
+! README.md
+.toolignore
+.agent/*
+.agent
+bug_sweeper_report.md
+training_platform_handoff.md
+.agent/bug_sweeper_report.md

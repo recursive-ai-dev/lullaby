@@ -13,60 +13,60 @@ export class SGDOptimizer {
         this.momentum = momentum;
         this.weightDecay = weightDecay;
         this.t = 0;
-        
+
         // Momentum buffers
         this.velocities = [];
         for (const p of params) {
             this.velocities.push(new Float32Array(p.data.length));
         }
     }
-    
+
     /**
      * Learning rate scheduling (same as Adam)
      */
     getLearningRate(step, totalSteps = 10000) {
         const warmupSteps = 100;
-        
+
         if (step < warmupSteps) {
             return this.baseLR * (step / warmupSteps);
         }
-        
+
         const progress = (step - warmupSteps) / (totalSteps - warmupSteps);
         const clampedProgress = Math.max(0, Math.min(1, progress));
         return this.baseLR * 0.5 * (1 + Math.cos(Math.PI * clampedProgress));
     }
-    
+
     step(epoch, totalEpochs, manualLr = null) {
         this.t++;
-        
+
         let currentLr;
         if (manualLr !== null) {
             currentLr = manualLr;
         } else {
             currentLr = this.getLearningRate(this.t);
         }
-        
+
         for (let pi = 0; pi < this.params.length; pi++) {
             const p = this.params[pi];
             if (!p.grad) continue;
-            
+
             for (let i = 0; i < p.data.length; i++) {
                 let g = p.grad[i];
-                
+
                 // Weight decay (L2 regularization)
                 if (this.weightDecay !== 0) {
                     g += this.weightDecay * p.data[i];
                 }
-                
+
                 // Update velocity: v = momentum * v + g
                 this.velocities[pi][i] = this.momentum * this.velocities[pi][i] + g;
-                
+
                 // Update parameters: θ = θ - lr * v
                 p.data[i] -= currentLr * this.velocities[pi][i];
             }
         }
     }
-    
+
     zeroGrad() {
         for (const p of this.params) p.zeroGrad();
     }
@@ -152,5 +152,30 @@ export class AdamOptimizer {
 
     zeroGrad() {
         for (const p of this.params) p.zeroGrad();
+    }
+
+    serialize() {
+        return {
+            t: this.t,
+            m: this.m.map(arr => arr.slice()), // Copy to ensure detached buffer
+            v: this.v.map(arr => arr.slice())
+        };
+    }
+
+    loadState(state) {
+        if (!state) return;
+        if (Number.isFinite(state.t)) this.t = state.t;
+
+        if (Array.isArray(state.m)) {
+            for (let i = 0; i < Math.min(this.m.length, state.m.length); i++) {
+                if (state.m[i]) this.m[i].set(state.m[i]);
+            }
+        }
+
+        if (Array.isArray(state.v)) {
+            for (let i = 0; i < Math.min(this.v.length, state.v.length); i++) {
+                if (state.v[i]) this.v[i].set(state.v[i]);
+            }
+        }
     }
 }
