@@ -168,13 +168,19 @@ export class AdamOptimizer {
 
         if (Array.isArray(state.m)) {
             for (let i = 0; i < Math.min(this.m.length, state.m.length); i++) {
-                if (state.m[i]) this.m[i].set(state.m[i]);
+                // Validate array lengths match before copying
+                if (state.m[i] && state.m[i].length === this.m[i].length) {
+                    this.m[i].set(state.m[i]);
+                }
             }
         }
 
         if (Array.isArray(state.v)) {
             for (let i = 0; i < Math.min(this.v.length, state.v.length); i++) {
-                if (state.v[i]) this.v[i].set(state.v[i]);
+                // Validate array lengths match before copying
+                if (state.v[i] && state.v[i].length === this.v[i].length) {
+                    this.v[i].set(state.v[i]);
+                }
             }
         }
     }

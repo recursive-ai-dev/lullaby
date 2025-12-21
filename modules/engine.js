@@ -562,8 +562,14 @@ export class ResonanceEngine {
                         // Restore weights
                         const params = this.model.parameters();
                         for (let i = 0; i < params.length; i++) {
-                            if (data.weights[i]) {
-                                params[i].data.set(data.weights[i]);
+                            // CRITICAL FIX: Validate array lengths match before copying
+                            // This prevents RangeError when checkpoint was saved with
+                            // a different model architecture or corrupted data
+                            const srcWeight = data.weights[i];
+                            if (srcWeight && srcWeight.length === params[i].data.length) {
+                                params[i].data.set(srcWeight);
+                            } else if (srcWeight) {
+                                console.warn(`[Checkpoint] Skipping param ${i}: length mismatch (${srcWeight.length} vs ${params[i].data.length})`);
                             }
                         }
 
