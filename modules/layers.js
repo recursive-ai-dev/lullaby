@@ -262,6 +262,45 @@ export class BayesianLinear {
         return kl;
     }
 
+    klGradient() {
+        // Calculate gradients for KL divergence term:
+        // dKL/dMu = mu
+        // dKL/dRho = (sigma - 1/sigma) * sigmoid(rho)
+
+        const sigmaW = this.computeSoftplus(this.w_rho);
+        const sigmaB = this.computeSoftplus(this.bias_rho);
+
+        // For weights
+        for (let i = 0; i < this.w_mu.data.length; i++) {
+            const mu = this.w_mu.data[i];
+            const rho = this.w_rho.data[i];
+            const sigma = Math.max(sigmaW.data[i], 1e-6);
+
+            // dKL/dMu = mu
+            this.w_mu.grad[i] += mu;
+
+            // dKL/dRho = (sigma - 1/sigma) * sigmoid(rho)
+            const dKL_dSigma = sigma - (1.0 / sigma);
+            const sigmoid = 1.0 / (1.0 + Math.exp(-rho));
+            this.w_rho.grad[i] += dKL_dSigma * sigmoid;
+        }
+
+        // For bias
+        for (let i = 0; i < this.bias_mu.data.length; i++) {
+            const mu = this.bias_mu.data[i];
+            const rho = this.bias_rho.data[i];
+            const sigma = Math.max(sigmaB.data[i], 1e-6);
+
+            // dKL/dMu = mu
+            this.bias_mu.grad[i] += mu;
+
+            // dKL/dRho = (sigma - 1/sigma) * sigmoid(rho)
+            const dKL_dSigma = sigma - (1.0 / sigma);
+            const sigmoid = 1.0 / (1.0 + Math.exp(-rho));
+            this.bias_rho.grad[i] += dKL_dSigma * sigmoid;
+        }
+    }
+
     backward(gradOutput) {
         // Backward pass for Bayesian Linear Layer
         // dLoss/dMu = dLoss/dW (direct gradient)

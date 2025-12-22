@@ -319,7 +319,8 @@ export class ResonanceEngine {
 
         // KL DIVERGENCE for Bayesian layers (identity protection)
         this.klLoss = this.calculateKLDivergence();
-        // Apply KL gradient would go here
+        // Apply KL gradient
+        this.calculateKLGradient();
 
         // CONSOLIDATION LOSS for important memories
         const consolidationLoss = this.consolidation.computeConsolidationLoss();
@@ -347,6 +348,16 @@ export class ResonanceEngine {
         }
 
         return kl;
+    }
+
+    // NEW: Calculate KL gradients for Bayesian layers
+    calculateKLGradient() {
+        const maybeLayers = [this.model?.ff1];
+        for (const layer of maybeLayers) {
+            if (layer && typeof layer.klGradient === 'function') {
+                layer.klGradient();
+            }
+        }
     }
 
     // UPGRADE #20: Model Export (Safetensors)
