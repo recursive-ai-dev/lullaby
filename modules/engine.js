@@ -13,15 +13,12 @@ import { generateSeedLines } from './seed.js';
 export class ResonanceEngine {
     constructor() {
         this.tokenizer = new Tokenizer();
-        // Map old properties to new tokenizer for compatibility if needed, 
-        // but preferably we just use this.tokenizer everywhere.
-        this.vocabSize = this.tokenizer.vocabSize;
 
         // Primary model (trained)
-        this.model = new NanoTransformer(this.vocabSize, 64, 4);
+        this.model = new NanoTransformer(this.tokenizer.vocabSize, 64, 4);
         // Secondary model (EMA shadow) for smoother inference.
         // This is what you asked for as a "second nanotensor".
-        this.emaModel = new NanoTransformer(this.vocabSize, 64, 4);
+        this.emaModel = new NanoTransformer(this.tokenizer.vocabSize, 64, 4);
         this.emaTau = 0.02; // higher = faster tracking, lower = smoother
         this.useEmaForGenerate = true;
 
