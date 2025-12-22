@@ -6,7 +6,8 @@ import React from 'react';
  * Creates authentic Rocky Mountain depth at 3am
  */
 
-export default function Mountains() {
+// Optimized with React.memo to prevent re-renders on every keystroke/state update in parent
+const Mountains = React.memo(function Mountains() {
     return (
         <div style={{
             position: 'fixed',
@@ -111,4 +112,6 @@ export default function Mountains() {
             </svg>
         </div>
     );
-}
+});
+
+export default Mountains;

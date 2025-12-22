@@ -292,7 +292,8 @@ const MountainMist = () => (
 );
 
 // Main Night Sky component
-export default function NightSky({ isActive = false }) {
+// Optimized with React.memo to prevent re-renders on every keystroke/state update in parent
+const NightSky = React.memo(function NightSky({ isActive = false }) {
     const [shootingStars, setShootingStars] = useState([]);
     const shootingStarIdRef = useRef(0);
 
@@ -448,4 +449,6 @@ export default function NightSky({ isActive = false }) {
             `}</style>
         </div>
     );
-}
+});
+
+export default NightSky;
