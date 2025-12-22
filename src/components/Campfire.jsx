@@ -6,7 +6,8 @@ import React from 'react';
  * Multiple light layers create depth and warmth
  */
 
-export default function Campfire({ isActive = false, intensity = 1 }) {
+// Optimized with React.memo to prevent re-renders on every keystroke/state update in parent
+const Campfire = React.memo(function Campfire({ isActive = false, intensity = 1 }) {
     const baseIntensity = isActive ? 1.2 : 1;
     const glowScale = baseIntensity * intensity;
 
@@ -145,4 +146,6 @@ export default function Campfire({ isActive = false, intensity = 1 }) {
             `}</style>
         </div>
     );
-}
+});
+
+export default Campfire;

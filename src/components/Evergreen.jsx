@@ -38,7 +38,8 @@ const PineTree = ({ style, size = 1, variant = 0 }) => {
     );
 };
 
-export default function Evergreen() {
+// Optimized with React.memo to prevent re-renders on every keystroke/state update in parent
+const Evergreen = React.memo(function Evergreen() {
     return (
         <>
             {/* Left side trees - varying depths */}
@@ -106,4 +107,6 @@ export default function Evergreen() {
             />
         </>
     );
-}
+});
+
+export default Evergreen;
