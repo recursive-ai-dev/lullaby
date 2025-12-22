@@ -147,27 +147,31 @@ export class Tensor {
             // Inner Matrix Multiplication Loop (Optimized)
             for (let m = 0; m < M; m++) {
                 const rowAOffset = offsetA + m * K;
-                for (let n = 0; n < N; n++) {
-                    const rowBTOffset = offsetBT + n * K;
-                    let sum = 0.0;
+                const rowCOffset = offsetC + m * N;
+
+                for (let k = 0; k < K; k++) {
+                    const valA = A.data[rowAOffset + k];
+
+                    // Optimization: Skip if valA is 0 (Sparsity)
+                    // This is very effective for ReLU outputs (~50% zeros)
+                    if (valA === 0) continue;
+
+                    const rowBOffset = offsetB + k * N;
 
                     // Loop Unrolling (Factor 4)
-                    let k = 0;
-                    const K_limit = K - 3;
-
-                    for (; k < K_limit; k += 4) {
-                        sum += A.data[rowAOffset + k] * BT.data[rowBTOffset + k];
-                        sum += A.data[rowAOffset + k + 1] * BT.data[rowBTOffset + k + 1];
-                        sum += A.data[rowAOffset + k + 2] * BT.data[rowBTOffset + k + 2];
-                        sum += A.data[rowAOffset + k + 3] * BT.data[rowBTOffset + k + 3];
+                    let n = 0;
+                    const N_limit = N - 3;
+                    for (; n < N_limit; n += 4) {
+                        C.data[rowCOffset + n] += valA * B.data[rowBOffset + n];
+                        C.data[rowCOffset + n + 1] += valA * B.data[rowBOffset + n + 1];
+                        C.data[rowCOffset + n + 2] += valA * B.data[rowBOffset + n + 2];
+                        C.data[rowCOffset + n + 3] += valA * B.data[rowBOffset + n + 3];
                     }
 
                     // Handle remainder
-                    for (; k < K; k++) {
-                        sum += A.data[rowAOffset + k] * BT.data[rowBTOffset + k];
+                    for (; n < N; n++) {
+                        C.data[rowCOffset + n] += valA * B.data[rowBOffset + n];
                     }
-
-                    C.data[offsetC + m * N + n] = sum;
                 }
             }
         }
