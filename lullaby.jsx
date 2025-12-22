@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { LineChart, Line, ResponsiveContainer, YAxis, Tooltip } from 'recharts';
 import { MessageCircle, Activity, Cpu, Database, Wifi, Zap, Heart, Sparkles, Lock, Unlock, Eye, Moon, Save, Layers, Download, Upload, Star, Flame, ChevronDown, ChevronUp, Eraser, Fingerprint, X } from 'lucide-react';
 import { createConversationStore } from './modules/conversation_store.js';
+import { useTrainingQueue } from './src/hooks/useTrainingQueue.js';
 
 // Immersive environment components
 import NightSky from './src/components/NightSky';
@@ -115,11 +116,6 @@ export default function NeuralTerminal() {
         }
     });
 
-    const datasetTrainingRef = useRef({ active: false });
-    const datasetTrainQueueRef = useRef([]);
-    const datasetTrainEpochRef = useRef(0);
-    const datasetTrainTotalRef = useRef(0);
-    const [datasetTraining, setDatasetTraining] = useState({ active: false, name: '', done: 0, total: 0 });
     const [showDevTools, setShowDevTools] = useState(false);
     const [devTrainText, setDevTrainText] = useState('');
 
@@ -295,6 +291,31 @@ export default function NeuralTerminal() {
         return requestId;
     };
 
+    const addLog = (source, text) => {
+        const ts = Date.now();
+
+        // Persist only user/ai messages when conversation store enabled.
+        if ((source === 'user' || source === 'ai') && (dbMode === 'local' || dbMode === 'idb')) {
+            const { store, db, conversationId } = conversationRef.current;
+            if (store && conversationId) {
+                store.appendMessage(db, conversationId, { role: source, text, createdAt: ts }).catch(() => { });
+            }
+        }
+
+        setLogs(prev => [...prev, { source, text, timestamp: new Date(ts).toLocaleTimeString() }]);
+    };
+
+    const { datasetTraining, startBatchTraining, processNextTrainItem, datasetTrainingRef } = useTrainingQueue({
+        workerRef,
+        postToWorker,
+        lastTrainRequestIdRef,
+        setIsComputing,
+        addLog
+    });
+
+    const processNextTrainItemRef = useRef(processNextTrainItem);
+    useEffect(() => { processNextTrainItemRef.current = processNextTrainItem; }, [processNextTrainItem]);
+
     const createAndWireWorker = () => {
         // Initialize Web Worker as module so ESM imports load correctly.
         const worker = new Worker(new URL('./lullaby.worker.js', import.meta.url), { type: 'module' });
@@ -368,24 +389,7 @@ export default function NeuralTerminal() {
                     // Ignore stale training completions if multiple are in-flight.
                     if (lastTrainRequestIdRef.current && requestId && requestId !== lastTrainRequestIdRef.current) break;
                     updateStats(payload.loss, payload.klLoss);
-                    if (datasetTrainingRef.current?.active) {
-                        const next = datasetTrainQueueRef.current.shift();
-                        const done = datasetTrainTotalRef.current - datasetTrainQueueRef.current.length;
-                        setDatasetTraining((prev) => ({ ...prev, done, total: datasetTrainTotalRef.current }));
-
-                        if (next) {
-                            datasetTrainEpochRef.current = done;
-                            const reqId = postToWorker('TRAIN', { text: next, epoch: datasetTrainEpochRef.current, totalEpochs: datasetTrainTotalRef.current, isGameplay: false });
-                            lastTrainRequestIdRef.current = reqId;
-                        } else {
-                            datasetTrainingRef.current = { active: false };
-                            setDatasetTraining({ active: false, name: '', done: 0, total: 0 });
-                            setIsComputing(false);
-                            addLog('sys', 'MEMORIES SETTLED.');
-                        }
-                    } else {
-                        setIsComputing(false);
-                    }
+                    processNextTrainItemRef.current(requestId);
                     break;
 
                 case 'GENERATE_COMPLETE':
@@ -641,34 +645,6 @@ export default function NeuralTerminal() {
         postToWorker('SEED', { name, count, templates });
     };
 
-    const startBatchTraining = (lines, { name = 'batch', logMessage } = {}) => {
-        if (!lines.length) return;
-        if (!workerRef.current) return;
-
-        datasetTrainQueueRef.current = [...lines];
-        datasetTrainEpochRef.current = 0;
-        datasetTrainTotalRef.current = lines.length;
-
-        datasetTrainingRef.current = { active: true };
-        setDatasetTraining({ active: true, name, done: 0, total: lines.length });
-        setIsComputing(true);
-
-        if (logMessage) addLog('sys', logMessage);
-
-        const first = datasetTrainQueueRef.current.shift();
-        if (!first) {
-            datasetTrainingRef.current = { active: false };
-            setDatasetTraining({ active: false, name: '', done: 0, total: 0 });
-            setIsComputing(false);
-            return;
-        }
-
-        const reqId = postToWorker('TRAIN', { text: first, epoch: 0, totalEpochs: datasetTrainTotalRef.current, isGameplay: false });
-        if (reqId) {
-            lastTrainRequestIdRef.current = reqId;
-        }
-    };
-
     const startTeachingSelectedDataset = () => {
         const dataset = customDatasets.find((d) => d.id === selectedDatasetId);
         if (!dataset) {
@@ -774,20 +750,6 @@ export default function NeuralTerminal() {
         return () => clearInterval(dreamInterval);
     }, [isBooting, isComputing]);
 
-
-    const addLog = (source, text) => {
-        const ts = Date.now();
-
-        // Persist only user/ai messages when conversation store enabled.
-        if ((source === 'user' || source === 'ai') && (dbMode === 'local' || dbMode === 'idb')) {
-            const { store, db, conversationId } = conversationRef.current;
-            if (store && conversationId) {
-                store.appendMessage(db, conversationId, { role: source, text, createdAt: ts }).catch(() => { });
-            }
-        }
-
-        setLogs(prev => [...prev, { source, text, timestamp: new Date(ts).toLocaleTimeString() }]);
-    };
 
     const cycleDbMode = async () => {
         const order = ['off', 'local', 'idb', 'checkpoints'];
