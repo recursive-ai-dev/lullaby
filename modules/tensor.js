@@ -90,46 +90,44 @@ export class Tensor {
         const resultShape = dimA > 2 ? [batchSize, M, N] : [M, N];
         const C = Tensor.zeros(resultShape);
 
-        // Optimization: Transpose B effectively by creating a temporary transposed view or copy
-        // For small matrices, the overhead might not be worth it, but for >64 it usually is.
-        // We'll do an explicit transpose of the last two dimensions of B for the batch.
-
-        // However, our transpose() method returns a new Tensor. 
-        // Let's do a "virtual" transpose or just transpose B once if it's not batched.
-        // If batched, we need to be careful.
-
-        // Let's implement the loop with B transposed.
-        // We can use the existing transpose() method.
-        const BT = B.transpose(); // [..., N, K]
+        // Optimization: Use "virtual transpose" by iterating in m, k, n order.
+        // This avoids creating a temporary transposed tensor (saving allocation/copy overhead)
+        // and allows efficient access to B (contiguous in n) and C (contiguous in n).
+        // It also enables skipping inner loops when A values are zero (sparsity optimization).
 
         for (let b = 0; b < batchSize; b++) {
             const offsetA = b * M * K;
-            const offsetBT = dimB > 2 ? b * N * K : 0; // BT has shape [..., N, K]
+            // Handle broadcasting for B (if B is 2D but A is 3D)
+            const offsetB = dimB > 2 ? b * K * N : 0;
             const offsetC = b * M * N;
 
             for (let m = 0; m < M; m++) {
                 const rowAOffset = offsetA + m * K;
-                for (let n = 0; n < N; n++) {
-                    const rowBTOffset = offsetBT + n * K; // Contiguous row in BT is column in B
-                    let sum = 0.0;
+                const rowCOffset = offsetC + m * N;
+
+                for (let k = 0; k < K; k++) {
+                    const valA = A.data[rowAOffset + k];
+
+                    // Optimization: Skip if valA is 0 (Sparsity)
+                    // This is very effective for ReLU outputs (~50% zeros)
+                    if (valA === 0) continue;
+
+                    const rowBOffset = offsetB + k * N;
 
                     // Loop Unrolling (Factor 4)
-                    let k = 0;
-                    const K_limit = K - 3;
-
-                    for (; k < K_limit; k += 4) {
-                        sum += A.data[rowAOffset + k] * BT.data[rowBTOffset + k];
-                        sum += A.data[rowAOffset + k + 1] * BT.data[rowBTOffset + k + 1];
-                        sum += A.data[rowAOffset + k + 2] * BT.data[rowBTOffset + k + 2];
-                        sum += A.data[rowAOffset + k + 3] * BT.data[rowBTOffset + k + 3];
+                    let n = 0;
+                    const N_limit = N - 3;
+                    for (; n < N_limit; n += 4) {
+                        C.data[rowCOffset + n] += valA * B.data[rowBOffset + n];
+                        C.data[rowCOffset + n + 1] += valA * B.data[rowBOffset + n + 1];
+                        C.data[rowCOffset + n + 2] += valA * B.data[rowBOffset + n + 2];
+                        C.data[rowCOffset + n + 3] += valA * B.data[rowBOffset + n + 3];
                     }
 
                     // Handle remainder
-                    for (; k < K; k++) {
-                        sum += A.data[rowAOffset + k] * BT.data[rowBTOffset + k];
+                    for (; n < N; n++) {
+                        C.data[rowCOffset + n] += valA * B.data[rowBOffset + n];
                     }
-
-                    C.data[offsetC + m * N + n] = sum;
                 }
             }
         }
