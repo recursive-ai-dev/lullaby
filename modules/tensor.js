@@ -78,39 +78,77 @@ export class Tensor {
         if (K !== K_B) {
             throw new Error(`Matmul dimension mismatch: A[..., ${M}, ${K}] @ B[..., ${K_B}, ${N}]`);
         }
-        if (dimA > 3 || dimB > 3) {
-            // CRITICAL FIX: Prevent silent data loss for 4D+ tensors (e.g. [Batch, Heads, Seq, Dim])
-            // The current implementation treats everything before the last 2 dims as a single batch dim,
-            // but only iterates A.shape[0] times. For 4D, A.shape[0] is Batch (not Batch*Heads).
-            // Full N-D broadcasting requires a more complex implementation.
-            throw new Error(`Matmul currently only supports up to 3 dimensions. Got A:${dimA}D, B:${dimB}D`);
+
+        // N-D Broadcasting Logic
+        const batchShapeA = A.shape.slice(0, -2);
+        const batchShapeB = B.shape.slice(0, -2);
+        const batchRank = Math.max(batchShapeA.length, batchShapeB.length);
+
+        const broadcastBatchShape = [];
+        const virtualStridesA = [];
+        const virtualStridesBT = []; // For Transposed B
+
+        // Align shapes and strides (pad with 1s on left)
+        const paddedBatchA = Array(batchRank - batchShapeA.length).fill(1).concat(batchShapeA);
+        const paddedBatchB = Array(batchRank - batchShapeB.length).fill(1).concat(batchShapeB);
+
+        // Strides for A (exclude last 2 dims)
+        const stridesA = A.strides.slice(0, -2);
+        const paddedStridesA = Array(batchRank - stridesA.length).fill(0).concat(stridesA);
+
+        // Pre-compute BT (B Transposed) for optimized access
+        // BT shape: [..., N, K]
+        const BT = B.transpose();
+        const stridesBT = BT.strides.slice(0, -2);
+        const paddedStridesBT = Array(batchRank - stridesBT.length).fill(0).concat(stridesBT);
+
+        for (let i = 0; i < batchRank; i++) {
+            const dA = paddedBatchA[i];
+            const dB = paddedBatchB[i];
+
+            if (dA === dB) {
+                broadcastBatchShape.push(dA);
+                virtualStridesA.push(paddedStridesA[i]);
+                virtualStridesBT.push(paddedStridesBT[i]);
+            } else if (dA === 1) {
+                broadcastBatchShape.push(dB);
+                virtualStridesA.push(0); // Broadcast A
+                virtualStridesBT.push(paddedStridesBT[i]);
+            } else if (dB === 1) {
+                broadcastBatchShape.push(dA);
+                virtualStridesA.push(paddedStridesA[i]);
+                virtualStridesBT.push(0); // Broadcast B
+            } else {
+                throw new Error(`Matmul broadcasting mismatch: A shape ${A.shape} vs B shape ${B.shape}`);
+            }
         }
 
-        const batchSize = dimA > 2 ? A.shape[0] : 1;
-        const resultShape = dimA > 2 ? [batchSize, M, N] : [M, N];
+        const resultShape = [...broadcastBatchShape, M, N];
         const C = Tensor.zeros(resultShape);
+        const totalBatches = broadcastBatchShape.reduce((p, c) => p * c, 1);
 
-        // Optimization: Transpose B effectively by creating a temporary transposed view or copy
-        // For small matrices, the overhead might not be worth it, but for >64 it usually is.
-        // We'll do an explicit transpose of the last two dimensions of B for the batch.
+        for (let b = 0; b < totalBatches; b++) {
+            // Compute offsets for this batch index
+            let offsetA = 0;
+            let offsetBT = 0;
+            let remainder = b;
 
-        // However, our transpose() method returns a new Tensor. 
-        // Let's do a "virtual" transpose or just transpose B once if it's not batched.
-        // If batched, we need to be careful.
+            for (let i = batchRank - 1; i >= 0; i--) {
+                const dim = broadcastBatchShape[i];
+                const idx = remainder % dim;
+                remainder = Math.floor(remainder / dim);
 
-        // Let's implement the loop with B transposed.
-        // We can use the existing transpose() method.
-        const BT = B.transpose(); // [..., N, K]
+                offsetA += idx * virtualStridesA[i];
+                offsetBT += idx * virtualStridesBT[i];
+            }
 
-        for (let b = 0; b < batchSize; b++) {
-            const offsetA = b * M * K;
-            const offsetBT = dimB > 2 ? b * N * K : 0; // BT has shape [..., N, K]
             const offsetC = b * M * N;
 
+            // Inner Matrix Multiplication Loop (Optimized)
             for (let m = 0; m < M; m++) {
                 const rowAOffset = offsetA + m * K;
                 for (let n = 0; n < N; n++) {
-                    const rowBTOffset = offsetBT + n * K; // Contiguous row in BT is column in B
+                    const rowBTOffset = offsetBT + n * K;
                     let sum = 0.0;
 
                     // Loop Unrolling (Factor 4)
