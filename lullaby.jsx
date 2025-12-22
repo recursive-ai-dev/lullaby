@@ -641,6 +641,34 @@ export default function NeuralTerminal() {
         postToWorker('SEED', { name, count, templates });
     };
 
+    const startBatchTraining = (lines, { name = 'batch', logMessage } = {}) => {
+        if (!lines.length) return;
+        if (!workerRef.current) return;
+
+        datasetTrainQueueRef.current = [...lines];
+        datasetTrainEpochRef.current = 0;
+        datasetTrainTotalRef.current = lines.length;
+
+        datasetTrainingRef.current = { active: true };
+        setDatasetTraining({ active: true, name, done: 0, total: lines.length });
+        setIsComputing(true);
+
+        if (logMessage) addLog('sys', logMessage);
+
+        const first = datasetTrainQueueRef.current.shift();
+        if (!first) {
+            datasetTrainingRef.current = { active: false };
+            setDatasetTraining({ active: false, name: '', done: 0, total: 0 });
+            setIsComputing(false);
+            return;
+        }
+
+        const reqId = postToWorker('TRAIN', { text: first, epoch: 0, totalEpochs: datasetTrainTotalRef.current, isGameplay: false });
+        if (reqId) {
+            lastTrainRequestIdRef.current = reqId;
+        }
+    };
+
     const startTeachingSelectedDataset = () => {
         const dataset = customDatasets.find((d) => d.id === selectedDatasetId);
         if (!dataset) {
@@ -654,29 +682,11 @@ export default function NeuralTerminal() {
             setMemoriesStatusTransient('that memory set is empty');
             return;
         }
-        if (!workerRef.current) return;
 
-        datasetTrainQueueRef.current = [...lines];
-        datasetTrainEpochRef.current = 0;
-        datasetTrainTotalRef.current = lines.length;
-        datasetTrainingRef.current = { active: true };
-        setDatasetTraining({ active: true, name: dataset.name || 'memories', done: 0, total: lines.length });
-        setIsComputing(true);
-        addLog('sys', `LISTENING: ${dataset.name || 'memories'} (${lines.length} LINES)...`);
         setMemoriesStatusTransient('teaching…', 12000);
-
-        const first = datasetTrainQueueRef.current.shift();
-        if (!first) {
-            datasetTrainingRef.current = { active: false };
-            setDatasetTraining({ active: false, name: '', done: 0, total: 0 });
-            setIsComputing(false);
-            return;
-        }
-        workerRef.current.postMessage({
-            v: protocolRef.current.v,
-            requestId: makeRequestId('train_dataset'),
-            type: 'TRAIN',
-            payload: { text: first, epoch: 0, totalEpochs: datasetTrainTotalRef.current, isGameplay: false }
+        startBatchTraining(lines, {
+            name: dataset.name || 'memories',
+            logMessage: `LISTENING: ${dataset.name || 'memories'} (${lines.length} LINES)...`
         });
     };
 
@@ -1603,23 +1613,10 @@ export default function NeuralTerminal() {
                                             const lines = devTrainText.split('\n').filter(l => l.trim());
                                             if (!lines.length) return;
 
-                                            addLog('sys', `DEV: BATCH TRAIN START (${lines.length} lines)`);
-
-                                            // Hack: Inject into existing queue system
-                                            datasetTrainQueueRef.current = [...lines];
-                                            datasetTrainEpochRef.current = 0;
-                                            datasetTrainTotalRef.current = lines.length;
-
-                                            if (!datasetTrainingRef.current.active) {
-                                                datasetTrainingRef.current = { active: true };
-                                                setDatasetTraining({ active: true, name: 'dev-batch', done: 0, total: lines.length });
-                                                setIsComputing(true);
-
-                                                const first = datasetTrainQueueRef.current.shift();
-                                                if (first) {
-                                                    postToWorker('TRAIN', { text: first, epoch: 0, totalEpochs: lines.length, isGameplay: false });
-                                                }
-                                            }
+                                            startBatchTraining(lines, {
+                                                name: 'dev-batch',
+                                                logMessage: `DEV: BATCH TRAIN START (${lines.length} lines)`
+                                            });
                                         }}
                                         className="flex-1 py-2 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-200 text-sm font-medium transition-colors border border-amber-500/10"
                                     >
