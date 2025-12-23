@@ -232,29 +232,100 @@ export class Tensor {
         return new Tensor(res, [...this.shape]);
     }
 
+    /**
+     * Numerically stable softmax implementation
+     * 
+     * Mathematical formula: softmax(x_i) = exp(x_i) / Σ exp(x_j)
+     * 
+     * Numerical stability technique:
+     * 1. Subtract max value before exp to prevent overflow
+     *    softmax(x - max) = exp(x - max) / Σ exp(x - max)
+     * 2. Add epsilon to denominator to prevent division by zero
+     * 
+     * Proof of equivalence:
+     * softmax(x_i - c) = exp(x_i - c) / Σ exp(x_j - c)
+     *                  = [exp(x_i) * exp(-c)] / [Σ exp(x_j) * exp(-c)]
+     *                  = exp(x_i) / Σ exp(x_j) = softmax(x_i)
+     * 
+     * Where c = max(x) ensures all exponents are ≤ 0, preventing overflow
+     */
     softmax() {
         const K = this.shape[this.shape.length - 1];
         const rows = this.data.length / K;
         const res = new Float32Array(this.data.length);
-        const epsilon = 1e-10; // Numerical stability guard
+        
+        // Numerical stability constants
+        const epsilon = 1e-10; // Prevent division by zero
+        const MIN_EXP_INPUT = -88; // Underflow threshold for Float32
 
         for (let r = 0; r < rows; r++) {
             const offset = r * K;
+            
+            // Step 1: Find maximum value for numerical stability
             let maxVal = -Infinity;
-            for (let i = 0; i < K; i++) if (this.data[offset + i] > maxVal) maxVal = this.data[offset + i];
+            for (let i = 0; i < K; i++) {
+                const val = this.data[offset + i];
+                if (Number.isFinite(val) && val > maxVal) {
+                    maxVal = val;
+                }
+            }
+            
+            // Handle edge case where all values are -Infinity or NaN
+            if (!Number.isFinite(maxVal)) {
+                // Uniform distribution fallback
+                const uniform = 1.0 / K;
+                for (let i = 0; i < K; i++) {
+                    res[offset + i] = uniform;
+                }
+                continue;
+            }
+            
+            // Step 2: Compute exp(x - max) and sum
             let sum = 0.0;
             for (let i = 0; i < K; i++) {
-                const e = Math.exp(this.data[offset + i] - maxVal);
+                const val = this.data[offset + i];
+                // Clamp to prevent underflow (exp(-88) ≈ 0 in Float32)
+                const shifted = Math.max(val - maxVal, MIN_EXP_INPUT);
+                const e = Math.exp(shifted);
                 res[offset + i] = e;
                 sum += e;
             }
-            // Guard against division by zero
-            for (let i = 0; i < K; i++) res[offset + i] /= (sum + epsilon);
+            
+            // Step 3: Normalize (with epsilon guard)
+            // Validation: sum should be positive
+            if (!(sum > 0)) {
+                // Fallback to uniform distribution if sum is invalid
+                const uniform = 1.0 / K;
+                for (let i = 0; i < K; i++) {
+                    res[offset + i] = uniform;
+                }
+            } else {
+                const normFactor = 1.0 / (sum + epsilon);
+                for (let i = 0; i < K; i++) {
+                    res[offset + i] *= normFactor;
+                }
+            }
         }
         return new Tensor(res, [...this.shape]);
     }
 
-    // Gradient of Softmax: dS_i = S_i * (dOut_i - sum(S_k * dOut_k))
+    /**
+     * Softmax backward pass
+     * 
+     * Mathematical derivation:
+     * For softmax output S = softmax(x), Jacobian is:
+     * ∂S_i/∂x_j = S_i(δ_ij - S_j)
+     * 
+     * Chain rule gives:
+     * ∂L/∂x_i = Σ_k (∂L/∂S_k)(∂S_k/∂x_i)
+     *         = Σ_k (∂L/∂S_k) * S_k(δ_ki - S_i)
+     *         = S_i * Σ_k [(∂L/∂S_k)δ_ki - (∂L/∂S_k)S_k]
+     *         = S_i * [(∂L/∂S_i) - Σ_k (∂L/∂S_k)S_k]
+     *         = S_i * (dOut_i - Σ_k S_k*dOut_k)
+     * 
+     * @param {Tensor} gradOutput - Gradient from next layer (dL/dS)
+     * @returns {Tensor} - Gradient wrt input (dL/dx)
+     */
     softmaxBackward(gradOutput) {
         const K = this.shape[this.shape.length - 1];
         const rows = this.data.length / K;
@@ -263,18 +334,29 @@ export class Tensor {
         // "this" is the output of softmax (S)
         for (let r = 0; r < rows; r++) {
             const offset = r * K;
+            
+            // Calculate sum(S_k * dOut_k) with numerical stability
             let sumSdOut = 0.0;
-
-            // Calculate sum(S_k * dOut_k)
             for (let k = 0; k < K; k++) {
-                sumSdOut += this.data[offset + k] * gradOutput.data[offset + k];
+                const s = this.data[offset + k];
+                const dOut = gradOutput.data[offset + k];
+                // Validate both values are finite
+                if (Number.isFinite(s) && Number.isFinite(dOut)) {
+                    sumSdOut += s * dOut;
+                }
             }
 
-            // Calculate dS_i
+            // Calculate gradient: dS_i = S_i * (dOut_i - sumSdOut)
             for (let i = 0; i < K; i++) {
                 const s = this.data[offset + i];
                 const dOut = gradOutput.data[offset + i];
-                res[offset + i] = s * (dOut - sumSdOut);
+                
+                // Validate inputs and compute gradient
+                if (Number.isFinite(s) && Number.isFinite(dOut) && Number.isFinite(sumSdOut)) {
+                    res[offset + i] = s * (dOut - sumSdOut);
+                } else {
+                    res[offset + i] = 0.0; // Safe fallback for invalid gradients
+                }
             }
         }
         return new Tensor(res, [...this.shape]);

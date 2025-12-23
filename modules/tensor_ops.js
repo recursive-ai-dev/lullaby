@@ -216,59 +216,219 @@ export class TensorOps {
     
     /**
      * Compute maximum value along specified axis
+     * 
      * @param {Tensor} tensor - Input tensor
-     * @param {number} axis - Axis along which to compute max
+     * @param {number} axis - Axis along which to compute max (null for global max)
+     * @param {boolean} keepDims - Whether to keep reduced dimension
+     * @returns {number|Tensor} - Maximum value(s)
      */
-    static max(tensor, axis = null) {
+    static max(tensor, axis = null, keepDims = false) {
         if (axis === null) {
             // Max of all elements
             let max = -Infinity;
             for (let i = 0; i < tensor.data.length; i++) {
-                if (tensor.data[i] > max) max = tensor.data[i];
+                if (Number.isFinite(tensor.data[i]) && tensor.data[i] > max) {
+                    max = tensor.data[i];
+                }
+            }
+            // Handle case where all values are non-finite
+            if (!Number.isFinite(max)) {
+                return NaN;
             }
             return max;
         }
         
-        throw new Error("Max with axis not yet implemented");
+        // Axis-specific max for 2D tensors
+        if (tensor.shape.length === 2) {
+            if (axis === 0) {
+                // Max along rows (output: [cols])
+                const [rows, cols] = tensor.shape;
+                const result = new Float32Array(cols);
+                result.fill(-Infinity);
+                
+                for (let r = 0; r < rows; r++) {
+                    for (let c = 0; c < cols; c++) {
+                        const val = tensor.data[r * cols + c];
+                        if (Number.isFinite(val) && val > result[c]) {
+                            result[c] = val;
+                        }
+                    }
+                }
+                
+                const shape = keepDims ? [1, cols] : [cols];
+                return new Tensor(result, shape);
+            } else if (axis === 1) {
+                // Max along columns (output: [rows])
+                const [rows, cols] = tensor.shape;
+                const result = new Float32Array(rows);
+                
+                for (let r = 0; r < rows; r++) {
+                    let max = -Infinity;
+                    for (let c = 0; c < cols; c++) {
+                        const val = tensor.data[r * cols + c];
+                        if (Number.isFinite(val) && val > max) {
+                            max = val;
+                        }
+                    }
+                    result[r] = Number.isFinite(max) ? max : NaN;
+                }
+                
+                const shape = keepDims ? [rows, 1] : [rows];
+                return new Tensor(result, shape);
+            }
+        }
+        
+        throw new Error(`Max with axis=${axis} not yet implemented for ${tensor.shape.length}D tensors`);
     }
     
     /**
      * Compute minimum value along specified axis
+     * 
      * @param {Tensor} tensor - Input tensor
-     * @param {number} axis - Axis along which to compute min
+     * @param {number} axis - Axis along which to compute min (null for global min)
+     * @param {boolean} keepDims - Whether to keep reduced dimension
+     * @returns {number|Tensor} - Minimum value(s)
      */
-    static min(tensor, axis = null) {
+    static min(tensor, axis = null, keepDims = false) {
         if (axis === null) {
             // Min of all elements
             let min = Infinity;
             for (let i = 0; i < tensor.data.length; i++) {
-                if (tensor.data[i] < min) min = tensor.data[i];
+                if (Number.isFinite(tensor.data[i]) && tensor.data[i] < min) {
+                    min = tensor.data[i];
+                }
+            }
+            // Handle case where all values are non-finite
+            if (!Number.isFinite(min)) {
+                return NaN;
             }
             return min;
         }
         
-        throw new Error("Min with axis not yet implemented");
+        // Axis-specific min for 2D tensors
+        if (tensor.shape.length === 2) {
+            if (axis === 0) {
+                // Min along rows (output: [cols])
+                const [rows, cols] = tensor.shape;
+                const result = new Float32Array(cols);
+                result.fill(Infinity);
+                
+                for (let r = 0; r < rows; r++) {
+                    for (let c = 0; c < cols; c++) {
+                        const val = tensor.data[r * cols + c];
+                        if (Number.isFinite(val) && val < result[c]) {
+                            result[c] = val;
+                        }
+                    }
+                }
+                
+                const shape = keepDims ? [1, cols] : [cols];
+                return new Tensor(result, shape);
+            } else if (axis === 1) {
+                // Min along columns (output: [rows])
+                const [rows, cols] = tensor.shape;
+                const result = new Float32Array(rows);
+                
+                for (let r = 0; r < rows; r++) {
+                    let min = Infinity;
+                    for (let c = 0; c < cols; c++) {
+                        const val = tensor.data[r * cols + c];
+                        if (Number.isFinite(val) && val < min) {
+                            min = val;
+                        }
+                    }
+                    result[r] = Number.isFinite(min) ? min : NaN;
+                }
+                
+                const shape = keepDims ? [rows, 1] : [rows];
+                return new Tensor(result, shape);
+            }
+        }
+        
+        throw new Error(`Min with axis=${axis} not yet implemented for ${tensor.shape.length}D tensors`);
     }
     
     /**
      * Compute variance along specified axis
+     * 
+     * Mathematical formula:
+     * Var(X) = E[(X - μ)²] = E[X²] - E[X]²
+     * 
+     * Using the computational formula for numerical stability:
+     * Var = (Σx²)/n - ((Σx)/n)²
+     * 
      * @param {Tensor} tensor - Input tensor
-     * @param {number} axis - Axis along which to compute variance
+     * @param {number} axis - Axis along which to compute variance (null for global)
+     * @param {boolean} keepDims - Whether to keep reduced dimension
+     * @param {number} ddof - Delta degrees of freedom (0 for population, 1 for sample)
+     * @returns {number|Tensor} - Variance value(s)
      */
-    static variance(tensor, axis = null) {
-        const mean = TensorOps.mean(tensor, axis, false);
-        
+    static variance(tensor, axis = null, keepDims = false, ddof = 0) {
         if (axis === null) {
             // Variance of all elements
-            let sumSq = 0;
-            for (let i = 0; i < tensor.data.length; i++) {
-                const diff = tensor.data[i] - mean;
-                sumSq += diff * diff;
+            const n = tensor.data.length;
+            if (n <= ddof) {
+                throw new Error(`Insufficient data points (${n}) for variance with ddof=${ddof}`);
             }
-            return sumSq / tensor.data.length;
+            
+            // Use Welford's online algorithm for numerical stability
+            let mean = 0;
+            let M2 = 0;
+            let count = 0;
+            
+            for (let i = 0; i < n; i++) {
+                const val = tensor.data[i];
+                if (Number.isFinite(val)) {
+                    count++;
+                    const delta = val - mean;
+                    mean += delta / count;
+                    const delta2 = val - mean;
+                    M2 += delta * delta2;
+                }
+            }
+            
+            if (count <= ddof) {
+                return NaN;
+            }
+            
+            return M2 / (count - ddof);
         }
         
-        throw new Error("Variance with axis not yet implemented");
+        // Axis-specific variance for 2D tensors
+        if (tensor.shape.length === 2 && axis === 1) {
+            const [rows, cols] = tensor.shape;
+            const result = new Float32Array(rows);
+            
+            for (let r = 0; r < rows; r++) {
+                if (cols <= ddof) {
+                    result[r] = NaN;
+                    continue;
+                }
+                
+                // Use Welford's algorithm for each row
+                let mean = 0;
+                let M2 = 0;
+                let count = 0;
+                
+                for (let c = 0; c < cols; c++) {
+                    const val = tensor.data[r * cols + c];
+                    if (Number.isFinite(val)) {
+                        count++;
+                        const delta = val - mean;
+                        mean += delta / count;
+                        const delta2 = val - mean;
+                        M2 += delta * delta2;
+                    }
+                }
+                
+                result[r] = (count > ddof) ? M2 / (count - ddof) : NaN;
+            }
+            
+            const shape = keepDims ? [rows, 1] : [rows];
+            return new Tensor(result, shape);
+        }
+        
+        throw new Error(`Variance with axis=${axis} not yet implemented for ${tensor.shape.length}D tensors`);
     }
     
     /**

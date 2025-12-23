@@ -42,6 +42,15 @@ export class Linear {
 
 export class LayerNorm {
     constructor(dim, eps = 1e-5) {
+        // Validation: ensure dimension is positive integer
+        if (!Number.isInteger(dim) || dim <= 0) {
+            throw new Error(`LayerNorm dimension must be a positive integer, got ${dim}`);
+        }
+        // Validation: ensure epsilon is positive for numerical stability
+        if (!(eps > 0) || !Number.isFinite(eps)) {
+            throw new Error(`LayerNorm epsilon must be positive and finite, got ${eps}`);
+        }
+        
         this.gamma = Tensor.zeros([dim]);
         for (let i = 0; i < dim; i++) this.gamma.data[i] = 1.0;
         this.beta = Tensor.zeros([dim]);
@@ -54,6 +63,16 @@ export class LayerNorm {
     parameters() { return [this.gamma, this.beta]; }
 
     forward(x) {
+        // Validation: check input is not null/undefined
+        if (!x || !x.data) {
+            throw new Error('LayerNorm.forward: input tensor is null or invalid');
+        }
+        
+        // Validation: check input length is divisible by dimension
+        if (x.data.length % this.dim !== 0) {
+            throw new Error(`LayerNorm.forward: input size ${x.data.length} not divisible by dimension ${this.dim}`);
+        }
+        
         const res = new Float32Array(x.data.length);
         const rows = x.data.length / this.dim;
         this.lastXHat = new Float32Array(x.data.length);
@@ -61,15 +80,34 @@ export class LayerNorm {
 
         for (let r = 0; r < rows; r++) {
             const offset = r * this.dim;
+            
+            // Compute mean with Kahan summation for numerical accuracy
             let mean = 0;
-            for (let i = 0; i < this.dim; i++) mean += x.data[offset + i];
+            let compensation = 0;
+            for (let i = 0; i < this.dim; i++) {
+                const y = x.data[offset + i] - compensation;
+                const t = mean + y;
+                compensation = (t - mean) - y;
+                mean = t;
+            }
             mean /= this.dim;
+            
+            // Compute variance with numerical stability
             let sqSum = 0;
             for (let i = 0; i < this.dim; i++) {
                 const d = x.data[offset + i] - mean;
                 sqSum += d * d;
             }
-            const invStd = 1.0 / Math.sqrt((sqSum / this.dim) + this.eps);
+            
+            // Add epsilon before sqrt for numerical stability (prevents division by zero)
+            const variance = (sqSum / this.dim) + this.eps;
+            const invStd = 1.0 / Math.sqrt(variance);
+            
+            // Validate invStd is finite (detects NaN/Inf propagation early)
+            if (!Number.isFinite(invStd)) {
+                throw new Error(`LayerNorm: non-finite invStd detected at row ${r}. Variance: ${variance}, sqSum: ${sqSum}`);
+            }
+            
             this.lastInvStd[r] = invStd;
             for (let i = 0; i < this.dim; i++) {
                 const norm = (x.data[offset + i] - mean) * invStd;
@@ -206,8 +244,19 @@ export class BayesianLinear {
         return out.addBroadcast(biasSample);
     }
 
-    // Helper: Softplus log(1 + e^x)
-    // For numerical stability, use: x if x > 20, log(1 + e^x) otherwise
+    /**
+     * Softplus: log(1 + exp(x)) with numerical stability
+     * 
+     * Mathematical properties:
+     * - softplus(x) ≈ x for large x (x > 20)
+     * - softplus(x) ≈ exp(x) for very negative x (x < -20)
+     * - Smooth approximation to ReLU: lim(x→∞) softplus(x) = x
+     * 
+     * Numerical stability bounds:
+     * - For x > 20: exp(x) >> 1, so log(1 + exp(x)) ≈ x
+     * - For x < -20: exp(x) ≈ 0, so log(1 + exp(x)) ≈ log(1) = 0
+     * - For -20 <= x <= 20: use standard formula
+     */
     computeSoftplus(tensor) {
         const res = new Float32Array(tensor.data.length);
         for (let i = 0; i < tensor.data.length; i++) {
@@ -517,10 +566,27 @@ export class MultiHeadAttention {
         }
     }
 
+    /**
+     * Apply causal attention mask
+     * 
+     * Mathematical purpose: Prevent attention from future tokens in autoregressive models
+     * Sets scores[i][j] = -∞ for j > i (future positions)
+     * 
+     * Implementation uses -1e9 instead of -Infinity because:
+     * 1. exp(-1e9) ≈ 0 in float32 precision
+     * 2. Avoids NaN propagation that can occur with -Infinity
+     * 3. Maintains numerical stability in softmax computation
+     */
     applyMask(scores, seqLen) {
+        // Large negative value that softmax will treat as ~0 probability
+        // Using -1e9 instead of -Infinity for numerical stability
+        const MASK_VALUE = -1e9;
+        
         for (let r = 0; r < seqLen; r++) {
             for (let c = 0; c < seqLen; c++) {
-                if (c > r) scores.data[r * seqLen + c] = -1e9;
+                if (c > r) {
+                    scores.data[r * seqLen + c] = MASK_VALUE;
+                }
             }
         }
     }

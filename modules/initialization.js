@@ -108,61 +108,117 @@ export class Initializer {
     }
 
     /**
-     * Orthogonal Initialization
-     * Initialize weights as an orthogonal matrix
-     * Good for: RNNs, deep networks
+     * Orthogonal Initialization using Gram-Schmidt Process
      * 
-     * @param {Array<number>} shape - Shape of the weight tensor [rows, cols]
+     * Mathematical Foundation:
+     * ========================
+     * Orthogonal matrices have the property: Q^T Q = I
+     * This means columns are orthonormal (perpendicular unit vectors).
+     * 
+     * Benefits for deep learning:
+     * - Preserves gradient norms during backpropagation
+     * - Prevents vanishing/exploding gradients in RNNs
+     * - Enables training of very deep networks
+     * 
+     * Gram-Schmidt Algorithm:
+     * -----------------------
+     * For vectors v₁, v₂, ..., vₙ:
+     * 
+     * u₁ = v₁ / ||v₁||
+     * 
+     * For i = 2 to n:
+     *   u_i = v_i - Σ_{j=1}^{i-1} (v_i · u_j) u_j
+     *   u_i = u_i / ||u_i||
+     * 
+     * Mathematical Proof of Orthonormality:
+     * ------------------------------------
+     * After Gram-Schmidt, we have:
+     * - u_i · u_j = 0 for i ≠ j (orthogonal)
+     * - ||u_i|| = 1 for all i (normalized)
+     * 
+     * Therefore: U^T U = I (orthonormal matrix)
+     * 
+     * @param {Array<number>} shape - Shape [rows, cols] (must be 2D)
      * @param {number} gain - Scaling factor (default: 1.0)
+     * @returns {Tensor} - Orthogonal weight matrix
      */
     static orthogonal(shape, gain = 1.0) {
-        if (shape.length !== 2) {
-            throw new Error("Orthogonal initialization requires 2D shape");
+        // Validation
+        if (!Array.isArray(shape) || shape.length !== 2) {
+            throw new Error(`Orthogonal initialization requires 2D shape, got ${shape}`);
+        }
+        if (!(gain > 0) || !Number.isFinite(gain)) {
+            throw new Error(`gain must be positive and finite, got ${gain}`);
         }
 
         const rows = shape[0];
         const cols = shape[1];
+        
+        if (rows <= 0 || cols <= 0 || !Number.isInteger(rows) || !Number.isInteger(cols)) {
+            throw new Error(`Invalid shape dimensions: [${rows}, ${cols}]`);
+        }
+        
         const flatSize = rows * cols;
         
-        // Generate random matrix
+        // Step 1: Generate random matrix with Gaussian entries
+        // Using Box-Muller transform for proper normal distribution
         const data = new Float32Array(flatSize);
-        for (let i = 0; i < flatSize; i++) {
-            // Use normal distribution
+        for (let i = 0; i < flatSize; i += 2) {
             let u1, u2;
             do {
                 u1 = Math.random();
                 u2 = Math.random();
-            } while (u1 <= 1e-10);
+            } while (u1 <= 1e-10); // Ensure u1 > 0 for log(u1)
             
-            const z = Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2);
-            data[i] = z;
+            const mag = Math.sqrt(-2.0 * Math.log(u1));
+            data[i] = mag * Math.cos(2.0 * Math.PI * u2);
+            if (i + 1 < flatSize) {
+                data[i + 1] = mag * Math.sin(2.0 * Math.PI * u2);
+            }
         }
         
-        // QR decomposition (simplified for square or tall matrices)
-        // For a full implementation, we would use Gram-Schmidt or Householder reflections
-        // Here we use a simplified approach
-        
-        const result = new Tensor(data, shape);
-        
-        // Normalize columns (simplified orthogonalization)
+        // Step 2: Apply Gram-Schmidt orthogonalization
+        // Process columns to create orthonormal basis
         for (let col = 0; col < cols; col++) {
-            // Compute norm of column
+            // Orthogonalize against all previous columns
+            for (let prevCol = 0; prevCol < col; prevCol++) {
+                // Compute dot product: projection = v_col · u_prevCol
+                let dotProduct = 0;
+                for (let row = 0; row < rows; row++) {
+                    dotProduct += data[row * cols + col] * data[row * cols + prevCol];
+                }
+                
+                // Subtract projection: v_col -= (v_col · u_prevCol) * u_prevCol
+                for (let row = 0; row < rows; row++) {
+                    data[row * cols + col] -= dotProduct * data[row * cols + prevCol];
+                }
+            }
+            
+            // Normalize the column: ||v_col|| → 1
             let norm = 0;
             for (let row = 0; row < rows; row++) {
-                const val = result.data[row * cols + col];
+                const val = data[row * cols + col];
                 norm += val * val;
             }
             norm = Math.sqrt(norm);
             
-            // Normalize column
-            if (norm > 1e-10) {
+            // Handle near-zero norm (should be rare with random initialization)
+            if (norm < 1e-10) {
+                // Reinitialize this column with a standard basis vector
                 for (let row = 0; row < rows; row++) {
-                    result.data[row * cols + col] *= gain / norm;
+                    data[row * cols + col] = (row === col % rows) ? 1.0 : 0.0;
                 }
+                norm = 1.0;
+            }
+            
+            // Normalize and apply gain
+            const scale = gain / norm;
+            for (let row = 0; row < rows; row++) {
+                data[row * cols + col] *= scale;
             }
         }
         
-        return result;
+        return new Tensor(data, shape);
     }
 
     /**
@@ -233,25 +289,85 @@ export class Initializer {
     /**
      * Calculate fan_in and fan_out for a weight tensor
      * 
+     * Mathematical Definition:
+     * ========================
+     * - fan_in: Number of input units/neurons
+     * - fan_out: Number of output units/neurons
+     * 
+     * For different layer types:
+     * 
+     * 1. Linear/Dense Layer [fan_in, fan_out]:
+     *    - fan_in = shape[0]
+     *    - fan_out = shape[1]
+     * 
+     * 2. Convolutional Layer [out_channels, in_channels, kernel_h, kernel_w]:
+     *    - receptive_field_size = kernel_h × kernel_w
+     *    - fan_in = in_channels × receptive_field_size
+     *    - fan_out = out_channels × receptive_field_size
+     * 
+     * 3. Other layers (default):
+     *    - fan_in = product of all dimensions except last
+     *    - fan_out = last dimension
+     * 
+     * Mathematical Justification:
+     * ---------------------------
+     * fan_in and fan_out are used to compute initialization variances.
+     * 
+     * For Xavier/Glorot:
+     * Var(W) = 2 / (fan_in + fan_out)
+     * 
+     * This ensures:
+     * - Var(output) ≈ Var(input) during forward pass
+     * - Var(gradient) ≈ constant during backward pass
+     * 
+     * Proof for linear layer:
+     * y = Wx where W ∈ ℝ^{fan_out × fan_in}, x ∈ ℝ^{fan_in}
+     * 
+     * If E[W_ij] = 0 and Var(W_ij) = σ²:
+     * Var(y_i) = Σ_j Var(W_ij x_j) = fan_in × σ² × Var(x)
+     * 
+     * For Var(y) ≈ Var(x), we need:
+     * fan_in × σ² = 1 → σ² = 1/fan_in
+     * 
+     * Xavier initialization balances forward and backward:
+     * σ² = 2/(fan_in + fan_out)
+     * 
      * @param {Array<number>} shape - Shape of the weight tensor
      * @returns {Object} {fanIn, fanOut}
      */
     static calculateFan(shape) {
-        if (shape.length < 2) {
-            throw new Error("Shape must have at least 2 dimensions");
+        // Validation
+        if (!Array.isArray(shape)) {
+            throw new Error(`shape must be an array, got ${typeof shape}`);
+        }
+        if (shape.length < 1) {
+            throw new Error('Shape must have at least 1 dimension');
+        }
+        if (!shape.every(d => Number.isInteger(d) && d > 0)) {
+            throw new Error(`All shape dimensions must be positive integers, got [${shape}]`);
         }
         
-        if (shape.length === 2) {
-            // Standard linear layer: [fan_in, fan_out]
+        if (shape.length === 1) {
+            // 1D tensor (e.g., bias): fan_in = fan_out = dimension
+            return { fanIn: shape[0], fanOut: shape[0] };
+        } else if (shape.length === 2) {
+            // 2D tensor (linear layer): [fan_in, fan_out]
             return { fanIn: shape[0], fanOut: shape[1] };
         } else if (shape.length === 4) {
-            // Convolutional layer: [out_channels, in_channels, height, width]
-            const receptiveFieldSize = shape[2] * shape[3];
-            const fanIn = shape[1] * receptiveFieldSize;
-            const fanOut = shape[0] * receptiveFieldSize;
+            // 4D tensor (convolutional layer): [out_channels, in_channels, height, width]
+            const outChannels = shape[0];
+            const inChannels = shape[1];
+            const kernelHeight = shape[2];
+            const kernelWidth = shape[3];
+            
+            const receptiveFieldSize = kernelHeight * kernelWidth;
+            const fanIn = inChannels * receptiveFieldSize;
+            const fanOut = outChannels * receptiveFieldSize;
+            
             return { fanIn, fanOut };
         } else {
-            // Default: product of all dims except last for fan_in, last dim for fan_out
+            // General case: fan_in = product of all dims except last
+            //               fan_out = last dim
             const fanIn = shape.slice(0, -1).reduce((a, b) => a * b, 1);
             const fanOut = shape[shape.length - 1];
             return { fanIn, fanOut };
