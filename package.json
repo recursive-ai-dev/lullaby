@@ -13,7 +13,11 @@
     "mobile:sync": "npm run build && cap sync",
     "mobile:android": "npm run mobile:sync && cap open android",
     "mobile:ios": "npm run mobile:sync && cap open ios",
-    "training": "cd dev-tools && npx -y http-server -p 8000 -o"
+    "train": "node train.js",
+    "train:mentor": "node train.js --pack mentor",
+    "train:creative": "node train.js --pack creative",
+    "train:stoic": "node train.js --pack stoic",
+    "training": "npm run train && npm run dev"
   },
   "dependencies": {
     "lucide-react": "^0.542.0",
@@ -32,6 +36,8 @@
     "concurrently": "^9.2.1",
     "electron": "^37.4.0",
     "electron-builder": "^26.0.12",
+    "hyparquet": "^1.23.3",
+    "pdf-parse": "^2.4.5",
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.18",
     "vite": "^7.2.7",

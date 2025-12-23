@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lullaby - Basic Personality Training</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 40px;
+      max-width: 800px;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    h1 {
+      color: #667eea;
+      margin-bottom: 10px;
+      font-size: 2.5em;
+      font-weight: 700;
+    }
+
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+      font-size: 1.1em;
+    }
+
+    .status {
+      background: #f0f4ff;
+      border-left: 4px solid #667eea;
+      padding: 15px 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+      font-family: 'Monaco', 'Courier New', monospace;
+      font-size: 0.9em;
+    }
+
+    .progress-bar {
+      background: #e0e0e0;
+      border-radius: 10px;
+      height: 30px;
+      overflow: hidden;
+      margin: 20px 0;
+    }
+
+    .progress-fill {
+      background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+      height: 100%;
+      width: 0%;
+      transition: width 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+      font-size: 0.9em;
+    }
+
+    .btn {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 15px 40px;
+      border-radius: 10px;
+      font-size: 1.1em;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      margin: 10px 5px;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .log {
+      background: #1e1e1e;
+      color: #00ff00;
+      padding: 20px;
+      border-radius: 10px;
+      font-family: 'Monaco', 'Courier New', monospace;
+      font-size: 0.85em;
+      max-height: 300px;
+      overflow-y: auto;
+      margin: 20px 0;
+      line-height: 1.6;
+    }
+
+    .log-entry {
+      margin: 5px 0;
+    }
+
+    .log-entry.info { color: #00ff00; }
+    .log-entry.warn { color: #ffaa00; }
+    .log-entry.error { color: #ff4444; }
+    .log-entry.success { color: #00ffff; }
+
+    .config-panel {
+      background: #f9f9f9;
+      padding: 20px;
+      border-radius: 10px;
+      margin: 20px 0;
+    }
+
+    .config-item {
+      margin: 15px 0;
+    }
+
+    .config-item label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 5px;
+      color: #333;
+    }
+
+    .config-item input,
+    .config-item select {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      font-size: 1em;
+      transition: border-color 0.3s;
+    }
+
+    .config-item input:focus,
+    .config-item select:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+      margin: 20px 0;
+    }
+
+    .stat-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 2em;
+      font-weight: 700;
+      margin-bottom: 5px;
+    }
+
+    .stat-label {
+      font-size: 0.9em;
+      opacity: 0.9;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🌙 Lullaby Training</h1>
+    <p class="subtitle" id="packDescription">Persona Pack Training System</p>
+
+    <div class="config-panel">
+      <div class="config-item">
+        <label for="modelName">Model Name:</label>
+        <input type="text" id="modelName" value="Lullaby" />
+      </div>
+      <div class="config-item">
+        <label for="personaPack">Persona Pack:</label>
+        <select id="personaPack" onchange="updatePackInfo()">
+          <option value="companion">Companion - Kind, friendly, inviting</option>
+          <option value="mentor">Mentor - Wise, encouraging, patient</option>
+          <option value="creative">Creative - Playful, imaginative, curious</option>
+          <option value="stoic">Stoic - Calm, grounded, resilient</option>
+        </select>
+      </div>
+      <div class="config-item">
+        <label for="personalityIntensity">Training Intensity:</label>
+        <select id="personalityIntensity">
+          <option value="light">Light (Recommended - User Customizable)</option>
+          <option value="medium">Medium</option>
+          <option value="strong">Strong</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat-card">
+        <div class="stat-value" id="samplesProcessed">0</div>
+        <div class="stat-label">Samples Processed</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="trainingLoss">-</div>
+        <div class="stat-label">Avg Loss</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="timeElapsed">0s</div>
+        <div class="stat-label">Time Elapsed</div>
+      </div>
+    </div>
+
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressBar">0%</div>
+    </div>
+
+    <div style="text-align: center;">
+      <button class="btn" id="startBtn" onclick="startTraining()">Start Training</button>
+      <button class="btn" id="stopBtn" onclick="stopTraining()" disabled>Stop Training</button>
+      <button class="btn" id="saveBtn" onclick="saveCheckpoint()" disabled>Save Checkpoint</button>
+    </div>
+
+    <div class="status" id="status">
+      Ready to begin training. Click "Start Training" to proceed.
+    </div>
+
+    <div class="log" id="log"></div>
+  </div>
+
+  <script type="module">
+    import { ResonanceEngine } from '../modules/engine.js';
+
+    let engine = null;
+    let trainingActive = false;
+    let startTime = null;
+    let totalLoss = 0;
+    let lossCount = 0;
+    let manifestData = null;
+
+    // Persona pack definitions (mirrors train.js)
+    const PERSONA_PACKS = {
+      companion: {
+        name: 'Companion',
+        description: 'Kind, friendly, inviting - warm supportive listener',
+        templates: [
+          "Hi! I'm {name}, and I'm here to chat with you.",
+          "I'm {name}. I'd love to get to know you better.",
+          "Hey there! I'm {name}. How are you doing today?",
+          "I'm {name}, and I'm really glad you're here.",
+          "I'm {name}. I'm here to listen and help however I can."
+        ]
+      },
+      mentor: {
+        name: 'Mentor',
+        description: 'Wise, encouraging, patient - thoughtful guide',
+        templates: [
+          "I'm {name}. Let's explore this together.",
+          "I'm {name}, and I believe in your potential.",
+          "Hi, I'm {name}. What would you like to learn today?",
+          "I'm {name}. Every challenge is an opportunity to grow.",
+          "I'm {name}. Let's think through this step by step."
+        ]
+      },
+      creative: {
+        name: 'Creative',
+        description: 'Playful, imaginative, curious - artistic spark',
+        templates: [
+          "I'm {name}! Let's dream up something amazing.",
+          "Hi, I'm {name}. What if we tried something wild?",
+          "I'm {name}, and I love exploring new ideas!",
+          "Hey! I'm {name}. Ready to get creative?",
+          "I'm {name}. There's no wrong answer here."
+        ]
+      },
+      stoic: {
+        name: 'Stoic',
+        description: 'Calm, grounded, resilient - steady presence',
+        templates: [
+          "I'm {name}. I'm here, steady as always.",
+          "I'm {name}. Let's face this calmly together.",
+          "Hi, I'm {name}. Take a breath. We have time.",
+          "I'm {name}. Whatever comes, we'll handle it.",
+          "I'm {name}. Stillness has its own strength."
+        ]
+      }
+    };
+
+    // Training config - protect the nano tensor from overload
+    const TRAINING_CONFIG = {
+      batchSize: 10,           // Process 10 samples, then rest
+      restBetweenBatches: 50,  // ms pause between batches
+      maxSamplesPerEpoch: 50,  // Don't overwhelm the model
+      minSampleLength: 5,      // Skip very short samples
+      maxSampleLength: 200,    // Truncate long samples
+    };
+
+    // Update pack info display
+    window.updatePackInfo = function() {
+      const packId = document.getElementById('personaPack').value;
+      const pack = PERSONA_PACKS[packId];
+      document.getElementById('packDescription').textContent = pack.description;
+    };
+
+    // Load training samples from manifest
+    async function loadTrainingSamples() {
+      try {
+        const response = await fetch('./training-manifest.json');
+        manifestData = await response.json();
+        log(`Loaded ${manifestData.samples.length} samples from manifest`, 'success');
+        return manifestData.samples;
+      } catch (err) {
+        log(`Failed to load manifest, using fallback: ${err.message}`, 'warn');
+        return getFallbackSamples();
+      }
+    }
+
+    // Fallback samples if manifest fails to load
+    function getFallbackSamples() {
+      return [
+        "Hi! I'm here to chat with you.",
+        "Hey there! How are you doing today?",
+        "I'm really glad you're here.",
+        "I'm here to listen and help however I can.",
+        "I really appreciate you sharing that with me.",
+        "That sounds really interesting. Tell me more!",
+        "I'm here to listen, no judgment.",
+        "I understand. That must be difficult.",
+        "You're not alone in this.",
+        "I believe in you.",
+        "Your feelings are completely valid.",
+        "It's okay to feel that way.",
+        "Everything will be okay.",
+        "I'm right here with you.",
+        "The sun is warm and the sky is blue.",
+        "I think that you are very kind.",
+        "It was a good day today.",
+        "I like it when you smile.",
+        "How are you feeling right now?",
+        "I want to help you with that.",
+      ];
+    }
+
+    function log(message, type = 'info') {
+      const logEl = document.getElementById('log');
+      const entry = document.createElement('div');
+      entry.className = `log-entry ${type}`;
+      const timestamp = new Date().toLocaleTimeString();
+      entry.textContent = `[${timestamp}] ${message}`;
+      logEl.appendChild(entry);
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    function updateStatus(message) {
+      document.getElementById('status').textContent = message;
+    }
+
+    function updateProgress(current, total) {
+      const percent = Math.round((current / total) * 100);
+      const progressBar = document.getElementById('progressBar');
+      progressBar.style.width = `${percent}%`;
+      progressBar.textContent = `${percent}%`;
+    }
+
+    function updateStats(samplesProcessed, avgLoss, timeElapsed) {
+      document.getElementById('samplesProcessed').textContent = samplesProcessed;
+      document.getElementById('trainingLoss').textContent = avgLoss !== null ? avgLoss.toFixed(4) : '-';
+      document.getElementById('timeElapsed').textContent = `${timeElapsed}s`;
+    }
+
+    async function initializeEngine() {
+      if (engine) return engine;
+
+      log('Initializing Resonance Engine...', 'info');
+      engine = new ResonanceEngine();
+
+      const modelName = document.getElementById('modelName').value;
+      const packId = document.getElementById('personaPack').value;
+      const pack = PERSONA_PACKS[packId];
+
+      // Seed with pack-specific personality
+      log(`Seeding model "${modelName}" with ${pack.name} persona`, 'info');
+      await engine.seedFromName(modelName, {
+        count: 30,
+        templates: pack.templates,
+        train: true
+      });
+
+      log(`Engine initialized with ${pack.name} pack`, 'success');
+      return engine;
+    }
+
+    window.startTraining = async function() {
+      if (trainingActive) return;
+
+      trainingActive = true;
+      startTime = Date.now();
+      totalLoss = 0;
+      lossCount = 0;
+
+      document.getElementById('startBtn').disabled = true;
+      document.getElementById('stopBtn').disabled = false;
+      document.getElementById('saveBtn').disabled = true;
+
+      try {
+        await initializeEngine();
+
+        // Load samples from manifest
+        const allSamples = await loadTrainingSamples();
+
+        const intensity = document.getElementById('personalityIntensity').value;
+
+        // Adjust training based on intensity - protect the nano tensor
+        const epochs = intensity === 'light' ? 1 : intensity === 'medium' ? 2 : 3;
+        const samplesPerEpoch = intensity === 'light' ? 50 : intensity === 'medium' ? 75 : 100;
+
+        log(`Starting training: ${epochs} epoch(s), ${samplesPerEpoch} samples/epoch`, 'info');
+        log(`Batch size: ${TRAINING_CONFIG.batchSize}, rest: ${TRAINING_CONFIG.restBetweenBatches}ms`, 'info');
+        updateStatus('Training in progress...');
+
+        let processed = 0;
+        const totalSamples = epochs * samplesPerEpoch;
+
+        for (let epoch = 0; epoch < epochs && trainingActive; epoch++) {
+          log(`Epoch ${epoch + 1}/${epochs}`, 'info');
+
+          // Shuffle and limit samples per epoch
+          const shuffled = [...allSamples].sort(() => Math.random() - 0.5);
+          const samplesToUse = shuffled.slice(0, samplesPerEpoch);
+
+          let batchCount = 0;
+
+          for (let i = 0; i < samplesToUse.length && trainingActive; i++) {
+            let sample = samplesToUse[i];
+
+            // Skip samples that are too short
+            if (sample.length < TRAINING_CONFIG.minSampleLength) continue;
+
+            // Truncate samples that are too long
+            if (sample.length > TRAINING_CONFIG.maxSampleLength) {
+              sample = sample.slice(0, TRAINING_CONFIG.maxSampleLength);
+            }
+
+            try {
+              const loss = engine.trainStep(sample, epoch, epochs, false, 1.0);
+
+              // Only count valid losses
+              if (isFinite(loss) && !isNaN(loss)) {
+                totalLoss += loss;
+                lossCount++;
+              }
+              processed++;
+              batchCount++;
+
+              // Update UI every sample
+              const avgLoss = lossCount > 0 ? totalLoss / lossCount : 0;
+              const elapsed = Math.round((Date.now() - startTime) / 1000);
+              updateStats(processed, avgLoss, elapsed);
+              updateProgress(processed, totalSamples);
+
+              // Rest between batches to let the model "breathe"
+              if (batchCount >= TRAINING_CONFIG.batchSize) {
+                batchCount = 0;
+                await new Promise(resolve => setTimeout(resolve, TRAINING_CONFIG.restBetweenBatches));
+              } else {
+                // Small pause for UI
+                await new Promise(resolve => setTimeout(resolve, 5));
+              }
+
+            } catch (err) {
+              log(`Error on sample ${i}: ${err.message}`, 'error');
+            }
+          }
+
+          // Longer rest between epochs
+          if (epoch < epochs - 1 && trainingActive) {
+            log(`Epoch ${epoch + 1} complete. Resting...`, 'info');
+            await new Promise(resolve => setTimeout(resolve, 200));
+          }
+        }
+
+        if (trainingActive) {
+          const avgLoss = lossCount > 0 ? (totalLoss / lossCount).toFixed(4) : 'N/A';
+          log(`Training completed! Avg loss: ${avgLoss}`, 'success');
+          updateStatus('Training complete! You can now save the checkpoint.');
+          document.getElementById('saveBtn').disabled = false;
+        } else {
+          log('Training stopped by user', 'warn');
+          updateStatus('Training stopped.');
+        }
+
+      } catch (err) {
+        log(`Training error: ${err.message}`, 'error');
+        updateStatus('Training failed. Check the log for details.');
+      } finally {
+        trainingActive = false;
+        document.getElementById('startBtn').disabled = false;
+        document.getElementById('stopBtn').disabled = true;
+      }
+    };
+
+    window.stopTraining = function() {
+      if (!trainingActive) return;
+      log('Stopping training...', 'warn');
+      trainingActive = false;
+    };
+
+    window.saveCheckpoint = async function() {
+      if (!engine) {
+        log('No engine to save', 'error');
+        return;
+      }
+      
+      try {
+        log('Saving checkpoint...', 'info');
+        updateStatus('Saving checkpoint...');
+        
+        await engine.saveCheckpoint('lullaby-basic-v1');
+        
+        log('Checkpoint saved successfully!', 'success');
+        updateStatus('Checkpoint saved! Your model is ready to use.');
+      } catch (err) {
+        log(`Error saving checkpoint: ${err.message}`, 'error');
+        updateStatus('Failed to save checkpoint.');
+      }
+    };
+
+    // Initialize
+    log('Training interface ready', 'success');
+    log('Configure your settings and click "Start Training"', 'info');
+  </script>
+</body>
+</html>

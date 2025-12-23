@@ -7,6 +7,15 @@ import { PrioritizedReplayBuffer } from './memory.js';
 import { ConsolidationEngine } from './consolidation.js';
 import { generateSeedLines } from './seed.js';
 
+// Import the Unified Tokenization System (6-model mixture-of-experts)
+let UnifiedTokenizationSystem = null;
+try {
+    const utsModule = await import('./tokenization/unified_tokenization_system.js');
+    UnifiedTokenizationSystem = utsModule.UnifiedTokenizationSystem;
+} catch (e) {
+    console.warn('[Engine] UTS not available, using neural-only mode:', e.message);
+}
+
 // ==========================================
 // 5. RESONANCE ENGINE (With Experience Replay)
 // ==========================================
@@ -22,7 +31,30 @@ export class ResonanceEngine {
         this.emaTau = 0.02; // higher = faster tracking, lower = smoother
         this.useEmaForGenerate = true;
 
-        // Internal “vibe trigger” for generation (not shown to user; only conditions the model).
+        // UNIFIED TOKENIZATION SYSTEM (6-model mixture-of-experts)
+        // This is the novel architecture that dramatically accelerates coherence
+        this.uts = null;
+        this.utsWeight = 0.4; // How much UTS influences generation (0-1)
+        this.useHybridMode = true; // Combine neural + statistical predictions
+        if (UnifiedTokenizationSystem) {
+            try {
+                this.uts = new UnifiedTokenizationSystem({
+                    modelWeights: {
+                        rcw: 0.25,  // Rhythmic Coherence Weaver (N-grams)
+                        ced: 0.20,  // Critical Erosion Dynamics (graphs)
+                        mar: 0.15,  // Metabolic Authority Rotation (bidding)
+                        mcg: 0.15,  // Mitotic Context Graphs (hyperdimensional)
+                        cbf: 0.15,  // Contextual Bidding Fabric (economic)
+                        rsb: 0.10   // Reflective Semantic Billiards (geometric)
+                    }
+                });
+                console.log('[Engine] UTS initialized - hybrid mode enabled');
+            } catch (e) {
+                console.warn('[Engine] UTS initialization failed:', e.message);
+            }
+        }
+
+        // Internal "vibe trigger" for generation (not shown to user; only conditions the model).
         // Matches the emma-bot spec doc.
         this.useVibeTriggerForGenerate = true;
         this.vibeTriggerText = "[Name]: Thin, sharp-tongued, fiercely loyal, lifelong friend. Attitude: Protective/Sarcastic. Passion: High.";
@@ -44,6 +76,9 @@ export class ResonanceEngine {
 
         // Checkpoint profile key (IndexedDB key)
         this.profileKey = 'latest';
+
+        // Track training data for UTS
+        this.utsTrainingBuffer = [];
     }
 
     setProfileKey(profileKey) {
@@ -269,13 +304,23 @@ export class ResonanceEngine {
         return this.trainStep(memory.text, 0, 1, true, importanceWeight);
     }
 
-    // MODIFIED: Include KL divergence and consolidation
+    // MODIFIED: Include KL divergence, consolidation, and UTS training
     trainStep(text, epoch = 0, totalEpochs = 1, isGameplay = false, importanceWeight = 1.0) {
         const tokens = this.tokenize(text);
         // Validate sequence length before processing (CRITICAL FIX #20)
         if (tokens.length < 2) {
             // Don't update optimizer state for invalid inputs
             return 0;
+        }
+
+        // HYBRID: Train UTS alongside neural network
+        // UTS learns statistical patterns while neural network learns deep features
+        if (this.uts && this.useHybridMode) {
+            this.utsTrainingBuffer.push(text);
+            // Batch train UTS every 10 samples for efficiency
+            if (this.utsTrainingBuffer.length >= 10) {
+                this._trainUTS();
+            }
         }
 
         this.optimizer.zeroGrad();
@@ -332,6 +377,29 @@ export class ResonanceEngine {
         this.updateEma();
 
         return (totalLoss / seqLen) + this.klLoss + consolidationLoss;
+    }
+
+    // Train UTS on buffered samples
+    _trainUTS() {
+        if (!this.uts || this.utsTrainingBuffer.length === 0) return;
+
+        try {
+            // UTS.train expects array of strings
+            this.uts.train(this.utsTrainingBuffer).catch(err => {
+                console.warn('[Engine] UTS training error:', err.message);
+            });
+        } catch (e) {
+            console.warn('[Engine] UTS sync training error:', e.message);
+        }
+
+        this.utsTrainingBuffer = [];
+    }
+
+    // Flush any remaining UTS training buffer
+    flushUTSTraining() {
+        if (this.utsTrainingBuffer.length > 0) {
+            this._trainUTS();
+        }
     }
 
     // NEW: Calculate KL divergence for Bayesian layers
