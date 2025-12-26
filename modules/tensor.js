@@ -86,7 +86,7 @@ export class Tensor {
 
         const broadcastBatchShape = [];
         const virtualStridesA = [];
-        const virtualStridesBT = []; // For Transposed B
+        const virtualStridesB = [];
 
         // Align shapes and strides (pad with 1s on left)
         const paddedBatchA = Array(batchRank - batchShapeA.length).fill(1).concat(batchShapeA);
@@ -96,11 +96,9 @@ export class Tensor {
         const stridesA = A.strides.slice(0, -2);
         const paddedStridesA = Array(batchRank - stridesA.length).fill(0).concat(stridesA);
 
-        // Pre-compute BT (B Transposed) for optimized access
-        // BT shape: [..., N, K]
-        const BT = B.transpose();
-        const stridesBT = BT.strides.slice(0, -2);
-        const paddedStridesBT = Array(batchRank - stridesBT.length).fill(0).concat(stridesBT);
+        // Strides for B (exclude last 2 dims)
+        const stridesB = B.strides.slice(0, -2);
+        const paddedStridesB = Array(batchRank - stridesB.length).fill(0).concat(stridesB);
 
         for (let i = 0; i < batchRank; i++) {
             const dA = paddedBatchA[i];
@@ -109,15 +107,15 @@ export class Tensor {
             if (dA === dB) {
                 broadcastBatchShape.push(dA);
                 virtualStridesA.push(paddedStridesA[i]);
-                virtualStridesBT.push(paddedStridesBT[i]);
+                virtualStridesB.push(paddedStridesB[i]);
             } else if (dA === 1) {
                 broadcastBatchShape.push(dB);
                 virtualStridesA.push(0); // Broadcast A
-                virtualStridesBT.push(paddedStridesBT[i]);
+                virtualStridesB.push(paddedStridesB[i]);
             } else if (dB === 1) {
                 broadcastBatchShape.push(dA);
                 virtualStridesA.push(paddedStridesA[i]);
-                virtualStridesBT.push(0); // Broadcast B
+                virtualStridesB.push(0); // Broadcast B
             } else {
                 throw new Error(`Matmul broadcasting mismatch: A shape ${A.shape} vs B shape ${B.shape}`);
             }
@@ -130,7 +128,7 @@ export class Tensor {
         for (let b = 0; b < totalBatches; b++) {
             // Compute offsets for this batch index
             let offsetA = 0;
-            let offsetBT = 0;
+            let offsetB = 0;
             let remainder = b;
 
             for (let i = batchRank - 1; i >= 0; i--) {
@@ -139,7 +137,7 @@ export class Tensor {
                 remainder = Math.floor(remainder / dim);
 
                 offsetA += idx * virtualStridesA[i];
-                offsetBT += idx * virtualStridesBT[i];
+                offsetB += idx * virtualStridesB[i];
             }
 
             const offsetC = b * M * N;
