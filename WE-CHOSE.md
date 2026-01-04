@@ -39,3 +39,25 @@ We selected **shared checkpoint key derivation** because it directly resolves th
 
 ### Final Selection (Mapped to Logic Chain)
 We selected **real-system construction for every test** to align with LOGIC-MAP “UTS Test Suite Real-Component Validation” Step 3, ensuring integration coverage mirrors production behavior.
+
+---
+
+## Deterministic Sampling & Weight Allocation (CEO / Junior Dev / End Customer)
+
+### CEO Perspective (Outcome & Risk)
+- **Goal:** Reproducible training manifests with provable adherence to pack weights.
+- **Risk Check:** Avoid opaque randomness that can invalidate training comparisons or audits.
+- **Choice:** Seeded randomness with uniform shuffling and explicit allocation math.
+
+### Junior Dev Perspective (Implementation Clarity)
+- **Goal:** Clear, testable flow with minimal moving parts.
+- **Decision:** Add `makeRng`, `shuffleInPlace`, and `allocateCounts` helpers.
+- **Why:** Encapsulated math makes it easy to reason about counts and sample stability.
+
+### End Customer Perspective (User Experience)
+- **Goal:** Consistent behavior across repeated training runs.
+- **Decision:** Derive a stable seed from pack and sample inputs (or accept a user seed).
+- **Outcome:** The same inputs yield identical manifests and predictable model behavior.
+
+### Final Selection (Mapped to Logic Chain)
+We selected **seeded Fisher–Yates shuffling with largest-remainder allocation** to align with LOGIC-MAP “Deterministic Sampling & Weight Allocation” Step 3, ensuring reproducible, weight-accurate manifests.

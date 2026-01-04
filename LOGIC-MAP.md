@@ -43,3 +43,28 @@ Let `S` be the production system initialization and `T` be the test suite.
 If `T` constructs `S`, then every test exercises the same dependency graph used in runtime.  
 If `T` uses mocks or undefined internals, then coverage is neither complete nor representative.  
 Therefore, initializing tests through `S` is necessary and sufficient for valid integration coverage.
+
+---
+
+## Logic Map: Deterministic Sampling & Weight Allocation
+
+### Issue
+Training manifests were built with a biased shuffle and non-deterministic selection, which could break reproducibility and weaken the weight-driven sample balance.
+
+### Logic Chain (Steps 1–3)
+1. **Observation ➜ Non-uniform shuffle + stochastic run variance**
+   - `Array.sort(() => Math.random() - 0.5)` is biased and order-dependent.
+   - `Math.random()` introduces run-to-run variance in manifest composition.
+2. **Causal Link ➜ Weight ratios are not provably honored**
+   - If the shuffle is biased or non-deterministic, then the selected prefix can drift from the desired weight proportions.
+   - This breaks reproducibility and makes debugging inconsistent training outcomes.
+3. **Correction ➜ Seeded RNG + Fisher–Yates + exact count allocation**
+   - Use a seeded RNG to ensure identical inputs yield identical manifests.
+   - Apply Fisher–Yates shuffling for uniform permutations.
+   - Allocate per-type counts using normalized weights and a largest-remainder method to guarantee totals.
+
+### Proof of Correctness (Minimal)
+Let `R` be a seeded RNG, `S` a Fisher–Yates shuffle, and `A` an allocation scheme that sums to `N`.  
+If `R` is deterministic, then `S(R, X)` produces the same permutation for identical inputs.  
+If `A` uses normalized weights and distributes remainders, then `sum(A) = N` and each count is within one of its exact proportion.  
+Therefore, the manifest is reproducible and respects the intended balance.
