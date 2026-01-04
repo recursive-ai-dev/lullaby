@@ -29,3 +29,30 @@ Each case validates that the checkpoint key used for saving is the same key the 
 ### Hardware/Timing Robustness
 - Repeat cases 3, 4, 10 under low CPU (simulated via browser throttling).
 - Ensure no failures in checkpoint save or load due to timing or storage delays.
+
+---
+
+## Unified Tokenization System Real-Component Tests (No Mocks)
+
+All tests exercise the production `UnifiedTokenizationSystem` path, using real models and configurations derived from `UTS_CONFIG`.
+
+### Outcome Matrix (Cases -1..12)
+- **-1:** Invalid config (`modelWeights` with missing keys) ➜ expect validation failure (testEdgeCases)
+- **0:** Empty training data ➜ expect explicit error (testEdgeCases)
+- **1:** Untrained generation attempt ➜ expect error (testEdgeCases)
+- **2:** Negative generation length ➜ expect rejection (testEdgeCases)
+- **3:** Excessive generation length (10001) ➜ expect rejection (testEdgeCases)
+- **4:** Default training dataset ➜ expect `isTrained=true` and valid metrics (testUnifiedSystemTraining)
+- **5:** Multi-strategy generation (`ensemble`, `best`, `weighted`) ➜ expect non-identical outputs (testUnifiedSystemGeneration)
+- **6:** Analysis on diverse vs. repetitive text ➜ expect lower diversity for repetitive output (testUnifiedSystemAnalysis)
+- **7:** Serialization round-trip ➜ expect training state and config restored (testUnifiedSystemSerialization)
+- **8:** Small multi-level cache ➜ expect hit/miss stats and evictions (testCacheSystem)
+- **9:** Energy update loop (150 iterations) ➜ expect convergence counters and bounded energies (testEnergyManager)
+- **10:** Performance benchmarks ➜ expect throughput above thresholds (testPerformanceBenchmarks)
+- **11:** Large vocabulary scalability ➜ expect vocab size and bounded training time (testScalability)
+- **12:** CBF training + generation ➜ expect trained state, prices, and deterministic length (testIntegratedCBF)
+
+### End-to-End Verification
+1. Run `node modules/tokenization/test_unified_system.js`.
+2. Confirm every component is initialized from `uts.models` (no mocks).
+3. Ensure the summary reports `ALL TESTS PASSED` and the success rate is 100%.

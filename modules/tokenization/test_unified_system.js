@@ -3,7 +3,12 @@
  * Production-grade validation with mathematical proofs and performance benchmarks
  */
 
-const { UnifiedTokenizationSystem, MathUtils, ConfigValidator } = require('./unified_tokenization_system');
+const {
+  UnifiedTokenizationSystem,
+  MathUtils,
+  ConfigValidator,
+  UTS_CONFIG
+} = require('./unified_tokenization_system');
 
 class UTSTestSuite {
   constructor() {
@@ -11,6 +16,21 @@ class UTSTestSuite {
     this.failed = 0;
     this.results = [];
     this.startTime = 0;
+  }
+
+  buildConfig(overrides = {}) {
+    return {
+      modelWeights: { ...UTS_CONFIG.modelWeights, ...(overrides.modelWeights || {}) },
+      cache: { ...UTS_CONFIG.cache, ...(overrides.cache || {}) },
+      memory: { ...UTS_CONFIG.memory, ...(overrides.memory || {}) },
+      convergence: { ...UTS_CONFIG.convergence, ...(overrides.convergence || {}) },
+      parallel: { ...UTS_CONFIG.parallel, ...(overrides.parallel || {}) },
+      validation: { ...UTS_CONFIG.validation, ...(overrides.validation || {}) }
+    };
+  }
+
+  createSystem(overrides = {}) {
+    return new UnifiedTokenizationSystem(this.buildConfig(overrides));
   }
 
   assert(condition, message, critical = true) {
@@ -125,9 +145,10 @@ class UTSTestSuite {
   testCacheSystem() {
     console.log('\n💾 Testing Multi-Level Cache System...');
 
-    const cache = new MultiLevelCache({
+    const uts = this.createSystem({
       cache: { l1Size: 4, l2Size: 8, l3Size: 16 }
     });
+    const cache = uts.cache;
 
     // Test basic operations
     cache.set('key1', 'value1');
@@ -174,27 +195,22 @@ class UTSTestSuite {
   testEnergyManager() {
     console.log('\n⚡ Testing Energy Management System...');
 
-    const mockModels = {
-      modelA: {}, modelB: {}, modelC: {}
-    };
-
-    const energyManager = new UnifiedEnergyManager(mockModels, {
-      modelWeights: { modelA: 0.5, modelB: 0.3, modelC: 0.2 }
-    });
+    const uts = this.createSystem();
+    const energyManager = uts.energyManager;
 
     // Test initial state
     const initialStatus = energyManager.getConvergenceStatus();
-    this.assert(initialStatus.modelA.energy === 1.0, 'Initial energy is maximum');
-    this.assert(initialStatus.modelB.energy === 1.0, 'All models start with full energy');
+    this.assert(initialStatus.rcw.energy === 1.0, 'Initial energy is maximum');
+    this.assert(initialStatus.ced.energy === 1.0, 'All models start with full energy');
 
     // Test energy update
-    energyManager.update('modelA', 0.5);
+    energyManager.update('rcw', 0.5);
     const updatedStatus = energyManager.getConvergenceStatus();
-    this.assert(updatedStatus.modelA.energy < 1.0, 'Winning model loses energy');
-    this.assert(updatedStatus.modelB.energy > 1.0, 'Losing models gain energy');
+    this.assert(updatedStatus.rcw.energy < 1.0, 'Winning model loses energy');
+    this.assert(updatedStatus.ced.energy > 1.0, 'Losing models gain energy');
 
     // Test weighted prediction
-    const predictions = { modelA: 0.8, modelB: 0.6, modelC: 0.4 };
+    const predictions = { rcw: 0.8, ced: 0.6, mar: 0.5, mcg: 0.45, cbf: 0.4, rsb: 0.3 };
     const weightedResult = energyManager.getWeightedPrediction(predictions);
     
     // Should be between min and max predictions, weighted by energies
@@ -202,11 +218,11 @@ class UTSTestSuite {
 
     // Test convergence detection
     for (let i = 0; i < 150; i++) {
-      energyManager.update('modelA', 0.001);
+      energyManager.update('rcw', 0.001);
     }
     
     const convergedStatus = energyManager.getConvergenceStatus();
-    this.assert(convergedStatus.modelA.iterations > 100, 'Iteration counting works');
+    this.assert(convergedStatus.rcw.iterations > 100, 'Iteration counting works');
 
     console.log('✅ Energy management system validated');
   }
@@ -218,10 +234,10 @@ class UTSTestSuite {
   testIntegratedRCW() {
     console.log('\n🧠 Testing Integrated RCW Component...');
 
-    const rcw = new IntegratedRCW({ maxOrder: 3 });
-    const energyManager = new UnifiedEnergyManager({ rcw: {} }, { modelWeights: { rcw: 1.0 } });
-    const contextManager = new HyperdimensionalContextManager();
-    
+    const uts = this.createSystem();
+    const rcw = uts.models.rcw;
+    const energyManager = uts.energyManager;
+    const contextManager = uts.contextManager;
     rcw.initialize(energyManager, contextManager);
 
     // Test learning
@@ -253,9 +269,9 @@ class UTSTestSuite {
   testIntegratedCED() {
     console.log('\n🌊 Testing Integrated CED Component...');
 
-    const ced = new IntegratedCED({});
-    const energyManager = new UnifiedEnergyManager({ ced: {} }, { modelWeights: { ced: 1.0 } });
-    
+    const uts = this.createSystem();
+    const ced = uts.models.ced;
+    const energyManager = uts.energyManager;
     ced.initialize(energyManager);
 
     // Test network building
@@ -279,9 +295,9 @@ class UTSTestSuite {
   testIntegratedMAR() {
     console.log('\n🏛️ Testing Integrated MAR Component...');
 
-    const mar = new IntegratedMAR({});
-    const energyManager = new UnifiedEnergyManager({ mar: {} }, { modelWeights: { mar: 1.0 } });
-    
+    const uts = this.createSystem();
+    const mar = uts.models.mar;
+    const energyManager = uts.energyManager;
     mar.initialize(energyManager);
 
     // Test agent creation
@@ -309,9 +325,9 @@ class UTSTestSuite {
   testIntegratedMCG() {
     console.log('\n🧬 Testing Integrated MCG Component...');
 
-    const mcg = new IntegratedMCG({});
-    const contextManager = new HyperdimensionalContextManager();
-    
+    const uts = this.createSystem();
+    const mcg = uts.models.mcg;
+    const contextManager = uts.contextManager;
     mcg.initialize(contextManager);
 
     // Test node creation
@@ -335,44 +351,41 @@ class UTSTestSuite {
     console.log('✅ MCG integration validated');
   }
 
-  testIntegratedCBF() {
+  async testIntegratedCBF() {
     console.log('\n💰 Testing Integrated CBF Component...');
 
-    const cbf = new IntegratedCBF({
-      baseCapital: 5.0,
-      synergyConstant: 1.5,
-      convergenceThreshold: 0.01
+    const uts = this.createSystem({
+      modelWeights: { rcw: 0.2, ced: 0.15, mar: 0.15, mcg: 0.15, cbf: 0.25, rsb: 0.10 }
     });
-    
-    const energyManager = new UnifiedEnergyManager({ cbf: {} }, { modelWeights: { cbf: 1.0 } });
+    const cbf = uts.models.cbf;
+    const energyManager = uts.energyManager;
     cbf.initialize(energyManager);
 
     // Test training
-    cbf.learn(['HELLO WORLD', 'WORLD PEACE', 'PEACE LOVE']).then(() => {
-      this.assert(cbf.isTrained, 'CBF marks itself as trained');
-      this.assert(cbf.vocab.size > 0, 'Vocabulary is built');
+    await cbf.learn(['HELLO WORLD', 'WORLD PEACE', 'PEACE LOVE']);
+    this.assert(cbf.isTrained, 'CBF marks itself as trained');
+    this.assert(cbf.vocab.size > 0, 'Vocabulary is built');
 
-      // Test generation
-      const generated = cbf.generate(10, 'HELLO');
-      this.assert(generated.length === 10, 'CBF generates correct length');
+    // Test generation
+    const generated = cbf.generate(10, 'HELLO');
+    this.assert(generated.length === 10, 'CBF generates correct length');
 
-      // Test price computation
-      this.assert(cbf.prices.size > 0, 'Prices are computed');
-      
-      for (const price of cbf.prices.values()) {
-        this.assert(price > 0, 'All prices are positive');
-      }
+    // Test price computation
+    this.assert(cbf.prices.size > 0, 'Prices are computed');
+    
+    for (const price of cbf.prices.values()) {
+      this.assert(price > 0, 'All prices are positive');
+    }
 
-      console.log('✅ CBF integration validated');
-    });
+    console.log('✅ CBF integration validated');
   }
 
   testIntegratedRSB() {
     console.log('\n🎯 Testing Integrated RSB Component...');
 
-    const rsb = new IntegratedRSB({});
-    const energyManager = new UnifiedEnergyManager({ rsb: {} }, { modelWeights: { rsb: 1.0 } });
-    
+    const uts = this.createSystem();
+    const rsb = uts.models.rsb;
+    const energyManager = uts.energyManager;
     rsb.initialize(energyManager);
 
     // Test semantic space initialization
@@ -402,7 +415,7 @@ class UTSTestSuite {
   async testUnifiedSystemTraining() {
     console.log('\n🔗 Testing Unified System Training...');
 
-    const uts = new UnifiedTokenizationSystem({
+    const uts = this.createSystem({
       modelWeights: { rcw: 0.3, ced: 0.2, mar: 0.2, mcg: 0.15, cbf: 0.1, rsb: 0.05 },
       convergence: { maxIterations: 500 }
     });
@@ -523,7 +536,7 @@ class UTSTestSuite {
     this.assert(validation.valid, 'Trained system passes validation');
 
     // Test with untrained system
-    const untrainedUTS = new UnifiedTokenizationSystem();
+    const untrainedUTS = this.createSystem();
     const untrainedValidation = untrainedUTS.validate();
     
     this.assert(!untrainedValidation.valid, 'Untrained system fails validation');
@@ -566,7 +579,7 @@ class UTSTestSuite {
   async testPerformanceBenchmarks() {
     console.log('\n🏁 Running Performance Benchmarks...');
 
-    const uts = new UnifiedTokenizationSystem({
+    const uts = this.createSystem({
       cache: { l1Size: 256, l2Size: 1024, l3Size: 4096 }, // Smaller cache for testing
       convergence: { maxIterations: 100 }
     });
@@ -623,14 +636,14 @@ class UTSTestSuite {
   // EDGE CASES & ERROR HANDLING
   // ==========================================================================
 
-  testEdgeCases() {
+  async testEdgeCases() {
     console.log('\n🧪 Testing Edge Cases & Error Handling...');
 
     // Test empty training data
-    const uts = new UnifiedTokenizationSystem();
+    const uts = this.createSystem();
     
     try {
-      uts.train([]);
+      await uts.train([]);
       this.assert(false, 'Empty training data should throw error');
     } catch (error) {
       this.assert(error.message.includes('non-empty'), 'Empty training error message is clear');
@@ -645,7 +658,7 @@ class UTSTestSuite {
     }
 
     // Test invalid parameters
-    const trainedUTS = new UnifiedTokenizationSystem();
+    const trainedUTS = this.createSystem();
     
     // We'll cheat and mark it as trained for parameter testing
     trainedUTS.isTrained = true;
@@ -685,7 +698,7 @@ class UTSTestSuite {
     console.log('\n📈 Testing Scalability...');
 
     // Test with large vocabulary
-    const largeVocabUTS = new UnifiedTokenizationSystem({
+    const largeVocabUTS = this.createSystem({
       memory: { maxNodes: 10000 },
       convergence: { maxIterations: 50 }
     });
@@ -741,7 +754,7 @@ class UTSTestSuite {
       this.testIntegratedCED();
       this.testIntegratedMAR();
       this.testIntegratedMCG();
-      // this.testIntegratedCBF(); // Async, tested separately
+      await this.testIntegratedCBF();
       this.testIntegratedRSB();
 
       // End-to-end integration tests
@@ -753,7 +766,7 @@ class UTSTestSuite {
 
       // Performance and reliability tests
       await this.testPerformanceBenchmarks();
-      this.testEdgeCases();
+      await this.testEdgeCases();
       await this.testScalability();
 
       // Final summary
