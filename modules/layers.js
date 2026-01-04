@@ -311,10 +311,10 @@ export class BayesianLinear {
         return kl;
     }
 
-    klGradient() {
+    klGradient(scale = 1.0) {
         // Calculate gradients for KL divergence term:
-        // dKL/dMu = mu
-        // dKL/dRho = (sigma - 1/sigma) * sigmoid(rho)
+        // dKL/dMu = mu * scale
+        // dKL/dRho = (sigma - 1/sigma) * sigmoid(rho) * scale
 
         const sigmaW = this.computeSoftplus(this.w_rho);
         const sigmaB = this.computeSoftplus(this.bias_rho);
@@ -326,12 +326,12 @@ export class BayesianLinear {
             const sigma = Math.max(sigmaW.data[i], 1e-6);
 
             // dKL/dMu = mu
-            this.w_mu.grad[i] += mu;
+            this.w_mu.grad[i] += mu * scale;
 
             // dKL/dRho = (sigma - 1/sigma) * sigmoid(rho)
             const dKL_dSigma = sigma - (1.0 / sigma);
             const sigmoid = 1.0 / (1.0 + Math.exp(-rho));
-            this.w_rho.grad[i] += dKL_dSigma * sigmoid;
+            this.w_rho.grad[i] += dKL_dSigma * sigmoid * scale;
         }
 
         // For bias
@@ -341,12 +341,12 @@ export class BayesianLinear {
             const sigma = Math.max(sigmaB.data[i], 1e-6);
 
             // dKL/dMu = mu
-            this.bias_mu.grad[i] += mu;
+            this.bias_mu.grad[i] += mu * scale;
 
             // dKL/dRho = (sigma - 1/sigma) * sigmoid(rho)
             const dKL_dSigma = sigma - (1.0 / sigma);
             const sigmoid = 1.0 / (1.0 + Math.exp(-rho));
-            this.bias_rho.grad[i] += dKL_dSigma * sigmoid;
+            this.bias_rho.grad[i] += dKL_dSigma * sigmoid * scale;
         }
     }
 
