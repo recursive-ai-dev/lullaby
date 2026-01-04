@@ -1,0 +1,44 @@
+
+╔════════════════════════════════════════════════════════════╗
+║  LULLABY UNIFIED TRAINING SYSTEM                           ║
+╚════════════════════════════════════════════════════════════╝
+
+📦 Pack: Companion - Kind, friendly, inviting - warm supportive listener
+📊 Max Samples: 500
+
+✅ Added 10 core samples from Companion pack
+🔍 Processing: language-fundamentals.jsonl ⭐
+   ✅ Extracted 100 samples
+🔍 Processing: friendly-basic.json ⭐
+   ✅ Extracted 30 samples
+🔍 Processing: personality-baseline.jsonl ⭐
+   ✅ Extracted 30 samples
+🔍 Processing: INTIMA.jsonl
+   ✅ Extracted 380 samples
+🔍 Processing: conversational-001.json
+   ✅ Extracted 1084 samples
+🔍 Processing: deep-connection-conversational.csv
+   ✅ Extracted 50 samples
+🔍 Processing: mad-libs-nextgen.md
+   ✅ Extracted 27 samples
+🔍 Processing: mad-libs-nextgen.txt
+   ✅ Extracted 27 samples
+🔍 Processing: sts-companion.tsv
+   ✅ Extracted 5293 samples
+
+⚖️  Classifying & Balancing Data...
+   🗣️  Conversational: 1916
+   🧠  Knowledge: 5115
+
+📦 Final Training Set: 500 samples
+   (416 conversational, 84 knowledge)
+
+✅ Manifest saved to public/training-manifest.json
+
+🚀 Next Steps:
+   1. npm run dev
+   2. Open http://localhost:5173/train-in-browser.html
+   3. Click "Start Training"
+
+═══════════════════════════════════════════════════════════════
+

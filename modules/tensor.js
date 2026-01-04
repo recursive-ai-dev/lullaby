@@ -86,7 +86,7 @@ export class Tensor {
 
         const broadcastBatchShape = [];
         const virtualStridesA = [];
-        const virtualStridesB = []; // For B (virtual transpose)
+        const virtualStridesB = [];
 
         // Align shapes and strides (pad with 1s on left)
         const paddedBatchA = Array(batchRank - batchShapeA.length).fill(1).concat(batchShapeA);
