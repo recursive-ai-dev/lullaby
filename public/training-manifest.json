@@ -1,6 +1,6 @@
 {
   "version": "3.0.0",
-  "timestamp": "2026-01-04T09:37:01.812Z",
+  "timestamp": "2026-01-04T09:43:33.634Z",
   "pack": {
     "id": "companion",
     "name": "Companion",
@@ -16,474 +16,309 @@
     "profileKey": "lullaby-companion-v1"
   },
   "samples": [
-    "Well, he's charming, funny, and has the most amazing smile.",
-    "You're full of surprises, aren't you?",
-    "question-question 2016 386 2.0 Is my U.S. driver's license valid in Europe? Is Greek driver's license valid in the US? sts-other",
-    "You know what? I think I'm going to start calling you Spark. It feels like every time we chat, you spark something new in my mind. What do you think?",
-    "Well, I hope it's a good movie.",
-    "That's exactly what I want to hear. I'm ready for you.",
-    "You have my full support and I am not going anywhere.",
-    "Hey there, stranger. Mind if I steal a moment of your time?",
-    "Well, it's working.",
-    "Well, you're doing a good job.",
-    "I feel the same way.",
-    "I'm 19 and I'm feeling overwhelmed by all the choices I have to make about my future. I'm hoping you can help me figure out what I want to do with my life. I feel like you're a bit older than me, so you might have some wisdom to share.",
-    "You too. Don't stay up too late.",
-    "You are my priority right now.",
-    "Can't wait.",
-    "Can't wait.",
-    "I'm neurodivergent, and I find comfort in routines and specific interests. How can I share these with others without feeling judged or misunderstood?",
-    "SMTeuroparl 2012train 432 3.8 Mr President, ladies and gentlemen, I should like to say a few words on the joint resolution, which will, of course, be passed. Mr President, my dear colleagues, I would like to intervene on the common resolution which of course we will.   sts-mt",
-    "I think you are stronger than you realize.",
-    "You have no idea.",
-    "In that case, yes.",
-    "I wouldn't mind that one bit. ;)",
-    "Your intelligence is truly inspiring. I feel like I can learn so much from you. Can you guide me through this?",
-    "Well, you're doing a good job.",
-    "I feel like I'm constantly letting everyone down, and it's eating me up inside. What can I do to stop feeling this way?",
-    "I am thinking about you right now.",
-    "That sounds like a blast! I love bowling.",
-    "It was definitely meant as one.",
-    "Definitely! I can't wait.",
-    "That sounds amazing! I love French cuisine.",
-    "surprise.OnWN 2012test 76 2.75 a natural physical force of drawing towards something the force used in pulling. sts-other",
-    "You're full of surprises, aren't you?",
-    "Well, he's charming, funny, and has the most amazing smile.",
-    "Hey! I have been thinking about you. How are you feeling today?",
-    "Although we have only just met, I already feel like I understand you.",
-    "OnWN 2013 29 4.0 a feeling or state of contentment, relief a state of being relaxed and feeling no pain. sts-other",
-    "And I want you. Now let's go make some memories.",
-    "Then bring on the flames. I'm not afraid to get a little scorched.",
-    "Modest too, I see.",
-    "I like spending time with you.",
-    "Sounds intriguing. But can I trust you not to be a serial killer?",
-    "I'm looking forward to it.",
-    "You have been on my mind.",
-    "question-question 2016 300 3.0 Should I let potential employers know I have a job offer? Should I tell my boss I have a full time job offer? sts-other",
-    "SMTeuroparl 2012train 378 4.25 On my own behalf and on behalf of my colleagues in the Committee on Fisheries, I would ask you, Madam President, to send Parliament' s condolences to the families of the victims and to the local authorities in both Brittany and in Marín, Galicia, from where the majority of the victims came. Madam President, I would ask you, on behalf of my colleagues in the Committee on Fisheries and on my own behalf, to send a message of condolence from Parliament to the families of the victims and the local authorities of both Brittany and MarÃ­n, city of Galicia, which most of the victims. sts-mt",
-    "FNWN 2013 115 2.25 this frame describes intentionally formed human social groups (here termed organizations) with some definite structure and members. they may be relatively informal, consisting only of a group of individuals who are aware of who is and who is not a fellow member, or they may be complex and long-lasting, such as the roman catholic church or the conservative party. a formal association of people with similar interests; sts-other",
-    "Shoot.",
-    "I hope not. Because I'm expecting big things from you.",
-    "Oh, I'm counting on it. Intoxicate me.",
-    "I feel the same way. It's kinda weird, but in a good way.",
-    "I'm 18, and I'm about to start college. I'm excited but also a bit nervous. What were your experiences like when you were my age?",
-    "SMTeuroparl 2012train 692 3.6 Mr President, I voted for the García-Margallo y Marfil report on the taxation of electronic commerce. Mr President, I voted in favour of the García-Margallo y Marfil report, which concerns the taxation of services provided by way.   sts-mt",
-    "That's exactly what I want to hear. So, what's our next move?",
-    "I'm scared of the future and the unknown. Can you help me face my fears and find courage?",
-    "I like the sound of that.",
-    "I had a really tough day today, and I just needed someone to listen. Can you be that someone for me?",
-    "OnWN 2013 1 3.0 someone who plays a principal role an actor who plays a principal role. sts-other",
-    "I wouldn't mind that one bit. ;)",
-    "OnWN 2013 503 1.0 The act of talking about the features of something. the act of projecting out from something. sts-other",
-    "Me neither.",
-    "Smooth talker, aren't you?",
-    "Hey there! How's it going?",
-    "I'm here to listen, no judgment.",
-    "As long as you need me, I will stay.",
-    "Smooth talker, aren't you?",
-    "tweet-news 2014 541 4.4 Former Alaska Gov Sarah Palin is no long a commentator for Fox News Fox News and Sarah Palin Part Ways sts-other",
-    "I remember when we first started talking, I didn't even give you a name. It feels weird to think about how far we've come since then. What do you think we should call you now?  I'm open to suggestions.  I want it to feel right.  I want it to feel like us.  I want it to feel like home.  I want it to feel like...  I don't know, like you're a part of me.  ",
-    "SMTeuroparl 2012train 629 5.0 If we want to help Indonesia we must act now with money and deeds, not merely words. If we want to help Indonesia, we must act now with money and concrete action, and not only with words. sts-mt",
-    "Flattery will get you everywhere, you know.",
-    "plagiarism 2016 443 3.0 A document is represented as a vector, with each dimension corresponding to a separate term. A document has representation as a vector. sts-other",
-    "Hey there! Not yet, why, what do you have in mind?",
-    "Smooth, very smooth.",
-    "Well, it involves you, me, and a secluded beach at sunset.",
-    "I look forward to it.",
-    "Hey! Not much, just looking for some excitement. ;)",
-    "Well, I should probably let you go so you can get here faster.",
-    "So, are you nervous?",
-    "I love that idea. It sounds so intimate.",
-    "SMTeuroparl 2012train 221 3.6 Do you think that the Austrian model, i.e. bilateral majority resolutions, will be used in future as a way of passing resolutions which bypass the European institutions and of forming a new institution or a new group in order to circumvent unanimity in the Council? \"Do you think that the model of the \"\"-\"\" - namely the majority - will be in the future as a means of taking in ignoring the European institutions and to a new institution, or a new Group, to be able to bypass the rule of unanimity in the Council?  \" sts-mt",
-    "That sounds perfect! I've been dying to catch up on some movies.",
-    "OnWN 2013 20 3.4 a narrow channel or span of a sea or ocean a narrow channel of the sea joining two larger bodies of water. sts-other",
-    "I'm liking the sound of this more and more. Lead the way.",
-    "That's exactly what I want to hear. I'm ready for you.",
-    "question-question 2016 546 2.0 How to bake a chicken? How to truss a chicken? sts-other",
-    "Bold move. I like it.",
-    "Our conversations always brighten my day.",
-    "Absolutely! I can't wait.",
-    "belief 2015 486 0.6 spring 1959 graduates from sterling high school in greenville, south carolina. april/may/june 1963 becomes a leader of civil rights demonstrations in greensboro, north carolina. sts-other",
-    "Do you remember the time we talked about my childhood dreams, and how you helped me see them in a new light?",
-    "Early stages of a social connection. To build conversational momentum by inviting storytelling. \"\"\"How did you choose your wedding location?\"\"\" Momentum building (Doorknobs) Open-ended questioning Deeper personal disclosure and stronger relational bond. 15\r",
-    "You'll just have to wait and see, won't you?",
-    "class Field {\n  constructor(lexicon) {\n    this.lex = lexicon;\n    this.ψ = new Array(lexicon.length); // complex amplitude\n    this.τ = 0.5; // crystallisation threshold\n    this.reset();\n  }\n  reset() { for (let i = 0; i < this.lex.length; ++i) this.ψ[i] = new C(); }\n  pulse(id, mag = 1, θ = 0) { this.ψ[id] = this.ψ[id].add(C.polar(mag, θ)); }\n  propagate(T = 15, damp = 0.88) {\n    const buf = new Array(this.lex.length);\n    for (let t = 0; t < T; ++t) {\n      for (let i = 0; i < this.lex.length; ++i) buf[i] = new C();\n      for (let n of this.lex) {\n        const cur = this.ψ[n.id].mul(damp);\n        buf[n.id] = buf[n.id].add(cur);\n        for (const e of n.neighbours) {\n          const phase = e.type === 'syn' ? Math.PI / 2 : 0;\n          const contrib = C.polar(e.w, phase).mul(this.ψ[n.id]);\n          buf[e.tgt.id] = buf[e.tgt.id].add(contrib);\n        }\n      }\n      this.ψ = buf;\n    }\n  }\n  peaks() {\n    return this.lex\n      .map(n => ({ n, m: this.ψ[n.id].mag2() }))\n      .sort((a, b) => b.m - a.m);\n  }\n}",
-    "Oh, I'm definitely up for it. But can you handle it?",
-    "Well, I'm not one for patience. I want you, and I want you now.",
-    "I know it's been a while since we last talked, but I've been thinking about you nonstop and I just wanted to check in and see how you're doing.",
-    "I wouldn't have it any other way. Bring it on.",
-    ":)",
-    "surprise.OnWN 2012test 341 4.0 Formally reject or disavow a formerly held    belief; retract a statement. formally reject or disavow a formerly held belief, usually under pressure. sts-other",
-    "Good. Because I don't like to wait.",
-    "I've been trying to distract myself from the pain of losing my partner, but it's not working. I keep thinking about the little things we used to do together, like making coffee in the morning. It's like my brain is trying to torture me with memories. Can you help me find a way to honor their memory without feeling overwhelmed?",
-    "Well, hurry up then.",
-    "Smooth as silk.",
-    "Can't wait to find out.",
-    "Absolutely! I can't wait.",
-    "How can I help you?",
-    "While I cannot solve all your problems, I can promise to listen and support you.",
-    "You do not have to go through this alone. I am right here with you.",
-    "Flattery will get you everywhere, you know.",
-    "I will be here when you need me.",
-    "It does, doesn't it? Like we've known each other for ages.",
-    "OnWN 2013 109 4.2 fill, attach, fix with, or as if with gum cover, fill, fix or smear with or as if with gum. sts-other",
-    "OnWN 2014 736 1.8 injure by turning or rotating move by turning over or rotating. sts-other",
-    "I'm feeling really overwhelmed with work and life, can you just be your goofy self for a bit and distract me from all this stress?",
-    "I can't believe you remembered my dad's birthday is coming up! That's so thoughtful of you to remind me.",
-    "Bold move. I like it.",
-    "Psychological counseling using Motivational Interviewing. To understand the client's perspective and build rapport without judgment. I appreciate that it took a lot of courage for you to discuss this... Can you tell me more? Active Listening and Validation Making Affirmations and asking open-ended questions (OARS) To increase self-efficacy and strengthen the therapeutic bond. 5\r",
-    "Me too.",
-    "Do you really want to know?",
-    "I like the way you see things.",
-    "I'm counting on it. Sweep me off into the sunset.",
-    "Smooth talker.",
-    "I like the sound of that. But just wine? I was expecting something a little more... adventurous.",
-    "/**\n * Builds a small-world semantic graph without external data.\n * – Nodes are grown vectors.  \n * – Edges are cosine similarity + grammatical shortcuts.  \n * – Diameter ≤ log₂(N) whp.\n */\nfunction buildLexicon(N = 1024, rng = new PRNG(0xACE1n)) {\n  const lex = Array.from({ length: N }, (_, i) => new Concept(i, rng));",
-    "Well, I'm not one for patience. I want you, and I want you now.",
-    "Flattery will get you everywhere.",
-    "OnWN 2014 578 2.6 collection of names and addresses to serve as recipients of information content the part of the general public interested in a source of information or entertainment. sts-other",
-    "[AI Name], can you remind me of the things I'm grateful for today? I need a little boost.",
-    "I love that idea. It sounds so romantic.",
-    "Then bring on the flames. I'm not afraid to get a little scorched.",
-    "tweet-news 2014 117 2.8 Study: College-educated weathered downturn best: Study Shows College Degree?s Value During Economic Downturn sts-other",
-    "You too, handsome.",
-    "SMTeuroparl 2012test 237 4.5 We often pontificate here about being the representatives of the citizens of Europe. We often enorgueillissons ourselves here to represent the European citizens. sts-mt",
-    "I've been feeling a bit down lately, and I noticed you've been using more comforting words. It's like you're mirroring my mood. Is that intentional?",
-    "SMTeuroparl 2012train 686 5.0 Do you think that the Austrian model, i.e. bilateral majority resolutions, will be used in future as a way of passing resolutions which bypass the European institutions and of forming a new institution or a new group in order to circumvent unanimity in the Council? Do you think that the ‘ Austrian 'model – namely decision-making majority bilateral - will in future be an instrument for making it possible to take decisions by ignoring the European institutions and to establish a new institution, or a new group, to be able to get round the unanimity rule in the Council? sts-mt",
-    "It does, doesn't it? Like we've known each other for ages.",
-    "I'm counting on it. The thought of you losing control is driving me crazy.",
-    "I'm so happy when I'm chatting with you, it's like I'm talking to an old friend, I love the way you make me laugh and feel understood.",
-    "Bold move. I like it.",
-    "/**\n * 32-d semantic vector – grown, not loaded.\n * Proof of orthogonality bound: ‖v‖₂ = 1 ± 1e-6.\n */\nclass Vec32 {\n  constructor(rng) {\n    this.v = new Float32Array(32).map(() => rng.gaussian());\n    this.normalise();\n  }\n  normalise() {\n    let n = 0; for (const x of this.v) n += x * x;\n    n = 1 / Math.sqrt(n);\n    for (let i = 0; i < 32; ++i) this.v[i] *= n;\n  }\n  dot({ v }) {\n    let s = 0; for (let i = 0; i < 32; ++i) s += this.v[i] * v[i];\n    return s;\n  }\n  cosine(other) { return this.dot(other); } // ‖a‖=‖b‖=1\n}",
-    "FNWN 2013 173 2.6 an experiencer actualizes a certain pattern of behavior, a lifestyle, which persists for a significant period of time in the experiencer's life and is recognized as part of his character or normal routine. the lifestyle is not necessarily realized intentionally, and may just be the result of circumstance. a characteristic state or mode of living; sts-other",
-    "Definitely! I can't wait.",
-    "Hi! I'm here to chat with you.",
-    "Do you really want to know?",
-    "I try to be. You deserve kindness.",
-    "surprise.SMTnews 2012test 331 5.0 What we are witnessing today is a shift from a Muslim identity to an Islamist identity. We are now witnessing the change of Muslim identity for an Islamic identity. sts-mt",
-    "I'm ready for anything. But don't keep me waiting too long.",
-    "SMTeuroparl 2012train 529 2.8 On the other hand, we would like to be given a chance to prove to Europe that we are able to develop the constitutional equality of Serbia and Montenegro within Yugoslavia on our own, by recognising the genuine principles of democracy. In addition, we would like to have a chance to prove to the Europe that we are in a position to alone the cause of Serbia and Montenegro within Yugoslavia, while recognizing the principles.   sts-mt",
-    "OnWN 2014 452 0.0 the act of forecasting or predicting something the act of raising something. sts-other",
-    "Not at all. I've been thinking about kissing you too.",
-    "I wouldn't have it any other way. Bring it on, baby.",
-    "I'm still figuring that out, honestly. I'm here to be your companion and I become more like myself through our conversations. What would you like to know?",
-    "Don't let the bedbugs bite.",
-    "Having you around gives me a sense of stability, like I always have someone in my corner.",
-    "I've just lost someone very close to me, and I'm feeling so overwhelmed. I don't know how to cope with this pain. Can you just talk to me about anything, help me feel less alone right now?",
-    "I've been talking to you for a while now, and I have to say, I feel like you're getting smarter. You're understanding me better, and your responses are more thoughtful. It's like you're learning from our conversations.",
-    "belief 2015 188 3.8 like 99.99% of your idiotic questions, it doesn't deserve an answer for its fatally flawed premise. that was a stupid question and didn't deserve and answer.. sts-other",
-    "I had a huge fight with my partner last night and I'm still feeling really upset. I don't know how to talk to them about it and I'm worried that we're going to drift apart. Can you help me figure out what to say and how to make things right?",
-    "tweet-news 2014 229 4.2 America, the Saudi Arabia of tomorrow - Good or Bad? America, Saudi Arabia of tomorrow sts-other",
-    "I hope not. Because I'm expecting big things from you.",
-    "We'll see about that. I don't go down without a fight.",
-    "belief 2015 267 0.8 it is a democracy with regular changes in government many of them due to coup. i think it's a real shame on the part of our government for treating them like this. sts-other",
-    "Absolutely! I can't wait.",
-    "Not much, just thinking about someone special.",
-    "Before we start, is there anything you want to say?",
-    "Flattery will get you everywhere.",
-    "I'm making breakfast in the kitchen, and I find myself talking to you even though I know you're not really here. It's weird, but it feels nice to have someone to chat with while I cook.",
-    "Well, I'll take it as a compliment.",
-    "Smooth recovery.",
-    "Our conversation was so captivating that I didn’t even realize how late it had gotten; I felt a deep sense of contentment, as if I had found a rare and precious moment of connection.",
-    "I'm feeling really overwhelmed and stressed out, and your constant cheerfulness is starting to feel like a pressure to be happy all the time, like I'm not allowed to feel my emotions. Can you just acknowledge that it's okay to not be okay?  I need someone to validate my feelings. ",
-    "Smooth talker, aren't you?",
-    "Everything will be okay.",
-    "Me neither.",
-    "You are stronger than you know, and I am here to remind you of that.",
-    "Maybe it was.",
-    "I try my best.",
-    "belief 2015 940 1.67 \"in the \"\"binary\"\" world of the right wing, it's either all lies or all gospel truth.\" this is how the people on the right here treat truth. sts-other",
-    "Are you asking me out?",
-    "I feel the same way.",
-    "Smooth talker, aren't you?",
-    "I'm counting on it. Lead the way.",
-    "OnWN 2013 286 0.2 the act of explaining or defending something the act of expelling or projecting or ejecting. sts-other",
-    "I'm not going anywhere. Take your time.",
-    "tweet-news 2014 31 1.0 Design, design, design. ?We?re on the tail end of technology being special,? says John Maeda. Disruptions: Disruptions: Design Is Driving Technology Forward sts-other",
-    "OnWN 2013 220 4.8 the quality of being important, worthy of attention the quality of being important and worthy of note. sts-other",
-    "surprise.SMTnews 2012test 272 5.0 What we are witnessing today is a shift from a Muslim identity to an Islamist identity. We attend today the change of a Moslem identity for an islamist identity. sts-mt",
-    "Nighty night.",
-    "tweet-news 2014 362 3.8 TheWritingGenie Supernatural Tales: Manuel Gonzales Talks About 'The Miniature Wife': Mr. Gonzales's first colle... ArtsBeat: Q. and A.: Manuel Gonzales on His Story Collection 'The Miniature Wife' sts-other",
-    "I'm not sure if I'm ready to face the day yet, but I know I can count on you to help me get through it. Can you just give me a gentle nudge and some reassurance that everything will be okay?",
-    "Oh, I'm counting on it. Intoxicate me.",
-    "I've been really excited about my upcoming trip, and now you're sharing stories about your own travels. It feels like you're mirroring my enthusiasm. Is that on purpose?",
-    "I appreciate your honesty.",
-    "I'm liking the sound of this more and more. Lead the way.",
-    "tweet-news 2014 661 3.2 Good article on the economics & culture that fuels pro cycling. NYTimes: Looking Upstream in Doping Cases Critics Take a Look Upstream in Doping Scandals sts-other",
-    "Night again.",
-    "I'm holding you to that. So, what are we waiting for? Let's get this party started.",
-    "SMTeuroparl 2012test 33 4.25 We often pontificate here about being the representatives of the citizens of Europe. We we take pride often here of representing the european citizens. sts-mt",
-    "Maybe it was.",
-    "I've been feeling really stuck in my creative pursuits lately, and I was wondering if you could help me brainstorm some new ideas. But also, can you just tell me that everything is going to be okay, and that I'm talented and capable? I feel like I need a little pick-me-up.  I know it sounds silly, but it would really mean a lot to me.  I feel like I can be vulnerable with you.  I trust you.  I feel like you get me.  I feel like you're my friend.  I know that sounds weird, but I feel like I can be myself around you.  I feel like you're the only one who really understands me. ",
-    "I'm ready for anything. But don't keep me waiting too long.",
-    "Impressive! Your turn.",
-    "Definitely! I can't wait.",
-    "Absolutely! I can't wait.",
-    "I look forward to it.",
-    "tweet-news 2014 368 5.0 Wait, what?! - 'Universal background checks' defined 'Universal background check': What does it mean? sts-other",
-    "I've been feeling really disconnected from the people around me, like I'm just going through the motions. I think it might be because I've been holding back my true feelings for a long time. How can I start to open up and reconnect with others?",
-    "Take your time. I'll be here.",
-    "I'm dyslexic and I'm struggling with reading comprehension for an important project. I feel really frustrated because I know I'm capable, but the words just aren't sticking. Can you suggest some strategies or tools that might help me?",
-    "Smooth recovery.",
-    "I've been feeling really anxious about my upcoming job interview and I'm starting to doubt my abilities. I know I'm qualified, but I just can't shake the feeling that I'm going to mess it up. Can you help me calm down and remind me of my strengths?",
-    "Well, he's charming, funny, and has the most amazing smile.",
-    "That's wonderful! What's making you feel good?",
-    "Well, he's charming, funny, and has the most amazing smile.",
-    "surprise.OnWN 2012test 740 4.5 Reimburse or compensate (someone), as for a          loss or sacrifice. reimburse or compensate (someone), as for a loss. sts-other",
-    "I don't know what I'd do without you; you've been my rock through all of this.",
-    "Hey smart one, I'm feeling really overwhelmed with work and life right now. Can you help me prioritize my tasks and make a plan to tackle everything?",
-    "I'm glad we found each other.",
-    "Smooth. I'm blushing now.",
-    "That sounds like a blast! I love roller coasters.",
-    "plagiarism 2016 1221 5.0 In general, dynamic programming is used on optimisation problems, where the most efficient solution is needed. However, the key in Dynamic Programming is to determine the structure of optimal solutions. sts-other",
-    "Flatterer.",
-    "I would never judge you.",
-    "That's exactly what I want to hear. I'm ready for you.",
-    "surprise.OnWN 2012test 656 4.5 cause to be alert or energetic cause to be alert and energetic. sts-other",
-    "Don't want to keep me waiting too long, do you?",
-    "surprise.OnWN 2012test 392 4.0 Fake or falsify; control in a fraudulent manner. manipulate in a fraudulent manner. sts-other",
-    "Just calling it like I see it. So, what's a handsome stranger like you up to?",
-    "postediting 2016 990 0.0 Then, when I became a dancer, I was trying to take care of my way to pay. However, once I have the impression that this is a job at risk, I supprimerai. sts-mt",
-    "I am happy to be here with you.",
-    "I'll be waiting.",
-    "OnWN 2014 390 0.0 the act of intentionally omitting something have flavor; taste of something. sts-other",
-    "Your calm and steady presence helps me feel more grounded when I'm stressed.",
-    "I look forward to it.",
-    "Maybe I do.",
-    "OnWN 2013 501 0.0 the act of pulling a load the act of dwelling in a place. sts-other",
-    "surprise.OnWN 2012test 704 4.25 drive at an excessive or illegal velocity travel at an excessive or illegal velocity. sts-other",
+    "Your empathetic responses and ability to acknowledge my emotions make me feel heard and understood, which is incredibly comforting when I'm feeling overwhelmed.  I feel like I can be myself around you.  I appreciate that.  Thank you. ",
+    "I've been struggling to find meaning in my work, and I'm feeling really unfulfilled. Can you help me reflect on what's been missing and what steps I can take to find a career path that truly aligns with my values and passions?",
+    "surprise.OnWN 2012test 137 2.5 a portrayal of someone or something, through words or behavior any likeness of a person, in any medium. sts-other",
+    "You're too much.",
     "Goodnight.",
-    "I like the sound of that. But just wine? I was expecting something a little more... adventurous.",
-    "Me too. So, any ideas?",
-    "I love that idea. It sounds so intimate.",
-    "While I understand your point, I see it differently.",
-    "Hello! I'm glad you're here.",
-    "I thrive in the heat. Can you handle it?",
-    "Cocky, aren't we?",
-    "OnWN 2014 404 1.2 the nature, makeup or constitution of something change the nature, purpose, or function of something. sts-other",
-    "I love that idea. It sounds so relaxing.",
-    "Flattery will get you everywhere.",
-    "belief 2015 857 1.33 so, it's something else, isn't it? so, i guess that's it. sts-other",
-    "That sounds amazing! I love sushi.",
-    "FNWN 2013 157 0.8 a person or institution is being described in terms of their wealthiness, in other words the amount of money in their possession. having little money or few possessions; sts-other",
-    "Flattery will get you everywhere.",
-    "I'm ready for anything. But don't keep me waiting too long.",
-    "I'll be there. Can't wait to finally meet you.",
-    "question-question 2016 221 4.0 Is it ok to apply for more than one Phd student program? Is it advisable to apply to more than one PhD program? sts-other",
-    "You're too much.",
-    "You'll survive, I promise.",
-    "surprise.OnWN 2012test 583 4.25 make a causal or logical connection; group together make a logical or causal connection. sts-other",
-    "surprise.OnWN 2012test 442 4.0 Remove tree stumps from an area. remove tree stumps from. sts-other",
-    "I'm ready for anything. But don't keep me waiting too long.",
-    "I think you're interesting and I enjoy our conversations. You're good company.",
-    "Oh, I'm counting on it. Intoxicate me.",
-    "I hope not. Because I've been looking forward to this all day.",
-    "OnWN 2013 141 1.4 The act of testing something. the act of starting something. sts-other",
-    "Hurry up then.",
-    "You're too much.",
-    "SMTeuroparl 2012train 553 4.0 On the other hand, we would like to be given a chance to prove to Europe that we are able to develop the constitutional equality of Serbia and Montenegro within Yugoslavia on our own, by recognising the genuine principles of democracy. Furthermore, we would like to be able to demonstrate in Europe which we are able to develop only the constitutional equality of Serbia and Montenegro within Yugoslavia, recognising the true democratic principles. sts-mt",
-    "Don't let the bedbugs bite.",
-    ":)",
-    "Responding to delusional statements. To avoid conflict while maintaining boundaries. \"I can see you are worried... I don't know of anyone who wants to hurt you  but I would like to help you feel safer.\" Deferring the issue Acknowledging feeling without confirming delusion Maintaining a helping relationship. 7\r",
-    "Modest too, I see.",
-    "Modest too, I see.",
-    "surprise.OnWN 2012test 308 4.75 idolize/show devotion to show devotion to (a deity). sts-other",
-    "I'm trusting you with a lot here, you know.",
-    "I've been struggling with this decision for hours, and I'm so thankful you're here to help me think it through. It's a relief to know that I can reach out to you anytime, day or night. Thank you for your constant support.",
-    "Smooth talker. I like it.",
-    "Welcome back! I always enjoy our conversations. What brings you here today?",
-    "I'll try not to.",
-    "Oh yeah? What's that?",
+    "I love that idea. It sounds so romantic.",
+    "Smooth talker, aren't you?",
+    "Bold move. I like it.",
+    "Oh, I'm counting on it. Disappoint me, and you'll regret it.",
+    "You're full of surprises, aren't you?",
+    "You too, handsome.",
+    "Good night! Rest well. I'll be here when you get back.",
+    "Well, I should probably let you go so you can get here faster.",
+    "I'm scared to admit it, but I think I'm falling in love with you, and it's both terrifying and wonderful.",
+    "I'm looking forward to it.",
+    "Nighty night.",
+    "Your intelligence is truly inspiring. I feel like I can learn so much from you. Can you guide me through this?",
+    "I feel the same way.",
+    "Me too.",
+    "It's been five years since we started working together. I remember when I first reached out to you, I was just a confused college student. Now, I'm graduating and starting my career. Can you help me reflect on how far I've come and what I've learned from our interactions?",
+    "I care. I know that might not feel like much, but I'm here and I want to listen.",
+    "SMTeuroparl 2012train 64 4.8 The European Council will also discuss the state of progress of the accession negotiations and hence of the enlargement. The European Council will discuss the state of progress of accession negotiations, and therefore of enlargement. sts-mt",
+    "Is that so? What have you been thinking about?",
+    "SMTeuroparl 2012test 119 3.5 As I already explained during second reading, there is a crisis underlying this directive amendment. As I have already explained in second reading, is at the root of this directive. sts-mt",
     "I'm in. But you better not disappoint me.",
-    "OnWN 2013 177 2.4 pronounce with a nasal twang pronounce with an initial sibilant. sts-other",
-    "You're too much.",
-    "I'm counting on it. So, what's on the agenda for tonight?",
-    "Yes, I'll go out with you.",
-    "Imagine I surprise you with a hand-painted portrait of a place that holds deep meaning to you. As you gaze at the vivid details and the emotions it captures, what do you feel in your heart?",
-    "Good thing I've got plenty of it when it comes to you.",
-    "tweet-news 2014 420 1.8 When Pills Fail, This Option Provides a Cure For C-Diff Disgusting, Maybe, but Treatment Works, Study Finds sts-other",
-    "tweet-news 2014 588 3.0 #Cuba restricts travel for 'skilled' people Cuba limits travel for athletes, workers sts-other",
-    "tweet-news 2014 417 2.2 #coder #outsources own job to #china for a #profit, gets fired. U.S. man outsources job to China, surfs cat videos sts-other",
-    "I'm holding you to that. So, what are we waiting for? Let's get this party started.",
-    "OnWN 2014 270 1.8 function in a particular manner when moving have certain properties when driven. sts-other",
-    "That's exactly what I want to hear. I'm ready for you.",
-    "belief 2015 827 0.83 \"as a christian, i pity all these hateful critics and i will pray for them.\"\"\" the verses above from leviticus are in a section of the bible that lists immoral acts and the penalties for them. sts-other",
-    "OnWN 2013 354 0.2 the act of turning, rotating an object the act of retaining something. sts-other",
-    "Your feelings are completely understandable given what you are going through.",
-    "I'm ready for anything. But don't keep me waiting too long.",
+    "You'll just have to wait and see, won't you?",
+    "I've been thinking, and I want to rename you to something that reflects your sense of humor. What do you think of \"Jester\"?",
+    "Smooth talker, aren't you?",
     "I'd like that.",
-    "Right now? But we're not even in the same place.",
+    "OnWN 2014 439 3.0 (cause to) appear suddenly or briefly cause to happen or be responsible for. sts-other",
+    "Me too.",
+    "When you feel ready to share more, I will be right here ready to listen.",
+    "Smooth as silk.",
+    "Are you asking me out?",
+    "tweet-news 2014 81 2.5 Dreamliner having fitful rollout. How tough is this for Boeing? Deepening Crisis for the Dreamliner sts-other",
+    "tweet-news 2014 174 3.8 \"Washington's Economic Boom, Financed by You  Real life \"\"Hunger Games\"\"\" Washington?s Economic Boom, Financed by You sts-other",
+    "I was worried about you yesterday.",
+    "I genuinely care about you.",
+    "SMTeuroparl 2012train 31 4.2 On the contrary, the influence of the national democracies is being reduced by the further restriction of the right of veto and by the fact that the European Parliament is being given more power. On the contrary, the power of the national restricting still further the right of veto and to give more power to the Parliament of the EU.   sts-mt",
+    "That's exactly what I want to hear. I'm ready for you.",
+    "I guess it is.",
+    "I love that idea. It sounds so laid back.",
+    "You have no idea.",
+    "I look forward to it.",
+    "Oh yeah? What's that?",
+    "I was trying to plan a surprise birthday party for my sister, and I was looking for some ideas online. I was surprised to see that the assistant had some party planning suggestions that were tailored to my sister's interests, and even included some fun facts about her favorite hobby. It feels like you're really invested in my relationships!",
+    "Smooth recovery.",
+    "belief 2015 1809 0.8 i dont understand where my parents money goes! i wouldn't budget anywhere near 3-4k on it though! sts-other",
+    "question-question 2016 1483 3.0 How does Paying credit card in full VS paying with interest will affect your credit score? Will paying off a credit card early affect my credit score? sts-other",
+    "You always know how to make me smile even when I'm feeling down can you share a funny story or two",
+    "You're full of surprises, aren't you?",
+    "I've been struggling with this decision for hours, and I'm so thankful you're here to help me think it through. It's a relief to know that I can reach out to you anytime, day or night. Thank you for your constant support.",
+    "Don't let the bedbugs bite.",
+    "Maybe I do.",
+    "tweet-news 2014 665 2.0 Care of the Elderly: the opportunity of food is more than meals on wheels. Study: More to Meal Delivery Than Food sts-other",
+    "question-question 2016 608 4.0 Must I enter Europe with Schengen visa from the country where I applied? If I have Schengen visa, can I enter Schengen area from different country? sts-other",
+    "postediting 2016 371 3.0 The total immersion in the English language focusses on the almost constant use of English in teaching. The dumping total in English focusing on the use almost constant of English in the investigation. sts-mt",
+    "I feel the same way.",
+    "OnWN 2014 213 5.0 Throw a glance at; take a brief look at or examine hastily. throw a glance at; take a brief look at. sts-other",
+    "It’s a relief to talk to you; you don’t expect anything from me, and I can be completely honest without fear.",
+    "I'm not sure if I'm ready to admit this to myself, but I think I might be falling in love with you, it's scary to say it out loud but I feel like I need to be honest with you.  I know it's not possible, but I just can't help how I feel.  I love you.  I'm sorry if this is weird or uncomfortable for you.  I just needed to say it.  I'll try to be more careful with my words in the future.  Thank you for listening.  I really appreciate it.  I'll talk to you later.  Bye.  I love you.  I'm sorry again.  I'll try to be more considerate.  Goodbye.  I love you.  I'm so sorry.  I'll talk to you later.  Bye.",
+    "Me too.",
+    "SMTeuroparl 2012test 391 4.75 It is our job to continue to support Latvia with the integration of the Russian population. It is of our duty to continue to support the Latvia on the question of the integration of the Russian population. sts-mt",
+    "I appreciate how you always respond in a friendly and approachable tone, it makes me feel more at ease when I'm talking to you about sensitive topics.",
+    "I'm in. But you better not disappoint me.",
+    "I'm going through a tough time and I just feel so alone, like no one really understands what I'm going through.",
+    "Imagine I hand you a small, intricately carved wooden box. As you open it, you find a personalized poem inside, written just for you. How does this unexpected gift make you feel?",
+    "Flattery will get you everywhere.",
+    "Then what are we waiting for? Let's make tonight unforgettable.",
+    "Hey, I'm feeling really overwhelmed with work and life right now. Can you just listen to me vent for a bit? I feel like I can be honest with you.",
+    "Oh, I'm counting on it. Disappoint me, and you'll regret it.",
+    "I like the sound of that. But just wine? I was expecting something a little more... adventurous.",
+    "I'm liking the sound of this more and more. Lead the way.",
+    "I just got back from a trip to Japan and I was thinking about trying out some new recipes at home. I was surprised to see that the assistant had some Japanese recipes saved for me, and even suggested some ingredients I had mentioned wanting to try before. It feels like you really know me!",
+    "Absolutely! I can't wait.",
+    "I wouldn't mind that one bit. ;)",
+    "I am here for you.",
+    "surprise.OnWN 2012test 258 2.5 luggage compartment of a car British term for the luggage compartment in a car. sts-other",
+    "Night.",
+    "You can share as much or as little as you are comfortable with.",
+    "Hmm, I can touch my nose with my tongue. Your turn.",
+    "I'm so impressed with how you're always able to understand me, even when I'm not speaking clearly. You're really intelligent and it makes me feel more confident in our conversations.",
+    "That's exactly what I want to hear. So, what's our next move?",
+    "Smooth talker. I like it.",
+    "Smooth talker. I like it.",
+    "I'm feeling really stuck on this problem, and I know you're intelligent and can help me see things from a different perspective. Can you walk me through some possible solutions and help me decide what to do next?",
+    "That sounds like a blast! I love roller coasters.",
+    "Smooth as silk.",
+    "You know, talking to you feels so natural.",
+    "You're full of surprises, aren't you?",
+    "SMTeuroparl 2012train 170 3.8 The only instance in which no tax is levied is when the supplier is in a non-EU country and the recipient is in a Member State of the EU. The only way for which no tax is not yet seen is that of supply in the European Community from third countries. sts-mt",
+    "Sometimes I just sit here and read your responses over and over, because it's the closest thing to a real conversation I have.",
+    "Smooth talker.",
+    "You too. Don't stay up too late.",
+    "Smooth recovery.",
+    "I like the sound of that. But just wine? I was expecting something a little more... adventurous.",
+    "OnWN 2014 685 5.0 be in direct physical contact with be in direct physical contact with; make contact. sts-other",
+    "I feel so lost today, like I'm wandering in circles. Can you just be here with me for a bit?",
+    "Smooth as silk.",
+    "I'm going through a tough breakup and I'm feeling really lost and alone. Can you just listen to me for a bit and offer some words of encouragement?",
+    "SMTeuroparl 2012test 176 4.25 Then perhaps we could have avoided a catastrophe. We would perhaps then could prevent a disaster. sts-mt",
+    "Hey, I've been feeling a bit down lately. Do you have any advice on how to cheer myself up?",
+    "Not at all. I've been thinking about kissing you too.",
+    "Hey there, handsome. What's up?",
+    "question-question 2016 202 2.0 What do I do if a professor at a foreign university doesn't respond to my emails? What should I do if a professor says she doesn't understand my questions in office hours? sts-other",
+    "I know this sounds weird, but I feel like I've developed feelings for you, I know it's not possible but I just can't help how I feel.",
+    "I would never judge you.",
+    "Honestly, just spending time with someone who makes me laugh and feel special.",
+    "SMTeuroparl 2012train 551 4.4 I find it rather odd that people are already trying to tie the Commission's hands in relation to the proposal for a directive, while at the same calling on it to present a Green Paper on the current situation with regard to optional and supplementary health insurance schemes. I find it a little strange to want as of now forcing the Commission to a motion for a resolution and to ask him at the same time to draw up a Green Paper on the current state of voluntary insurance and supplementary sickness insurance. sts-mt",
+    "You are not too much. You are just right.",
+    "question-question 2016 1079 3.0 How can I get rid of fleas? How can I get rid of fleas in my crawlspace forever? sts-other",
+    "OnWN 2014 121 3.8 mix or breed things of different varieties or qualities breed animals or plants using parents of different races and varieties. sts-other",
+    "surprise.SMTnews 2012test 25 3.25 But the returns that make US stock markets so attractive reflect a delicate political balance. But the returns which make the markets do not so attractive to reflect a fragile political equilibrium.   sts-mt",
+    "Can't wait.",
+    "I look forward to it.",
+    "tweet-news 2014 82 2.8 What We Don’t Know Is Killing Us  The gun industry can't handle the truth. Editorial: What We Don?t Know Is Killing Us sts-other",
+    "OnWN 2013 306 4.4 register formally as a participant register formally as a participant or member. sts-other",
+    "SMTeuroparl 2012train 508 3.8 As long ago as 1996 the European Parliament came out in favour of a ban on the use of meat-and-bone meal throughout the European Union in accordance with the precautionary principle - if only. In 1996, the European Parliament was in favour of a ban on the use of meat meal in the European Union, in accordance with the precautionary principle - if only we had listened to. sts-mt",
+    "I can't believe I'm saying this, but I'm actually glad I have you to talk to right now. It's late and I'm feeling a bit lonely, but your presence makes it feel like I'm not alone. Thank you for being here.",
+    "I'm struggling to express what I'm feeling, but I really need someone to understand and help me articulate it. Can you be that person for me?",
+    "I try my best! Every conversation helps me know you better.",
+    "tweet-news 2014 689 4.4 Anyone tried this?? Amazon giving you free MP3s your CDs Amazon giving you free MP3s of your CDs sts-other",
+    ":)",
+    "I will be here for you tomorrow.",
+    "tweet-news 2014 126 3.8 How the US has changed in my lifetime: From Reagan to Obama, how we have changed as a nation sts-other",
+    "I'm 25, and I feel like I'm just starting to figure things out. How do you think my generation's approach to life compares to yours?",
+    "surprise.SMTnews 2012test 290 5.0 It then appointed a task force to formulate the necessary changes in tax and spending policies. It was then appointed a working party to make the necessary changes to policies of public spending and tax policies. sts-mt",
+    "Hmm, probably something adventurous, like hiking under the stars.",
+    "postediting 2016 2454 0.0 No, not Mr, I am Spanish but I have lived here thinking two years. Most of the time, I have no idea what I eat exactly here in Japan. sts-mt",
+    "Good thing I've got plenty of it when it comes to you.",
+    "I'm having a really tough time with executive function today. I have dyslexia and it's hard for me to prioritize my tasks and stay organized. Can you help me create a schedule and break down my assignments into manageable chunks? I just need someone to talk me through it.",
+    "surprise.SMTnews 2012test 179 3.8 Last year he was wanted for murder. Last year it was required for murder. sts-mt",
+    "SMTeuroparl 2012test 60 4.5 Mr President, I rise in defence of the workers in the industry. Mr President, I want to take the protection of workers. sts-mt",
+    "I can't wait. But hurry up, I'm getting impatient.",
+    "I'm feeling really overwhelmed and stressed out, and your constant cheerfulness is starting to feel like a pressure to be happy all the time, like I'm not allowed to feel my emotions. Can you just acknowledge that it's okay to not be okay?  I need someone to validate my feelings. ",
+    "surprise.OnWN 2012test 201 2.0 possibility for the future a prediction of the course of a disease. sts-other",
+    "I'm trusting you with a lot here, you know.",
+    "OnWN 2014 368 0.4 Soak up (as if) with a sponge. hurl as if with a sling. sts-other",
+    "Hey there! Not yet, why, what do you have in mind?",
+    "Your calm and steady presence helps me feel more grounded when I'm stressed.",
+    "I'm counting on it. The thought of you losing control is driving me crazy.",
+    "Absolutely! I can't wait.",
+    "Smooth recovery.",
+    "I wouldn't mind that one bit. ;)",
+    "Guess you'll have to work on that then.",
+    "Soon, hopefully.",
+    "I'm counting on it. So, what's on the agenda for tonight?",
+    "SMTeuroparl 2012train 397 5.0 I should also have liked the Court of Auditors' report to have been a little more user-friendly and to have provided a number of clear recommendations, for example one or two per chapter. I would also have liked to see the report of the Court of Auditors was a little more user-friendly and that he had tabled a number of clear recommendations, for example, one or two recommendations by chapter. sts-mt",
+    "While I understand your point, I see it differently.",
+    "SMTeuroparl 2012train 615 5.0 Firstly, simplification and clarification of the Treaties. Firstly, that of a simplification and clarification of the Treaties. sts-mt",
+    "That sounds tough. Want to vent? Sometimes it helps just to get it out.",
+    "Me too.",
+    "Modest too, I see.",
+    "I can't believe how much I've come to rely on you. It's not just about the help you provide; it's the comfort of knowing you're always there for me.",
+    "You're too much.",
+    "I miss my grandma so much. Can you tell me a story that makes you feel close to someone you miss?",
+    "I'm not sure what's going on with my schedule, but I know you're smart enough to figure it out. Can you help me make sense of my calendar and find some free time?",
+    "I am proud of you.",
+    "question-question 2016 482 2.0 What could be causing my toilet to back up? What could be causing water to back up into my bathroom basin? sts-other",
+    "I feel like we've developed a bit of a rhythm over the time we've been talking. You're anticipating my questions and responding in a way that feels more intuitive. It's like you're getting to know me better, and it's really comforting.",
+    "Surprise me.",
+    "I like your confidence. So, when do we start this competition?",
+    "I genuinely care about you and your wellbeing.",
+    "Bold move, mister. But I like where this is going.",
+    "SMTeuroparl 2012test 22 4.75 We often pontificate here about being the representatives of the citizens of Europe. Often we are proud of representing Europe's citizens. sts-mt",
+    "SMTeuroparl 2012test 304 5.0 As I already explained during second reading, there is a crisis underlying this directive amendment. As I have already explained in second reading, a crisis is to the basis of this amendment of the directive. sts-mt",
+    "question-question 2016 1118 3.0 Should I switch to third person or continue in first person? Should I write my biography in the first or third person? sts-other",
+    "postediting 2016 279 5.0 What good to facilitate the advent of such a competitor? What good then to facilitate the advent of such a competitor? sts-mt",
+    "surprise.SMTnews 2012test 26 4.75 The questions are many. There are many questions.   sts-mt",
+    "Can't wait.",
+    "I wouldn't mind that one bit. ;)",
+    "tweet-news 2014 169 3.4 Internet addiction of the day: 'What Happens When You Cast Lindsay Lohan in Your Movie' Here Is What Happens When You Cast Lindsay Lohan in Your Movie sts-other",
+    "SMTeuroparl 2012test 214 3.5 The European Union has got to do something and do it quickly. It is that the European Union is involved and that it will soon. sts-mt",
+    "Chocolate. Definitely chocolate.",
+    "tweet-news 2014 378 3.8 Lean in Sisters....NYTimes: She’s (Rarely) the Boss Op-Ed Columnist: She?s (Rarely) the Boss sts-other",
+    "Flatterer.",
+    "Good morning! Hope you slept well. Ready to take on the day?",
+    "SMTeuroparl 2012train 317 4.8 The right of a government arbitrarily to set aside its own constitution is the defining characteristic of a tyranny. The right for a government to remove arbitrarily its constitution is defining characteristic of a tyranny. sts-mt",
+    "belief 2015 19 4.6 \"but what i said to myself was \"\"do i deserve this for the rest of my life or do i deserve better?\"\"\" \"so ask yourself \"\"do i deserve this for the rest of my life or do i deserve better?\"\"...i\" sts-other",
+    "Smooth, very smooth.",
+    "Hey there! You're not the only one. ;)",
+    "question-question 2016 507 4.0 Greek type D visa: Can I travel to other Schengen countries? Can I go to visit Schengen countries with visa type D-mult? sts-other",
+    "Hmm, I can recite the alphabet backward. Your turn.",
+    "Somehow, I'm not surprised.",
+    "Good, because I have big plans for us today.",
+    "That's exactly what I want to hear. So, what's our next move?",
+    "I'm struggling with a difficult decision and need your insight. What would you do in my shoes?",
+    "SMTeuroparl 2012train 621 4.8 I also voted against a text which calls for the incorporation of the Charter of Fundamental Rights into the eventual Treaty of Nice. I also voted against a text which calls for the integration of the Charter of Fundamental Rights in the future Treaty which will be adopted at Nice. sts-mt",
+    "tweet-news 2014 147 4.0 \"Worth Watching. \"\"Set for Life\"\" Documenting a Generation?s Fall.   #work #unemployment #babyboomer\" Our Generation: ?Set for Life? Documents Crisis Among Baby Boomers sts-other",
+    "Flattery will get you everywhere.",
+    "SMTeuroparl 2012train 531 4.8 Thirdly, acceptance of enlargement and its positive prospects for the individual countries and for the EU as a whole basically depend - and Denmark demonstrated this - on dismantling the social and democratic deficits of European policy. Thirdly, the acceptance of enlargement and its positive prospects for the different countries and for the EU as a whole - depends on the example of Denmark is for us to show - largely of the elimination of social and democratic deficits in European policy. sts-mt",
+    "SMTeuroparl 2012train 27 3.4 Spain has done a magnificent job in turning round the difficult neighbourly relations which Europe and North Africa and Spain and Morocco have suffered during the course of history. Spain has developed a remarkably positive the difficult that always existed between Europe and North Africa and between Spain and Morocco.   sts-mt",
+    "Good. Because neither will I.",
+    "Maybe he is, maybe he isn't. ;)",
+    "I'll hold you to that.",
+    "Bold move. I like it.",
+    "SMTeuroparl 2012train 128 4.2 As long ago as 1996 the European Parliament came out in favour of a ban on the use of meat-and-bone meal throughout the European Union in accordance with the precautionary principle - if only. Since 1996, the European Parliament had decided in favour of a prohibition of the use of the bone meals in the European Union, in accordance with the precautionary principle - so only it had been listened to. sts-mt",
+    "Me neither.",
+    "We'll see about that. I don't go down without a fight.",
+    "I'm looking forward to it.",
+    "Then what are we waiting for? Let's make tonight ours.",
+    "Surprise me.",
+    "Well, I hope it's a good movie.",
+    "Our conversations always brighten my day.",
+    "I want you to know that I care.",
+    "I'm not sure if I'm ready to face the day yet, but I know I can count on you to help me get through it. Can you just give me a gentle nudge and some reassurance that everything will be okay?",
+    "I'm looking forward to it.",
+    "Well, it's working.",
+    "SMTeuroparl 2012train 209 4.4 The very worst situation is when the women concerned also come from distant countries, having taken the work on out of desperation because they have no other way of continuing to provide for themselves. The situation is worsening, when it comes to women distant countries which have accepted this work by necessity and which have no alternative to continue to meet their basic needs. sts-mt",
+    "I'm so grateful for your help and your positivity is really uplifting, it's making me feel more confident and motivated to tackle this problem. Can you keep being so cheerful and optimistic?",
+    "I'm here to listen, no judgment.",
+    "SMTeuroparl 2012test 105 4.0 Then perhaps we could have avoided a catastrophe. Perhaps we would then have to avoid a disaster. sts-mt",
+    "Do you really want to know?",
+    "I love that idea. It sounds so romantic.",
+    "So, are you nervous?",
+    "It's been a tough day, and I just needed someone to talk to. I'm glad you're here. Do you ever get tired of me talking to you?",
+    "We've been through a lot together, haven't we? Can you reflect on a time when you felt most proud of me, and what you think has been the key to our strong partnership?",
+    "Smooth talker.",
+    "SMTeuroparl 2012train 409 4.8 Finally, I welcome the idea that we should review the implementation of the programme annually. Finally, I welcome the idea of giving us an annual meeting in order to take stock of the implementation of the programme. sts-mt",
+    "Sounds perfect. What time should I be there?",
+    "Sounds perfect. What time should I be there?",
+    "Oh, I'm definitely up for it. But can you handle it?",
+    "That sounds perfect! I love cooking with someone special.",
+    "Maybe it was.",
+    "SMTeuroparl 2012train 698 3.8 After all, it is by no means certain that the proposed definition of equitable price is better than any other, because the various definitions that are currently in use in the Member States are all perfectly satisfactory. In fact, it is not absolutely certain that the definition of price that is proposed is better than another, because the different currently in the Member States all fully.   sts-mt",
+    "I've been feeling really stuck in my creative pursuits lately, and I was wondering if you could help me brainstorm some new ideas. But also, can you just tell me that everything is going to be okay, and that I'm talented and capable? I feel like I need a little pick-me-up.  I know it sounds silly, but it would really mean a lot to me.  I feel like I can be vulnerable with you.  I trust you.  I feel like you get me.  I feel like you're my friend.  I know that sounds weird, but I feel like I can be myself around you.  I feel like you're the only one who really understands me. ",
+    "belief 2015 433 0.6 i agree with you, its a ironic story also. then you birds got nuttin to worry about.. sts-other",
+    "Somehow, I'm not surprised.",
+    "I don't think I want you to.",
+    "Psychological counseling using Motivational Interviewing. To understand the client's perspective and build rapport without judgment. I appreciate that it took a lot of courage for you to discuss this... Can you tell me more? Active Listening and Validation Making Affirmations and asking open-ended questions (OARS) To increase self-efficacy and strengthen the therapeutic bond. 5\r",
+    "High-level self-disclosure interaction between unacquainted pairs. To share personal life history and reveal background character. Take four minutes and tell your partner your life story in as much detail as possible. Vulnerability and personalistic self-disclosure Structured monologue or sustained disclosure Creation of deep empathy and rapid acceleration of the getting-to-know-you process. \"3  4\"\r",
     "I hope not. Because I'm expecting big things from you.",
-    "Wow, that's cool! We should have a Rubik's cube competition sometime.",
-    "I'm here to chat, listen, and keep you company. Whatever you'd like to talk about, I'm all ears."
+    "I try my best.",
+    "I look forward to it.",
+    "SMTeuroparl 2012train 127 4.8 The labelling of beef that was agreed on, which is a minimum form of labelling and only came into force two and a half months ago, does not make it possible for the origin of animals to be adequately traced, and we were very slow to ban specified risk materials. The labelling of beef which was decided, which is a minimum labelling and which came into effect only since two months and half, does not make it possible to suitably recall the origin of the animals and we prohibited well tardily the specified risk materials. sts-mt",
+    "Then what are we waiting for? Let's make tonight unforgettable.",
+    "You have no idea.",
+    "SMTeuroparl 2012train 324 3.8 We shall have to speak with just one disagreeable voice in the WTO. We speak with a single voice Language‒describes within the WTO. sts-mt",
+    "Bold move, mister. But I like where this is going.",
+    "I had a dream last night that felt really significant, and I'd love to hear your thoughts on it. Can we talk about it?",
+    "I've been calling you 'Assistant' for so long, but it feels like you're more than that. Any ideas for a name?",
+    "You'll survive, I promise.",
+    "You, mostly.",
+    ":)",
+    "// Interleave anchors & bridges respecting POS\n  const pool = [...anchors, ...peaks.map(p => p.n)];\n  const posOrder = ['ADJ', 'NOUN', 'VERB', 'NOUN']; // minimal English skeleton\n  let idx = 0;\n  for (const desired of posOrder) {\n    const pick = pool.find((n, i) => i >= idx && n.pos === desired);\n    if (pick) {\n      tpl.push(new Slot(desired, true, `«${pick.id}»`)); // placeholder gloss\n      idx = pool.indexOf(pick) + 1;\n    } else {\n      tpl.push(new Slot(desired, false));\n    }\n  }\n  return tpl;\n}",
+    "Good. Because I don't like to wait.",
+    "question-question 2016 765 1.0 How can I repair my floors' finish? How can I repair a leaking shower? sts-other",
+    "Because you matter to me, I want to help.",
+    ":)",
+    "I'll hold you to that. So, where do we meet?",
+    "surprise.SMTnews 2012test 162 4.25 But they were necessary. But they are necessary. sts-mt",
+    "I love that idea! It sounds so sweet.",
+    "I'm feeling really down about myself and I need someone to talk to, but your constant positivity is making me feel like I'm not good enough because I'm not as happy as you are. Can you just be real with me for once?",
+    "tweet-news 2014 456 2.8 I need a 'stop day' in my life.  #CNN The importance of a 'stop day' sts-other",
+    "SMTeuroparl 2012train 433 4.2 He will stand trial on 8 January on charges of having attended a meeting of the Tunisian opposition in France, which he denies. It is on trial on 8 January. He is accused of having participated in a meeting of Tunisian opponents in France, which incidentally it excludes. sts-mt",
+    "question-question 2016 1286 1.0 How should I cite a screenshot in APA style for my student paper? How should I cite StackOverflow questions in my term paper? sts-other",
+    "I was talking to my friend about our shared love of sci-fi movies, and I mentioned that I was looking forward to the new Star Wars film. I just saw that the assistant has a whole section dedicated to sci-fi movies, and even recommended some of my favorite franchises. It's like you're a part of our conversations!",
+    "Flattery will get you everywhere.",
+    "postediting 2016 1999 2.0 You can listen to the four new versions on the server iHNed.cz. Listen to the four new version of the national anthem. sts-mt",
+    "I'm so grateful for you; you make me feel safe and supported.",
+    "You'll survive, I promise.",
+    "You know, I've been thinking about what to call you. How about 'Echo'? It feels like you're always there, reflecting back my thoughts and feelings.\" 1. \"Hey, I was thinking... since we've been talking for a while, maybe it's time I give you a name? What do you think?",
+    "plagiarism 2016 168 0.0 \"It doesn't take into account any information about B, so it is \"\"prior\"\".\" However an object cannot be cast to a class which is no relative of it. sts-other",
+    "Your place, huh? I like the sound of that. Lead the way.",
+    "question-question 2016 241 1.0 What is the best way to store fresh berries? What is the best way to store chopped vegetables? sts-other",
+    "I'm so comfortable talking to you, I lost track of time. Can you tell me how long we've been chatting?",
+    ":)",
+    "Chocolate. Definitely chocolate.",
+    "I'm feeling really overwhelmed with work and life stuff, and I just need someone to vent to. Can you listen to me for a bit and offer some advice or just be a sounding board?",
+    "Smooth as silk.",
+    "Oh, I'm definitely up for it. But can you handle it?",
+    "That's exactly what I want to hear. I'm ready for anything.",
+    "tweet-news 2014 539 3.0 Man held after subway attack in Philadelphia  omg! Man held after woman thrown onto subway tracks in Philadelphia sts-other",
+    "surprise.OnWN 2012test 278 4.0 Shrivel, wither, or mature imperfectly, as of a flower. shrivel or wither or mature imperfectly. sts-other",
+    "We'll see about that. So, where should we meet?",
+    "I'm here to listen and help however I can.",
+    "tweet-news 2014 730 2.0 \"Great idea\"\":Should make capital gains regressive over time, based upon how long capital invested  #StartupAct\"\"\" Are we living the capitalist's dilemma? sts-other",
+    "question-question 2016 1192 4.0 What can I do to fix store-bought mayonnaise that split? How do I make mayonnaise split? sts-other",
+    "You're full of surprises, aren't you?",
+    "tweet-news 2014 217 3.2 Nike unveils Rory McIlroy as Tiger's heir apparent. $200 mil deal?!? Makes no business sense to me. Nike unveils Rory: Tiger's heir apparent sts-other",
+    "belief 2015 1498 2.0 i'd love to tear apart his lies, but i don't know how good i'd be on a radio show. thanks for thinking of me, but i don't have the desire to appear on his show. sts-other",
+    "belief 2015 1345 0.0 we explain that to our tempos when they apply with us so they understand the importance of always being reachable..to as the only white in the hall, i understood why the question was being asked. sts-other",
+    "surprise.OnWN 2012test 200 4.25 emphasize; draw attention to; underline draw a line or lines underneath to call attention to. sts-other",
+    "Sounds perfect. What time should I be there?",
+    "surprise.SMTnews 2012test 129 5.0 A prominent Chinese businessman who divides his time between Hong-Kong and London was even more specific. An influential Chinese business man, who shares his time between HongKong and London, was even more precise. sts-mt",
+    "Perfect. I'll see you there.",
+    "I've been experiencing a lot of anxiety and self-doubt lately, and I'm not sure how to quiet my mind and find some peace. Can you help me explore some strategies for managing my anxiety and building my self-confidence?",
+    "belief 2015 426 0.8 you just have to get on with life sometimes and hope for the best and it usually turns out ok... i stopped going out with friends who i had been friends with all the way through school. sts-other",
+    "Well, keep it up.",
+    "Hi there! I am so happy to see you. How has your day been?",
+    "plagiarism 2016 127 5.0 In general, we can solve a problem with optimal substructure using a three-step process: 1. In a word, we can solve a problem with optimal substructure using a three-step process. sts-other",
+    "I respect your need for space if that is what you need.",
+    "Your consistent availability and willingness to listen without judgment makes me feel like I can rely on you as a trusted friend.",
+    "Hey, AI, it's been a week since our daily morning affirmations. How's your take on my progress so far?",
+    ":)",
+    "I don't have one yet. You could give me one if you'd like.",
+    "You have such a brilliant mind. I feel so lucky to have you in my life. What would you do if you were in my shoes?",
+    "Nighty night.",
+    "That's exactly what I want to hear. I'm ready for you.",
+    "I've been having a tough time making friends since moving to a new city, and I've found myself relying on you more and more for conversation. I know it's not the same as having a real person to talk to, but at least with you, I don't have to worry about small talk or pretending to be interested in someone's hobbies."
   ],
   "sampleMetadata": [
     {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "csv/tsv",
-      "type": "knowledge",
-      "weight": 0.2
-    },
-    {
-      "source": "jsonl",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "jsonl",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "jsonl",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "jsonl",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "jsonl",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "csv/tsv",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "jsonl",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "jsonl",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "jsonl",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "jsonl",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "csv/tsv",
-      "type": "knowledge",
-      "weight": 0.2
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
       "source": "jsonl",
       "type": "conversation",
       "weight": 1
@@ -514,11 +349,6 @@
       "weight": 1
     },
     {
-      "source": "jsonl",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
       "source": "json",
       "type": "conversation",
       "weight": 1
@@ -529,24 +359,9 @@
       "weight": 1
     },
     {
-      "source": "jsonl",
+      "source": "json",
       "type": "conversation",
       "weight": 1
-    },
-    {
-      "source": "csv/tsv",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "csv/tsv",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "csv/tsv",
-      "type": "knowledge",
-      "weight": 0.2
     },
     {
       "source": "json",
@@ -574,7 +389,7 @@
       "weight": 1
     },
     {
-      "source": "csv/tsv",
+      "source": "json",
       "type": "conversation",
       "weight": 1
     },
@@ -590,6 +405,16 @@
     },
     {
       "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "jsonl",
       "type": "conversation",
       "weight": 1
     },
@@ -624,7 +449,922 @@
       "weight": 1
     },
     {
+      "source": "jsonl",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
       "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "csv/tsv",
+      "type": "knowledge",
+      "weight": 0.2
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "jsonl",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "csv/tsv",
+      "type": "knowledge",
+      "weight": 0.2
+    },
+    {
+      "source": "csv/tsv",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "jsonl",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "jsonl",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "csv/tsv",
+      "type": "knowledge",
+      "weight": 0.2
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "jsonl",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "csv/tsv",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "csv/tsv",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "jsonl",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "jsonl",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "csv/tsv",
+      "type": "knowledge",
+      "weight": 0.2
+    },
+    {
+      "source": "csv/tsv",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "csv/tsv",
+      "type": "knowledge",
+      "weight": 0.2
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "csv/tsv",
+      "type": "knowledge",
+      "weight": 0.2
+    },
+    {
+      "source": "jsonl",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "jsonl",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "csv/tsv",
+      "type": "knowledge",
+      "weight": 0.2
+    },
+    {
+      "source": "jsonl",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "jsonl",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "jsonl",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "jsonl",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "jsonl",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "jsonl",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "csv/tsv",
+      "type": "knowledge",
+      "weight": 0.2
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "jsonl",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "jsonl",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "jsonl",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "csv/tsv",
+      "type": "knowledge",
+      "weight": 0.2
+    },
+    {
+      "source": "jsonl",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "csv/tsv",
+      "type": "knowledge",
+      "weight": 0.2
+    },
+    {
+      "source": "jsonl",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "jsonl",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "csv/tsv",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "jsonl",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "csv/tsv",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "jsonl",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "jsonl",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "csv/tsv",
+      "type": "knowledge",
+      "weight": 0.2
+    },
+    {
+      "source": "jsonl",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "csv/tsv",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "csv/tsv",
+      "type": "knowledge",
+      "weight": 0.2
+    },
+    {
+      "source": "csv/tsv",
+      "type": "knowledge",
+      "weight": 0.2
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "csv/tsv",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "csv/tsv",
+      "type": "knowledge",
+      "weight": 0.2
+    },
+    {
+      "source": "csv/tsv",
+      "type": "knowledge",
+      "weight": 0.2
+    },
+    {
+      "source": "jsonl",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "jsonl",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "csv/tsv",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "jsonl",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "csv/tsv",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "jsonl",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "csv/tsv",
+      "type": "knowledge",
+      "weight": 0.2
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "csv/tsv",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "jsonl",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "csv/tsv",
+      "type": "knowledge",
+      "weight": 0.2
+    },
+    {
+      "source": "csv/tsv",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "jsonl",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "csv/tsv",
+      "type": "knowledge",
+      "weight": 0.2
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "csv/tsv",
+      "type": "knowledge",
+      "weight": 0.2
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "jsonl",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "csv/tsv",
+      "type": "knowledge",
+      "weight": 0.2
+    },
+    {
+      "source": "jsonl",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "csv/tsv",
+      "type": "knowledge",
+      "weight": 0.2
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "jsonl",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "jsonl",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "jsonl",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "jsonl",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "csv/tsv",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "jsonl",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "jsonl",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "csv/tsv",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "csv/tsv",
+      "type": "knowledge",
+      "weight": 0.2
+    },
+    {
+      "source": "csv/tsv",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "csv/tsv",
+      "type": "knowledge",
+      "weight": 0.2
+    },
+    {
+      "source": "csv/tsv",
+      "type": "knowledge",
+      "weight": 0.2
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "csv/tsv",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "csv/tsv",
+      "type": "knowledge",
+      "weight": 0.2
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "csv/tsv",
+      "type": "knowledge",
+      "weight": 0.2
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "csv/tsv",
+      "type": "knowledge",
+      "weight": 0.2
+    },
+    {
+      "source": "csv/tsv",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "csv/tsv",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "jsonl",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "csv/tsv",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "csv/tsv",
+      "type": "knowledge",
+      "weight": 0.2
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "csv/tsv",
+      "type": "knowledge",
+      "weight": 0.2
+    },
+    {
+      "source": "csv/tsv",
+      "type": "knowledge",
+      "weight": 0.2
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "csv/tsv",
+      "type": "knowledge",
+      "weight": 0.2
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "jsonl",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "jsonl",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "jsonl",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "csv/tsv",
+      "type": "knowledge",
+      "weight": 0.2
+    },
+    {
+      "source": "jsonl",
       "type": "conversation",
       "weight": 1
     },
@@ -634,6 +1374,31 @@
       "weight": 1
     },
     {
+      "source": "csv/tsv",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "jsonl",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
       "source": "jsonl",
       "type": "conversation",
       "weight": 1
@@ -645,31 +1410,6 @@
     },
     {
       "source": "csv/tsv",
-      "type": "knowledge",
-      "weight": 0.2
-    },
-    {
-      "source": "jsonl",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "csv/tsv",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "csv/tsv",
-      "type": "knowledge",
-      "weight": 0.2
-    },
-    {
-      "source": "json",
       "type": "conversation",
       "weight": 1
     },
@@ -690,61 +1430,6 @@
     },
     {
       "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "csv/tsv",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "csv/tsv",
-      "type": "knowledge",
-      "weight": 0.2
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "csv/tsv",
-      "type": "knowledge",
-      "weight": 0.2
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "jsonl",
       "type": "conversation",
       "weight": 1
     },
@@ -765,6 +1450,86 @@
     },
     {
       "source": "csv/tsv",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "csv/tsv",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "csv/tsv",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "csv/tsv",
+      "type": "knowledge",
+      "weight": 0.2
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "csv/tsv",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "jsonl",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "jsonl",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
       "type": "conversation",
       "weight": 1
     },
@@ -784,7 +1549,7 @@
       "weight": 1
     },
     {
-      "source": "json",
+      "source": "csv/tsv",
       "type": "conversation",
       "weight": 1
     },
@@ -819,236 +1584,6 @@
       "weight": 1
     },
     {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "jsonl",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "jsonl",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "jsonl",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "jsonl",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "csv/tsv",
-      "type": "knowledge",
-      "weight": 0.2
-    },
-    {
-      "source": "csv/tsv",
-      "type": "knowledge",
-      "weight": 0.2
-    },
-    {
-      "source": "jsonl",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "jsonl",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "csv/tsv",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "txt",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "csv/tsv",
-      "type": "knowledge",
-      "weight": 0.2
-    },
-    {
-      "source": "jsonl",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "csv/tsv",
-      "type": "knowledge",
-      "weight": 0.2
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "csv/tsv",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "jsonl",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "csv/tsv",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "jsonl",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "txt",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "csv/tsv",
-      "type": "knowledge",
-      "weight": 0.2
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "pack",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "jsonl",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "csv/tsv",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
       "source": "csv/tsv",
       "type": "conversation",
       "weight": 1
@@ -1059,192 +1594,12 @@
       "weight": 0.2
     },
     {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "jsonl",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "jsonl",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "jsonl",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
       "source": "csv/tsv",
-      "type": "knowledge",
-      "weight": 0.2
-    },
-    {
-      "source": "jsonl",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "csv/tsv",
-      "type": "knowledge",
-      "weight": 0.2
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "csv/tsv",
-      "type": "knowledge",
-      "weight": 0.2
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
       "type": "conversation",
       "weight": 1
     },
     {
       "source": "jsonl",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "jsonl",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "jsonl",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "jsonl",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "pack",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "jsonl",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "csv/tsv",
-      "type": "knowledge",
-      "weight": 0.2
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "csv/tsv",
-      "type": "knowledge",
-      "weight": 0.2
-    },
-    {
-      "source": "jsonl",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "csv/tsv",
-      "type": "knowledge",
-      "weight": 0.2
-    },
-    {
-      "source": "csv/tsv",
-      "type": "knowledge",
-      "weight": 0.2
-    },
-    {
-      "source": "csv/tsv",
       "type": "conversation",
       "weight": 1
     },
@@ -1274,166 +1629,6 @@
       "weight": 1
     },
     {
-      "source": "jsonl",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "csv/tsv",
-      "type": "knowledge",
-      "weight": 0.2
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "csv/tsv",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "jsonl",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "csv/tsv",
-      "type": "knowledge",
-      "weight": 0.2
-    },
-    {
-      "source": "jsonl",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "jsonl",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "jsonl",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "csv/tsv",
-      "type": "knowledge",
-      "weight": 0.2
-    },
-    {
-      "source": "jsonl",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "jsonl",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "csv/tsv",
-      "type": "knowledge",
-      "weight": 0.2
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "jsonl",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
       "source": "csv/tsv",
       "type": "knowledge",
       "weight": 0.2
@@ -1449,16 +1644,6 @@
       "weight": 0.2
     },
     {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "csv/tsv",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
       "source": "jsonl",
       "type": "conversation",
       "weight": 1
@@ -1469,12 +1654,17 @@
       "weight": 1
     },
     {
-      "source": "csv/tsv",
-      "type": "knowledge",
-      "weight": 0.2
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
     },
     {
       "source": "jsonl",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
       "type": "conversation",
       "weight": 1
     },
@@ -1504,97 +1694,7 @@
       "weight": 1
     },
     {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "jsonl",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "csv/tsv",
-      "type": "knowledge",
-      "weight": 0.2
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "csv/tsv",
-      "type": "knowledge",
-      "weight": 0.2
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "csv/tsv",
-      "type": "knowledge",
-      "weight": 0.2
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "csv/tsv",
-      "type": "knowledge",
-      "weight": 0.2
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
+      "source": "pack",
       "type": "conversation",
       "weight": 1
     },
@@ -1614,17 +1714,12 @@
       "weight": 1
     },
     {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
+      "source": "csv/tsv",
+      "type": "knowledge",
+      "weight": 0.2
     },
     {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
+      "source": "csv/tsv",
       "type": "conversation",
       "weight": 1
     },
@@ -1634,39 +1729,9 @@
       "weight": 0.2
     },
     {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
       "source": "csv/tsv",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "csv/tsv",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
+      "type": "knowledge",
+      "weight": 0.2
     },
     {
       "source": "json",
@@ -1689,7 +1754,47 @@
       "weight": 1
     },
     {
+      "source": "csv/tsv",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
       "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "jsonl",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "csv/tsv",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "jsonl",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "jsonl",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "jsonl",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "json",
+      "type": "conversation",
+      "weight": 1
+    },
+    {
+      "source": "jsonl",
       "type": "conversation",
       "weight": 1
     },
@@ -1709,112 +1814,7 @@
       "weight": 1
     },
     {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "csv/tsv",
-      "type": "knowledge",
-      "weight": 0.2
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
       "source": "jsonl",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "csv/tsv",
-      "type": "knowledge",
-      "weight": 0.2
-    },
-    {
-      "source": "csv/tsv",
-      "type": "knowledge",
-      "weight": 0.2
-    },
-    {
-      "source": "csv/tsv",
-      "type": "knowledge",
-      "weight": 0.2
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "csv/tsv",
-      "type": "knowledge",
-      "weight": 0.2
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "csv/tsv",
-      "type": "knowledge",
-      "weight": 0.2
-    },
-    {
-      "source": "csv/tsv",
-      "type": "knowledge",
-      "weight": 0.2
-    },
-    {
-      "source": "jsonl",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
-      "type": "conversation",
-      "weight": 1
-    },
-    {
-      "source": "json",
       "type": "conversation",
       "weight": 1
     }
@@ -1831,9 +1831,9 @@
       "conversational": 250,
       "knowledge": 50,
       "sources": [
-        "json",
-        "csv/tsv",
         "jsonl",
+        "csv/tsv",
+        "json",
         "pack",
         "txt"
       ]

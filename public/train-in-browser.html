@@ -256,6 +256,9 @@
     let totalLoss = 0;
     let lossCount = 0;
     let manifestData = null;
+    
+    // Training profile configuration
+    const CHECKPOINT_PROFILE_KEY = 'lullaby-companion-extended-v1';
 
     // Persona pack definitions (mirrors train.js)
     const PERSONA_PACKS = {
@@ -499,7 +502,7 @@
             // Save checkpoint after each epoch for persistence
             try {
               log(`Saving checkpoint after epoch ${epoch + 1}...`, 'info');
-              await engine.saveCheckpoint('lullaby-companion-extended-v1');
+              await engine.saveCheckpoint(CHECKPOINT_PROFILE_KEY);
               log(`✓ Checkpoint saved (epoch ${epoch + 1})`, 'success');
             } catch (err) {
               log(`Checkpoint save warning: ${err.message}`, 'warn');
@@ -519,7 +522,7 @@
           setTimeout(async () => {
             try {
               log('Auto-saving checkpoint...', 'info');
-              await engine.saveCheckpoint('lullaby-companion-extended-v1');
+              await engine.saveCheckpoint(CHECKPOINT_PROFILE_KEY);
               log('✅ Checkpoint saved automatically! Model persisted to IndexedDB.', 'success');
               updateStatus('Training complete and saved! Your model is ready to use.');
             } catch (err) {
@@ -558,7 +561,7 @@
         log('Saving checkpoint...', 'info');
         updateStatus('Saving checkpoint...');
         
-        await engine.saveCheckpoint('lullaby-basic-v1');
+        await engine.saveCheckpoint(CHECKPOINT_PROFILE_KEY);
         
         log('Checkpoint saved successfully!', 'success');
         updateStatus('Checkpoint saved! Your model is ready to use.');
