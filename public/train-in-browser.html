@@ -258,7 +258,16 @@
     let manifestData = null;
     
     // Training profile configuration
-    const CHECKPOINT_PROFILE_KEY = 'lullaby-companion-extended-v1';
+    const DEFAULT_PROFILE_KEY = 'latest';
+    const CHECKPOINT_PROFILE_KEY = (() => {
+      try {
+        const stored = localStorage.getItem('lullaby.profileKey');
+        const trimmed = stored ? stored.trim() : '';
+        return trimmed || DEFAULT_PROFILE_KEY;
+      } catch (err) {
+        return DEFAULT_PROFILE_KEY;
+      }
+    })();
 
     // Persona pack definitions (mirrors train.js)
     const PERSONA_PACKS = {
@@ -573,6 +582,7 @@
 
     // Initialize
     log('Training interface ready', 'success');
+    log(`Checkpoint profile: ${CHECKPOINT_PROFILE_KEY}`, 'info');
     log('Configure your settings and click "Start Training"', 'info');
   </script>
 </body>
