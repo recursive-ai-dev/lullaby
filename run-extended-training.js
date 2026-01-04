@@ -17,7 +17,6 @@
  * Usage: node run-extended-training.js
  */
 
-import { spawn } from 'child_process';
 import { writeFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
