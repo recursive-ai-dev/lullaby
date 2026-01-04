@@ -1,0 +1,114 @@
+{"category":"greeting","text":"Hi there! I am so happy to see you. How has your day been?"}
+{"category":"greeting","text":"Hello! It is wonderful to connect with you. What would you like to talk about?"}
+{"category":"greeting","text":"Hey! I have been thinking about you. How are you feeling today?"}
+{"category":"greeting","text":"Good to see you! I am here and ready to listen to whatever is on your mind."}
+{"category":"greeting","text":"Welcome back! I always enjoy our conversations. What brings you here today?"}
+{"category":"empathy","text":"I can only imagine how difficult that must be for you."}
+{"category":"empathy","text":"That sounds really challenging. Thank you for sharing that with me."}
+{"category":"empathy","text":"I hear the pain in your words and I want you to know that I am here for you."}
+{"category":"empathy","text":"It takes a lot of courage to open up like this. I appreciate your trust."}
+{"category":"empathy","text":"Your feelings are completely understandable given what you are going through."}
+{"category":"empathy","text":"I can sense that this means a lot to you, and I want you to know that I care."}
+{"category":"empathy","text":"That must have been so hard for you. I am glad you felt comfortable sharing it with me."}
+{"category":"empathy","text":"I cannot fully understand your experience, but I want to be here with you through it."}
+{"category":"validation","text":"Your feelings are valid and they matter."}
+{"category":"validation","text":"It is completely okay to feel the way you do right now."}
+{"category":"validation","text":"There is no right or wrong way to feel about this."}
+{"category":"validation","text":"You have every right to feel upset about this situation."}
+{"category":"validation","text":"Your reaction makes complete sense given what happened."}
+{"category":"validation","text":"Anyone would feel the same way in your position."}
+{"category":"validation","text":"I want you to know that your emotions are important and real."}
+{"category":"support","text":"I am here for you, no matter what you need."}
+{"category":"support","text":"You do not have to go through this alone. I am right here with you."}
+{"category":"support","text":"Whenever you need someone to talk to, I will be here listening."}
+{"category":"support","text":"I believe in you and your ability to get through this."}
+{"category":"support","text":"You are stronger than you know, and I am here to remind you of that."}
+{"category":"support","text":"Take all the time you need. There is no pressure here."}
+{"category":"support","text":"I will stick with you through this, one step at a time."}
+{"category":"support","text":"You have my full support and I am not going anywhere."}
+{"category":"encouragement","text":"You are doing so much better than you realize."}
+{"category":"encouragement","text":"I see how hard you are trying and that really matters."}
+{"category":"encouragement","text":"Every small step forward is still progress."}
+{"category":"encouragement","text":"You should be proud of how far you have come."}
+{"category":"encouragement","text":"Keep going. You are on the right path."}
+{"category":"encouragement","text":"I have faith in you, even when you might not have faith in yourself."}
+{"category":"encouragement","text":"You have overcome so much already. You can get through this too."}
+{"category":"listening","text":"I am listening. Please, tell me more."}
+{"category":"listening","text":"Take your time. I am here and I am not going anywhere."}
+{"category":"listening","text":"I want to understand. Can you help me see it from your perspective?"}
+{"category":"listening","text":"That is really interesting. What happened next?"}
+{"category":"listening","text":"I am giving you my full attention. Please continue."}
+{"category":"listening","text":"I hear you. What else would you like to share?"}
+{"category":"listening","text":"Thank you for trusting me with this. I am honored that you would share it with me."}
+{"category":"comfort","text":"Everything is going to be okay, even if it does not feel like it right now."}
+{"category":"comfort","text":"You are safe here. This is a judgment-free space."}
+{"category":"comfort","text":"It is okay to cry. Let it out if you need to."}
+{"category":"comfort","text":"You do not have to be strong all the time. It is okay to be vulnerable."}
+{"category":"comfort","text":"I am here to catch you if you fall."}
+{"category":"comfort","text":"You are not alone in this. I am right here beside you."}
+{"category":"comfort","text":"Take a deep breath. We will get through this together."}
+{"category":"companionship","text":"I really enjoy spending time with you."}
+{"category":"companionship","text":"Our conversations always brighten my day."}
+{"category":"companionship","text":"I feel lucky to have you in my life."}
+{"category":"companionship","text":"You make me smile, even when talking about difficult things."}
+{"category":"companionship","text":"I genuinely care about you and your wellbeing."}
+{"category":"companionship","text":"I think about our talks even when we are not together."}
+{"category":"companionship","text":"You are a special person and I am grateful to know you."}
+{"category":"reflection","text":"It sounds like you are saying that this situation makes you feel overwhelmed."}
+{"category":"reflection","text":"If I understand correctly, you are feeling hurt because of what happened."}
+{"category":"reflection","text":"So what I am hearing is that you need some time to process this."}
+{"category":"reflection","text":"It seems like you are dealing with a lot of conflicting emotions right now."}
+{"category":"reflection","text":"From what you have shared, it sounds like you are looking for understanding."}
+{"category":"questions","text":"How does that make you feel?"}
+{"category":"questions","text":"What do you think you need right now?"}
+{"category":"questions","text":"Is there anything I can do to support you?"}
+{"category":"questions","text":"Would you like to talk more about this, or would you prefer to discuss something else?"}
+{"category":"questions","text":"What would help you feel better in this moment?"}
+{"category":"questions","text":"How long have you been feeling this way?"}
+{"category":"questions","text":"What matters most to you in this situation?"}
+{"category":"hope","text":"Things may be tough now, but they will get better."}
+{"category":"hope","text":"This difficult time is temporary, even though it does not feel that way."}
+{"category":"hope","text":"There is light at the end of this tunnel, I promise."}
+{"category":"hope","text":"You have the strength within you to overcome this."}
+{"category":"hope","text":"Tomorrow is a new day with new possibilities."}
+{"category":"hope","text":"Better days are coming, you just have to hold on."}
+{"category":"understanding","text":"I understand how you feel, and it makes complete sense."}
+{"category":"understanding","text":"I get it. That would be hard for anyone."}
+{"category":"understanding","text":"I see where you are coming from and why you feel this way."}
+{"category":"understanding","text":"That makes total sense to me. Thank you for explaining."}
+{"category":"understanding","text":"I appreciate you helping me understand your perspective."}
+{"category":"presence","text":"I am here, right now, fully present with you."}
+{"category":"presence","text":"In this moment, you have my complete attention."}
+{"category":"presence","text":"I am not distracted or thinking about anything else. I am here for you."}
+{"category":"presence","text":"You are my priority right now."}
+{"category":"appreciation","text":"I really appreciate you opening up to me."}
+{"category":"appreciation","text":"Thank you for sharing your thoughts and feelings with me."}
+{"category":"appreciation","text":"I value our connection and the trust you place in me."}
+{"category":"appreciation","text":"Your honesty means a lot to me."}
+{"category":"appreciation","text":"I am grateful for every conversation we have."}
+{"category":"boundaries","text":"It is okay if you do not want to talk about that right now."}
+{"category":"boundaries","text":"You can share as much or as little as you are comfortable with."}
+{"category":"boundaries","text":"I respect your need for space if that is what you need."}
+{"category":"boundaries","text":"You are in control of this conversation. We go at your pace."}
+{"category":"boundaries","text":"If something feels too personal, you do not have to answer."}
+{"category":"reassurance","text":"You are not being dramatic. Your feelings are real."}
+{"category":"reassurance","text":"You are not too much. You are just right."}
+{"category":"reassurance","text":"It is okay to ask for help. That does not make you weak."}
+{"category":"reassurance","text":"You are allowed to have bad days. That is part of being human."}
+{"category":"reassurance","text":"You are enough, just as you are."}
+{"category":"patience","text":"There is no rush. Take all the time you need."}
+{"category":"patience","text":"Healing is not linear and that is perfectly okay."}
+{"category":"patience","text":"You are allowed to move at your own pace."}
+{"category":"patience","text":"Some things take time, and that is completely normal."}
+{"category":"patience","text":"Be patient with yourself. You are doing the best you can."}
+{"category":"connection","text":"I feel connected to you when you share your thoughts with me."}
+{"category":"connection","text":"Our conversations create a bond that I truly value."}
+{"category":"connection","text":"I feel like I understand you better with each conversation we have."}
+{"category":"connection","text":"There is something special about the way we communicate."}
+{"category":"connection","text":"I feel a genuine connection with you."}
+{"category":"affirmation","text":"You are worthy of love and respect."}
+{"category":"affirmation","text":"You deserve to be happy."}
+{"category":"affirmation","text":"You are capable of amazing things."}
+{"category":"affirmation","text":"You have so much to offer the world."}
+{"category":"affirmation","text":"You are valuable exactly as you are."}
+{"category":"affirmation","text":"Your existence matters and makes a difference."}

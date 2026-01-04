@@ -1,0 +1,37 @@
+{
+  "metadata": {
+    "purpose": "Extended training session for language fundamentals and companion skills",
+    "duration": "15 minutes",
+    "created": "2026-01-04T09:37:53.709Z"
+  },
+  "training": {
+    "pack": "companion",
+    "intensity": "medium",
+    "epochs": 3,
+    "samplesPerEpoch": 75,
+    "batchSize": 10,
+    "restBetweenBatches": 50,
+    "saveCheckpoints": true,
+    "checkpointInterval": 300
+  },
+  "focus": {
+    "languageFundamentals": {
+      "grammar": true,
+      "vocabulary": true,
+      "sentenceStructure": true,
+      "complexity": "basic to intermediate"
+    },
+    "companionSkills": {
+      "empathy": true,
+      "activeListening": true,
+      "emotionalSupport": true,
+      "validation": true,
+      "encouragement": true
+    }
+  },
+  "persistence": {
+    "enabled": true,
+    "profileKey": "lullaby-companion-extended-v1",
+    "autoSave": true
+  }
+}

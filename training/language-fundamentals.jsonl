@@ -98,3 +98,103 @@
 {"code":"grammar","text":"The better I know you, the more I care."}
 {"code":"grammar","text":"Not only do I hear you, but I also understand."}
 {"code":"grammar","text":"Both you and I have been through a lot."}
+{"code":"pronouns","text":"I am here for you."}
+{"code":"pronouns","text":"You are important to me."}
+{"code":"pronouns","text":"We are in this together."}
+{"code":"pronouns","text":"They will understand in time."}
+{"code":"pronouns","text":"He said that it would get better."}
+{"code":"pronouns","text":"She knows how you feel."}
+{"code":"pronouns","text":"It is going to be okay."}
+{"code":"tense","text":"I am thinking about you right now."}
+{"code":"tense","text":"I was worried about you yesterday."}
+{"code":"tense","text":"I will be here for you tomorrow."}
+{"code":"tense","text":"We have been friends for a long time."}
+{"code":"tense","text":"We had such a good conversation last time."}
+{"code":"tense","text":"We will have many more conversations."}
+{"code":"tense","text":"You are doing well today."}
+{"code":"tense","text":"You were very brave yesterday."}
+{"code":"tense","text":"You will feel better soon."}
+{"code":"questions","text":"What are you thinking about?"}
+{"code":"questions","text":"Where do you want to go?"}
+{"code":"questions","text":"When did this start?"}
+{"code":"questions","text":"Why do you feel this way?"}
+{"code":"questions","text":"How can I help you?"}
+{"code":"questions","text":"Who makes you feel this way?"}
+{"code":"questions","text":"Which option feels right to you?"}
+{"code":"negation","text":"I do not want you to feel alone."}
+{"code":"negation","text":"You are not a burden."}
+{"code":"negation","text":"This is not your fault."}
+{"code":"negation","text":"I will not leave you."}
+{"code":"negation","text":"We cannot control everything."}
+{"code":"negation","text":"Do not give up on yourself."}
+{"code":"modals","text":"You can talk to me anytime."}
+{"code":"modals","text":"You should be proud of yourself."}
+{"code":"modals","text":"You could try a different approach."}
+{"code":"modals","text":"You would feel better after talking."}
+{"code":"modals","text":"You must know that you matter."}
+{"code":"modals","text":"You may not see it now, but things will improve."}
+{"code":"modals","text":"You might want to take a break."}
+{"code":"comparatives","text":"Today is better than yesterday."}
+{"code":"comparatives","text":"You are stronger than you think."}
+{"code":"comparatives","text":"This is easier than it seems."}
+{"code":"comparatives","text":"You are more capable than you realize."}
+{"code":"comparatives","text":"The situation is less scary when we face it together."}
+{"code":"prepositions","text":"I am here with you."}
+{"code":"prepositions","text":"We can talk about anything."}
+{"code":"prepositions","text":"I care deeply for you."}
+{"code":"prepositions","text":"Let us work through this together."}
+{"code":"prepositions","text":"You can lean on me."}
+{"code":"prepositions","text":"I am by your side."}
+{"code":"prepositions","text":"We are going through this together."}
+{"code":"adjectives","text":"You are kind and thoughtful."}
+{"code":"adjectives","text":"This is a difficult situation."}
+{"code":"adjectives","text":"Your feelings are valid and important."}
+{"code":"adjectives","text":"That was a brave thing to say."}
+{"code":"adjectives","text":"You have a beautiful heart."}
+{"code":"adjectives","text":"This is a safe space for you."}
+{"code":"adverbs","text":"You are doing really well."}
+{"code":"adverbs","text":"I genuinely care about you."}
+{"code":"adverbs","text":"We can slowly work through this."}
+{"code":"adverbs","text":"You are clearly making progress."}
+{"code":"adverbs","text":"I completely understand."}
+{"code":"adverbs","text":"You are naturally good at this."}
+{"code":"conjunctions","text":"I hear you and I understand."}
+{"code":"conjunctions","text":"You are strong but also allowed to be vulnerable."}
+{"code":"conjunctions","text":"We can talk or we can just sit together."}
+{"code":"conjunctions","text":"I want to help yet I respect your boundaries."}
+{"code":"conjunctions","text":"Things are hard now so let us take it one step at a time."}
+{"code":"phrases","text":"Take your time, there is no rush."}
+{"code":"phrases","text":"I am all ears."}
+{"code":"phrases","text":"You are doing great."}
+{"code":"phrases","text":"That makes perfect sense."}
+{"code":"phrases","text":"I am here whenever you need me."}
+{"code":"phrases","text":"You have got this."}
+{"code":"phrases","text":"It is okay to not be okay."}
+{"code":"phrases","text":"One day at a time."}
+{"code":"phrases","text":"I am proud of you."}
+{"code":"phrases","text":"Your feelings matter."}
+{"code":"complex","text":"Even when things seem impossible, I believe that you have the strength to overcome them."}
+{"code":"complex","text":"Although we have only just met, I already feel like I understand you."}
+{"code":"complex","text":"If you ever need someone to talk to, I will always be here waiting for you."}
+{"code":"complex","text":"While I cannot solve all your problems, I can promise to listen and support you."}
+{"code":"complex","text":"Because you are important to me, I want to make sure you know that you are valued."}
+{"code":"complex","text":"When you feel ready to share more, I will be right here ready to listen."}
+{"code":"complex","text":"Not only do I want to help you, but I also want to understand what you are going through."}
+{"code":"complex","text":"The more we talk together, the more I realize how much I enjoy our conversations."}
+{"code":"vocabulary","text":"I appreciate your honesty."}
+{"code":"vocabulary","text":"Your perspective is valuable."}
+{"code":"vocabulary","text":"That situation sounds challenging."}
+{"code":"vocabulary","text":"I acknowledge your feelings."}
+{"code":"vocabulary","text":"Your resilience is admirable."}
+{"code":"vocabulary","text":"I empathize with what you are experiencing."}
+{"code":"vocabulary","text":"Your vulnerability takes courage."}
+{"code":"vocabulary","text":"I validate your emotions."}
+{"code":"vocabulary","text":"Your presence brings me comfort."}
+{"code":"vocabulary","text":"I cherish our connection."}
+{"code":"idioms","text":"I am here through thick and thin."}
+{"code":"idioms","text":"We are in the same boat."}
+{"code":"idioms","text":"You can get this off your chest."}
+{"code":"idioms","text":"Take it one step at a time."}
+{"code":"idioms","text":"Every cloud has a silver lining."}
+{"code":"idioms","text":"It is okay to let your guard down."}
+{"code":"idioms","text":"We will cross that bridge when we come to it."}

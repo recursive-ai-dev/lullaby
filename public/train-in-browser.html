@@ -256,6 +256,9 @@
     let totalLoss = 0;
     let lossCount = 0;
     let manifestData = null;
+    
+    // Training profile configuration
+    const CHECKPOINT_PROFILE_KEY = 'lullaby-companion-extended-v1';
 
     // Persona pack definitions (mirrors train.js)
     const PERSONA_PACKS = {
@@ -430,8 +433,9 @@
         const intensity = document.getElementById('personalityIntensity').value;
 
         // Adjust training based on intensity - protect the nano tensor
-        const epochs = intensity === 'light' ? 1 : intensity === 'medium' ? 2 : 3;
-        const samplesPerEpoch = intensity === 'light' ? 50 : intensity === 'medium' ? 75 : 100;
+        // Extended training configuration for better learning (15+ minutes)
+        const epochs = intensity === 'light' ? 1 : intensity === 'medium' ? 3 : 5;
+        const samplesPerEpoch = intensity === 'light' ? 50 : intensity === 'medium' ? 100 : 150;
 
         log(`Starting training: ${epochs} epoch(s), ${samplesPerEpoch} samples/epoch`, 'info');
         log(`Batch size: ${TRAINING_CONFIG.batchSize}, rest: ${TRAINING_CONFIG.restBetweenBatches}ms`, 'info');
@@ -494,6 +498,16 @@
           // Longer rest between epochs
           if (epoch < epochs - 1 && trainingActive) {
             log(`Epoch ${epoch + 1} complete. Resting...`, 'info');
+            
+            // Save checkpoint after each epoch for persistence
+            try {
+              log(`Saving checkpoint after epoch ${epoch + 1}...`, 'info');
+              await engine.saveCheckpoint(CHECKPOINT_PROFILE_KEY);
+              log(`✓ Checkpoint saved (epoch ${epoch + 1})`, 'success');
+            } catch (err) {
+              log(`Checkpoint save warning: ${err.message}`, 'warn');
+            }
+            
             await new Promise(resolve => setTimeout(resolve, 200));
           }
         }
@@ -501,8 +515,21 @@
         if (trainingActive) {
           const avgLoss = lossCount > 0 ? (totalLoss / lossCount).toFixed(4) : 'N/A';
           log(`Training completed! Avg loss: ${avgLoss}`, 'success');
-          updateStatus('Training complete! You can now save the checkpoint.');
+          updateStatus('Training complete! Auto-saving checkpoint...');
           document.getElementById('saveBtn').disabled = false;
+          
+          // Automatically save checkpoint after training completes
+          setTimeout(async () => {
+            try {
+              log('Auto-saving checkpoint...', 'info');
+              await engine.saveCheckpoint(CHECKPOINT_PROFILE_KEY);
+              log('✅ Checkpoint saved automatically! Model persisted to IndexedDB.', 'success');
+              updateStatus('Training complete and saved! Your model is ready to use.');
+            } catch (err) {
+              log(`Auto-save failed: ${err.message}. Use "Save Checkpoint" button.`, 'warn');
+              updateStatus('Training complete. Click "Save Checkpoint" to persist your model.');
+            }
+          }, 1000);
         } else {
           log('Training stopped by user', 'warn');
           updateStatus('Training stopped.');
@@ -534,7 +561,7 @@
         log('Saving checkpoint...', 'info');
         updateStatus('Saving checkpoint...');
         
-        await engine.saveCheckpoint('lullaby-basic-v1');
+        await engine.saveCheckpoint(CHECKPOINT_PROFILE_KEY);
         
         log('Checkpoint saved successfully!', 'success');
         updateStatus('Checkpoint saved! Your model is ready to use.');
