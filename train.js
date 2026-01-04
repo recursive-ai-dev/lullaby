@@ -39,7 +39,8 @@ function parseArgs() {
         pack: 'companion',
         samples: 150,
         output: 'public/training-manifest.json',
-        verbose: false
+        verbose: false,
+        seed: null
     };
 
     for (let i = 0; i < args.length; i++) {
@@ -49,6 +50,8 @@ function parseArgs() {
             config.samples = parseInt(args[++i], 10);
         } else if (args[i] === '--output' && args[i + 1]) {
             config.output = args[++i];
+        } else if (args[i] === '--seed' && args[i + 1]) {
+            config.seed = args[++i];
         } else if (args[i] === '--verbose' || args[i] === '-v') {
             config.verbose = true;
         } else if (args[i] === '--help' || args[i] === '-h') {
@@ -61,6 +64,7 @@ Options:
   --pack <name>     Persona pack to use (companion|mentor|creative|stoic)
   --samples <n>     Maximum samples to include (default: 150)
   --output <path>   Output manifest path (default: public/training-manifest.json)
+  --seed <value>    Seed for deterministic sampling/shuffle
   --verbose, -v     Show detailed output
   --help, -h        Show this help
 
@@ -74,7 +78,94 @@ Persona Packs:
         }
     }
 
+    config.samples = Number.isFinite(config.samples) ? Math.max(1, Math.floor(config.samples)) : 150;
+
     return config;
+}
+
+// ============================================================================
+// DETERMINISTIC SAMPLING UTILITIES
+// ============================================================================
+
+function hashStringToUint32(str) {
+    let h = 0x811c9dc5;
+    for (let i = 0; i < str.length; i++) {
+        h ^= str.charCodeAt(i);
+        h = Math.imul(h, 0x01000193);
+    }
+    return h >>> 0;
+}
+
+function makeRng(seedInput) {
+    const seedString = String(seedInput ?? 'lullaby-seed');
+    let state = hashStringToUint32(seedString) || 0x1;
+    return {
+        nextUint32() {
+            state ^= state << 13;
+            state ^= state >>> 17;
+            state ^= state << 5;
+            return state >>> 0;
+        },
+        float01() {
+            return this.nextUint32() / 0x100000000;
+        }
+    };
+}
+
+function shuffleInPlace(arr, rng) {
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(rng.float01() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+}
+
+function normalizeWeights(weights) {
+    const safe = {
+        conversation: Number.isFinite(weights?.conversation) ? Math.max(0, weights.conversation) : 0,
+        knowledge: Number.isFinite(weights?.knowledge) ? Math.max(0, weights.knowledge) : 0
+    };
+    const total = safe.conversation + safe.knowledge;
+    if (total <= 0) {
+        return { conversation: 0.5, knowledge: 0.5 };
+    }
+    return {
+        conversation: safe.conversation / total,
+        knowledge: safe.knowledge / total
+    };
+}
+
+function allocateCounts(total, weights, availability) {
+    const normalized = normalizeWeights(weights);
+    const totalAvailable = Math.min(total, availability.conversation + availability.knowledge);
+    const rawConversation = totalAvailable * normalized.conversation;
+    const rawKnowledge = totalAvailable * normalized.knowledge;
+
+    const counts = {
+        conversation: Math.min(Math.floor(rawConversation), availability.conversation),
+        knowledge: Math.min(Math.floor(rawKnowledge), availability.knowledge)
+    };
+
+    let remaining = totalAvailable - (counts.conversation + counts.knowledge);
+    const remainderOrder = [
+        { key: 'conversation', remainder: rawConversation - Math.floor(rawConversation) },
+        { key: 'knowledge', remainder: rawKnowledge - Math.floor(rawKnowledge) }
+    ].sort((a, b) => b.remainder - a.remainder);
+
+    while (remaining > 0) {
+        let allocated = false;
+        for (const entry of remainderOrder) {
+            if (remaining === 0) break;
+            const key = entry.key;
+            if (counts[key] < availability[key]) {
+                counts[key] += 1;
+                remaining -= 1;
+                allocated = true;
+            }
+        }
+        if (!allocated) break;
+    }
+
+    return counts;
 }
 
 // ============================================================================
@@ -271,12 +362,17 @@ function parseText(filepath) {
 async function ingestTrainingData(config) {
     const TRAINING_DIR = join(__dirname, 'training');
     const pack = PERSONA_PACKS[config.pack] || PERSONA_PACKS.companion;
+    const seedBase = config.seed ?? `${config.pack}|${config.samples}|${config.output}`;
+    const rng = makeRng(seedBase);
 
     console.log('\n╔════════════════════════════════════════════════════════════╗');
     console.log('║  LULLABY UNIFIED TRAINING SYSTEM                           ║');
     console.log('╚════════════════════════════════════════════════════════════╝\n');
     console.log(`📦 Pack: ${pack.name} - ${pack.description}`);
     console.log(`📊 Max Samples: ${config.samples}\n`);
+    if (config.verbose) {
+        console.log(`🎲 Seed: ${seedBase}`);
+    }
 
     // Files to skip (heavy/complex)
     const IGNORED = [
@@ -349,23 +445,23 @@ async function ingestTrainingData(config) {
     console.log(`   🧠  Knowledge: ${knowledge.length}`);
 
     // Shuffle
-    const shuffle = arr => arr.sort(() => Math.random() - 0.5);
-    shuffle(conversation);
-    shuffle(knowledge);
+    shuffleInPlace(conversation, rng);
+    shuffleInPlace(knowledge, rng);
 
     // Select based on pack weights
     const selectedSamples = [];
-    const convRatio = pack.weights.conversation / (pack.weights.conversation + pack.weights.knowledge);
-    const convCount = Math.min(conversation.length, Math.floor(config.samples * convRatio));
-    selectedSamples.push(...conversation.slice(0, convCount));
+    const counts = allocateCounts(
+        config.samples,
+        pack.weights,
+        { conversation: conversation.length, knowledge: knowledge.length }
+    );
+    selectedSamples.push(...conversation.slice(0, counts.conversation));
+    selectedSamples.push(...knowledge.slice(0, counts.knowledge));
 
-    const knowCount = Math.min(knowledge.length, config.samples - selectedSamples.length);
-    selectedSamples.push(...knowledge.slice(0, knowCount));
-
-    shuffle(selectedSamples);
+    shuffleInPlace(selectedSamples, rng);
 
     console.log(`\n📦 Final Training Set: ${selectedSamples.length} samples`);
-    console.log(`   (${convCount} conversational, ${knowCount} knowledge)`);
+    console.log(`   (${counts.conversation} conversational, ${counts.knowledge} knowledge)`);
 
     return { pack, samples: selectedSamples };
 }

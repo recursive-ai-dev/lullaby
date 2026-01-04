@@ -56,3 +56,30 @@ All tests exercise the production `UnifiedTokenizationSystem` path, using real m
 1. Run `node modules/tokenization/test_unified_system.js`.
 2. Confirm every component is initialized from `uts.models` (no mocks).
 3. Ensure the summary reports `ALL TESTS PASSED` and the success rate is 100%.
+
+---
+
+## Deterministic Sampling & Weight Allocation Tests (No Mocks)
+
+All tests target `train.js` to ensure reproducible manifests and exact sample counts.
+
+### Outcome Matrix (Cases -1..12)
+- **-1:** `--samples -5` ➜ expect normalized minimum of 1 sample in manifest
+- **0:** `--samples 0` ➜ expect normalized minimum of 1 sample in manifest
+- **1:** `--seed "alpha"` (twice) ➜ expect identical manifests (byte-for-byte)
+- **2:** `--seed "alpha"` vs `--seed "beta"` ➜ expect manifests differ in order
+- **3:** Weights `{conversation: 1, knowledge: 1}` ➜ expect near-even counts (difference ≤ 1)
+- **4:** Weights `{conversation: 3, knowledge: 1}` ➜ expect 75% conversational (±1)
+- **5:** Weights `{conversation: 0, knowledge: 1}` ➜ expect all knowledge if available
+- **6:** Weights `{conversation: 1, knowledge: 0}` ➜ expect all conversational if available
+- **7:** Conversation availability = 0 ➜ expect all knowledge, no errors
+- **8:** Knowledge availability = 0 ➜ expect all conversation, no errors
+- **9:** Availability total < requested samples ➜ expect manifest length equals available total
+- **10:** `--seed 12345` (numeric) ➜ expect stable shuffle order across runs
+- **11:** `--seed "pack|samples|output"` (derived default) ➜ expect consistent results when args are unchanged
+- **12:** `--seed "α-β-γ"` (unicode) ➜ expect deterministic hash + manifest generation
+
+### End-to-End Verification
+1. Run `node train.js --pack companion --samples 20 --seed alpha`.
+2. Run the same command twice and diff `public/training-manifest.json`.
+3. Validate the `metadata.stats` counts match the allocation math.
