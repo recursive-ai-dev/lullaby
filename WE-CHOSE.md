@@ -17,3 +17,25 @@
 
 ### Final Selection (Mapped to Logic Chain)
 We selected **shared checkpoint key derivation** because it directly resolves the mismatch in the logic chain (LOGIC-MAP.md Step 3) while minimizing risk and complexity.
+
+---
+
+## UTS Test Suite Real-Component Validation (CEO / Junior Dev / End Customer)
+
+### CEO Perspective (Outcome & Risk)
+- **Goal:** Tests must validate production wiring, not isolated fragments.
+- **Risk Check:** Avoid hidden regressions caused by mock-only coverage or undefined internals.
+- **Choice:** Instantiate `UnifiedTokenizationSystem` for every component test and derive config from `UTS_CONFIG`.
+
+### Junior Dev Perspective (Implementation Clarity)
+- **Goal:** Make the test suite deterministic and self-contained.
+- **Decision:** Add `buildConfig()` and `createSystem()` helpers that deep-merge overrides into `UTS_CONFIG`.
+- **Why:** This preserves required configuration fields while allowing small overrides without breaking validation.
+
+### End Customer Perspective (User Experience)
+- **Goal:** Reliable quality signals that reflect the shipping system.
+- **Decision:** Test cache, energy manager, and model components through real `uts.models` instances.
+- **Outcome:** Failures now correspond to true production issues instead of mock-induced artifacts.
+
+### Final Selection (Mapped to Logic Chain)
+We selected **real-system construction for every test** to align with LOGIC-MAP “UTS Test Suite Real-Component Validation” Step 3, ensuring integration coverage mirrors production behavior.
