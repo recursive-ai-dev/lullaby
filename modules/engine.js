@@ -305,7 +305,7 @@ export class ResonanceEngine {
     }
 
     // MODIFIED: Include KL divergence, consolidation, and UTS training
-    trainStep(text, epoch = 0, totalEpochs = 1, isGameplay = false, importanceWeight = 1.0) {
+    trainStep(text, epoch = 0, totalEpochs = 1, isGameplay = false, importanceWeight = 1.0, klScale = 1e-4) {
         const tokens = this.tokenize(text);
         // Validate sequence length before processing (CRITICAL FIX #20)
         if (tokens.length < 2) {
@@ -363,9 +363,11 @@ export class ResonanceEngine {
         this.model.backward(gradLogits);
 
         // KL DIVERGENCE for Bayesian layers (identity protection)
-        this.klLoss = this.calculateKLDivergence();
-        // Apply KL gradient
-        this.calculateKLGradient();
+        // Scaled down to prevent overwhelming the data loss
+        this.klLoss = this.calculateKLDivergence() * klScale;
+
+        // Apply KL gradient with scaling
+        this.calculateKLGradient(klScale);
 
         // CONSOLIDATION LOSS for important memories
         const consolidationLoss = this.consolidation.computeConsolidationLoss();
@@ -419,11 +421,11 @@ export class ResonanceEngine {
     }
 
     // NEW: Calculate KL gradients for Bayesian layers
-    calculateKLGradient() {
+    calculateKLGradient(scale = 1.0) {
         const maybeLayers = [this.model?.ff1];
         for (const layer of maybeLayers) {
             if (layer && typeof layer.klGradient === 'function') {
-                layer.klGradient();
+                layer.klGradient(scale);
             }
         }
     }
