@@ -96,8 +96,7 @@ export class Tensor {
         const stridesA = A.strides.slice(0, -2);
         const paddedStridesA = Array(batchRank - stridesA.length).fill(0).concat(stridesA);
 
-        // Strides for B (exclude last 2 dims)
-        // Optimization: Virtual transpose for B (avoiding explicit transpose)
+        // Strides for B (exclude last 2 dims), used for batch broadcasting (no transpose)
         const stridesB = B.strides.slice(0, -2);
         const paddedStridesB = Array(batchRank - stridesB.length).fill(0).concat(stridesB);
 
