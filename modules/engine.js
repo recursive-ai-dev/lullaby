@@ -369,8 +369,38 @@ export class ResonanceEngine {
         // Apply KL gradient with scaling
         this.calculateKLGradient(klScale);
 
+        // RETENTION: Update Fisher Information (EWC)
+        // We accumulate gradients to estimate parameter importance for future consolidation
+        const currentGrads = this.model.parameters().map(p => p.grad);
+        this.consolidation.updateFisher(currentGrads);
+
         // CONSOLIDATION LOSS for important memories
         const consolidationLoss = this.consolidation.computeConsolidationLoss();
+
+        // UTILIZATION: Gradient Clipping
+        // Prevents exploding gradients allowing for more stable training and better utilization of high learning rates
+        const maxGradNorm = 1.0;
+        let totalNorm = 0;
+        const params = this.model.parameters();
+        for (const p of params) {
+            if (p.grad) {
+                for (let i = 0; i < p.grad.length; i++) {
+                    totalNorm += p.grad[i] * p.grad[i];
+                }
+            }
+        }
+        totalNorm = Math.sqrt(totalNorm);
+
+        if (totalNorm > maxGradNorm) {
+            const clipScale = maxGradNorm / (totalNorm + 1e-6);
+            for (const p of params) {
+                if (p.grad) {
+                    for (let i = 0; i < p.grad.length; i++) {
+                        p.grad[i] *= clipScale;
+                    }
+                }
+            }
+        }
 
         const manualLr = isGameplay ? 0.1 : null;
         this.optimizer.step(epoch, totalEpochs, manualLr);
@@ -379,6 +409,14 @@ export class ResonanceEngine {
         this.updateEma();
 
         return (totalLoss / seqLen) + this.klLoss + consolidationLoss;
+    }
+
+    // NEW: Explicitly consolidate memory (finalize EWC weights)
+    // Call this after a significant training session or "sleep" cycle
+    consolidateMemory() {
+        this.consolidation.normalizeFisher();
+        this.consolidation.consolidate();
+        console.log('[Engine] Memory consolidated: parameters locked for retention.');
     }
 
     // Train UTS on buffered samples
