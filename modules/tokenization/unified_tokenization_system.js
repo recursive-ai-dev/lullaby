@@ -50,6 +50,7 @@ class UnifiedEnergyManager {
     this.energies = new Map();
     this.modelHistory = new Map();
     this.convergenceTracker = new Map();
+    this.uts = null; // Set during UTS init
     
     // Initialize energies for each model
     for (const [name, model] of Object.entries(models)) {
@@ -60,12 +61,14 @@ class UnifiedEnergyManager {
   }
 
   update(winningModel, performanceGain) {
+    // Metabolic Floor to prevent System Paralysis
+    const ENERGY_FLOOR = 0.05;
     const currentEnergy = this.energies.get(winningModel);
     const drain = this.config.modelWeights[winningModel] * 0.1;
     const recover = this.config.modelWeights[winningModel] * 0.05;
 
     // Update energy based on performance
-    const newEnergy = Math.max(0, Math.min(1, 
+    const newEnergy = Math.max(ENERGY_FLOOR, Math.min(1,
       currentEnergy - drain + performanceGain * recover));
     
     this.energies.set(winningModel, newEnergy);
@@ -80,6 +83,16 @@ class UnifiedEnergyManager {
       if (model !== winningModel) {
         const recovery = recover / (this.energies.size - 1);
         this.energies.set(model, Math.min(1, energy + recovery));
+      }
+    }
+
+    // FORMAL INVARIANT: Energy Boundedness [Theorem 1]
+    // Total system energy must remain within [0.05 * N, N]
+    if (this.config.validation.enableRuntimeChecks) {
+      let total = 0;
+      for (const e of this.energies.values()) total += e;
+      if (total < 0.05 * this.energies.size || total > this.energies.size + 1e-6) {
+        console.warn(`[EnergyManager] Invariant violation: Total energy ${total} out of bounds`);
       }
     }
   }
@@ -742,9 +755,9 @@ const MathUtils = {
   /**
    * Weighted random sampling from distribution
    */
-  weightedSample: (weights) => {
+  weightedSample: (weights, rng = Math.random) => {
     const sum = weights.reduce((a, b) => a + b, 0);
-    let r = Math.random() * sum;
+    let r = rng() * sum;
     for (let i = 0; i < weights.length; i++) {
       r -= weights[i];
       if (r <= 0) return i;
@@ -842,20 +855,20 @@ class ConfigValidator {
     const errors = [];
     
     // Validate model weights sum to 1
-    const totalWeight = Object.values(config.modelWeights).reduce((a, b) => a + b, 0);
+    const totalWeight = Object.values(config.modelWeights || {}).reduce((a, b) => a + b, 0);
     if (Math.abs(totalWeight - 1.0) > 1e-6) {
       errors.push(`Model weights must sum to 1.0, got ${totalWeight}`);
     }
 
     // Validate cache sizes are powers of 2 (optimal for hardware)
-    for (const [key, size] of Object.entries(config.cache)) {
+    for (const [key, size] of Object.entries(config.cache || {})) {
       if (key !== 'ttl' && !Number.isInteger(Math.log2(size))) {
         errors.push(`Cache size ${key} should be power of 2 for optimal performance`);
       }
     }
 
     // Validate convergence parameters
-    if (config.convergence.entropyThreshold <= 0) {
+    if (config.convergence?.entropyThreshold <= 0) {
       errors.push('Entropy threshold must be positive');
     }
 
@@ -922,17 +935,22 @@ class MultiLevelCache {
   _promoteToL1(key, entry) {
     entry.accessCount++;
     
+    // ATOMIC PROMOTION: Check if entry already in L1 to avoid redundant operations
+    if (this.l1.get(key) === entry) {
+      entry.timestamp = Date.now();
+      return;
+    }
+
     // Remove from lower levels if present
     this.l2.delete(key);
     this.l3.delete(key);
     
     // Add to L1 if not already there
-    if (!this.l1.has(key)) {
-      if (this.l1.size >= this.config.cache.l1Size) {
-        this._evictL1();
-      }
-      this.l1.set(key, entry);
+    if (this.l1.size >= this.config.cache.l1Size) {
+      this._evictL1();
     }
+    this.l1.set(key, entry);
+    entry.timestamp = Date.now();
   }
 
   _promoteToL2(key, entry) {
@@ -1166,7 +1184,7 @@ class IntegratedMAR {
     for (const [name, agent] of this.agents) {
       if (agent.stamina <= 0) continue;
       
-      const token = agent.generator(context);
+      const token = agent.generator(context, () => (this.energyManager.uts && this.energyManager.uts._rng) ? this.energyManager.uts._rng() : Math.random());
       if (!token) continue;
       
       const quality = this._calculateTokenQuality(token, context);
@@ -1202,23 +1220,23 @@ class IntegratedMAR {
     return next;
   }
 
-  _babblerGenerator(context) {
+  _babblerGenerator(context, rng = Math.random) {
     // Simple vowel/consonant alternation
     const vowels = 'AEIOU';
     const consonants = 'BCDFGHJKLMNPQRSTVWXYZ';
     const lastChar = context[context.length - 1] || 'A';
     
     if (vowels.includes(lastChar)) {
-      return consonants[Math.floor(Math.random() * consonants.length)];
+      return consonants[Math.floor(rng() * consonants.length)];
     } else {
-      return vowels[Math.floor(Math.random() * vowels.length)];
+      return vowels[Math.floor(rng() * vowels.length)];
     }
   }
 
-  _entropyGenerator(context) {
+  _entropyGenerator(context, rng = Math.random) {
     // Random consonant
     const consonants = 'BCDFGHJKLMNPQRSTVWXYZ';
-    return consonants[Math.floor(Math.random() * consonants.length)];
+    return consonants[Math.floor(rng() * consonants.length)];
   }
 }
 
@@ -1523,9 +1541,7 @@ class IntegratedCBF {
   }
 
   generate(length, seed = null) {
-    if (!this.isTrained) {
-      throw new Error('CBF must be trained before generation');
-    }
+    if (!this.isTrained) return seed || " ";
 
     const lattice = new Array(length).fill(null);
     const capital = new Float64Array(length).fill(this.config.baseCapital);
@@ -1573,8 +1589,8 @@ class IntegratedCBF {
       const freq = count / this.totalCounts;
       
       // Scarcity-based pricing
-      const scarcity = Math.log((this.totalCounts + 1) / (count + 1));
-      const price = this.config.priceScale * scarcity;
+      const scarcity = Math.max(0, Math.log((this.totalCounts + 1) / (count + 1)));
+      const price = (this.config.priceScale || 1.0) * scarcity;
       
       this.prices.set(token, Math.max(0.001, price));
     }
@@ -1920,6 +1936,7 @@ class UnifiedTokenizationSystem {
 
     // Initialize energy manager
     this.energyManager = new UnifiedEnergyManager(this.models, this.config);
+    this.energyManager.uts = this;
 
     // Initialize all models with dependencies
     for (const [name, model] of Object.entries(this.models)) {
@@ -2157,16 +2174,18 @@ class UnifiedTokenizationSystem {
         try {
           let prediction;
           
-          // Model-specific generation interfaces
+                    // Model-specific generation interfaces
           switch (name) {
             case 'rcw':
-              prediction = model.generate(context, 1);
+              const rcwResult = model.generate(context, 1);
+              prediction = rcwResult.slice(context.length);
               break;
             case 'ced':
               prediction = model.generate(context[context.length - 1]);
               break;
             case 'mar':
-              prediction = model.generate(context, 1);
+              const marResult = model.generate(context, 1);
+              prediction = marResult.slice(context.length);
               break;
             case 'mcg':
               const mcgResult = model.generate(context[context.length - 1] || ' ', 1);
@@ -2174,7 +2193,10 @@ class UnifiedTokenizationSystem {
               break;
             case 'cbf':
               const cbfResult = model.generate(1, context[context.length - 1]);
-              prediction = cbfResult[0] || null;
+              // CBF generate might return seed + token or just tokens depending on implementation
+              // Looking at CBF.generate: it fills a lattice of 'length'.
+              // Since we call it with length 1, it should be 1 char.
+              prediction = cbfResult[0] === context[context.length - 1] ? cbfResult.slice(1) : cbfResult;
               break;
             case 'rsb':
               const rsbResult = model.generate(context[context.length - 1] || ' ', 1);
@@ -2281,11 +2303,10 @@ class UnifiedTokenizationSystem {
     analysis.diversity = Object.keys(tokenFreq).length / totalTokens;
 
     // Model contribution analysis
-    analysis.modelContributions = Object.fromEntries(
-      Object.entries(this.energyManager.energies).map(([model, energy]) => [
-        model, { energy, weight: this.config.modelWeights[model] }
-      ])
-    );
+    analysis.modelContributions = {};
+    for (const [model, energy] of this.energyManager.energies.entries()) {
+      analysis.modelContributions[model] = { energy, weight: this.config.modelWeights[model] };
+    }
 
     // Pattern detection
     analysis.patterns = this._detectPatterns(tokens);

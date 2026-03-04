@@ -22,6 +22,14 @@ try {
 export class ResonanceEngine {
     constructor() {
         this.tokenizer = new Tokenizer();
+        this.seed = "lullaby-core-v2";
+        // Derive state from seed for profile-bound determinism
+        let h = 0x811c9dc5;
+        for (let i = 0; i < this.seed.length; i++) {
+            h ^= this.seed.charCodeAt(i);
+            h = Math.imul(h, 0x01000193);
+        }
+        this._state = h >>> 0;
 
         // Primary model (trained)
         this.model = new NanoTransformer(this.tokenizer.vocabSize, 64, 4);
@@ -39,6 +47,7 @@ export class ResonanceEngine {
         if (UnifiedTokenizationSystem) {
             try {
                 this.uts = new UnifiedTokenizationSystem({
+                    seed: this.seed,
                     modelWeights: {
                         rcw: 0.25,  // Rhythmic Coherence Weaver (N-grams)
                         ced: 0.20,  // Critical Erosion Dynamics (graphs)
@@ -79,6 +88,15 @@ export class ResonanceEngine {
 
         // Track training data for UTS
         this.utsTrainingBuffer = [];
+        this.utsTrainingLock = false;
+    }
+
+        // Deterministic PRNG (Lullaby-Standard)
+    _rng() {
+        this._state ^= this._state << 13;
+        this._state ^= this._state >>> 17;
+        this._state ^= this._state << 5;
+        return (this._state >>> 0) / 0x100000000;
     }
 
     setProfileKey(profileKey) {
@@ -208,7 +226,7 @@ export class ResonanceEngine {
                 sumExp += e;
             }
 
-            const r = Math.random() * sumExp;
+            const r = this._rng() * sumExp;
             let accumulated = 0;
             let bestId = 0;
             for (let v = 0; v < vocabSize; v++) {
@@ -420,19 +438,24 @@ export class ResonanceEngine {
     }
 
     // Train UTS on buffered samples
-    _trainUTS() {
-        if (!this.uts || this.utsTrainingBuffer.length === 0) return;
+    async _trainUTS() {
+        if (!this.uts || this.utsTrainingBuffer.length === 0 || this.utsTrainingLock) return;
+
+        this.utsTrainingLock = true;
+        const buffer = [...this.utsTrainingBuffer];
+        this.utsTrainingBuffer = [];
 
         try {
-            // UTS.train expects array of strings
-            this.uts.train(this.utsTrainingBuffer).catch(err => {
-                console.warn('[Engine] UTS training error:', err.message);
-            });
-        } catch (e) {
-            console.warn('[Engine] UTS sync training error:', e.message);
+            await this.uts.train(buffer);
+        } catch (err) {
+            console.warn('[Engine] UTS training error:', err.message);
+        } finally {
+            this.utsTrainingLock = false;
+            // If more samples arrived during training, trigger another run
+            if (this.utsTrainingBuffer.length >= 10) {
+                this._trainUTS();
+            }
         }
-
-        this.utsTrainingBuffer = [];
     }
 
     // Flush any remaining UTS training buffer

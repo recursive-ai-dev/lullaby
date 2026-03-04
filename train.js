@@ -483,7 +483,7 @@ function generateManifest(config, pack, samples) {
             maxSamples: config.samples,
             weights: pack.weights,
             modelName: 'Lullaby',
-            profileKey: `lullaby-${config.pack}-v1`
+            profileKey: config.pack === "companion" ? "latest" : `lullaby-${config.pack}-v1`
         },
         samples: samples.map(s => s.text),
         sampleMetadata: samples.map(s => ({
