@@ -4,7 +4,7 @@
 
 'use strict';
 
-const { ProductionUnifiedTokenizationSystem, ProductionMath } = require('./production_unified_system');
+import { UnifiedTokenizationSystem, MathUtils, ConfigValidator, UTS_CONFIG } from './unified_tokenization_system.js';
 
 async function runTests() {
     console.log('═══════════════════════════════════════════════════════════════');
@@ -27,7 +27,7 @@ async function runTests() {
     // Test 1: System initialization
     console.log('🔧 Test 1: System Initialization');
     try {
-        const puts = new ProductionUnifiedTokenizationSystem();
+        const puts = new UnifiedTokenizationSystem();
         assert(puts !== null, 'System creates successfully');
         assert(Object.keys(puts.models).length === 6, 'All 6 models initialized');
         assert(!puts.isTrained, 'Initially not trained');
@@ -42,7 +42,7 @@ async function runTests() {
     try {
         // Should fail with invalid weights
         try {
-            new ProductionUnifiedTokenizationSystem({
+            new UnifiedTokenizationSystem({
                 modelWeights: { rcw: 2.0, ced: 0.5 }  // Doesn't sum to 1
             });
             assert(false, 'Should reject invalid weights');
@@ -58,14 +58,14 @@ async function runTests() {
     console.log('\n🔧 Test 3: Mathematical Utilities');
     try {
         const dist = { a: 0.5, b: 0.3, c: 0.2 };
-        const entropy = ProductionMath.entropy(dist);
+        const entropy = MathUtils.entropy(dist);
         assert(entropy > 0 && entropy < 2, `Entropy calculation works: ${entropy.toFixed(4)}`);
 
-        const softmaxResult = ProductionMath.softmax([1, 2, 3]);
+        const softmaxResult = MathUtils.softmax([1, 2, 3]);
         const softmaxSum = softmaxResult.reduce((a, b) => a + b, 0);
         assert(Math.abs(softmaxSum - 1.0) < 1e-6, 'Softmax sums to 1');
 
-        const editDist = ProductionMath.editDistance('kitten', 'sitting');
+        const editDist = MathUtils.editDistance('kitten', 'sitting');
         assert(editDist === 3, `Edit distance correct: ${editDist}`);
     } catch (e) {
         console.log(`  ❌ Math utilities error: ${e.message}`);
@@ -75,7 +75,7 @@ async function runTests() {
     // Test 4: Training
     console.log('\n🔧 Test 4: Training');
     try {
-        const puts = new ProductionUnifiedTokenizationSystem();
+        const puts = new UnifiedTokenizationSystem();
 
         const trainingData = [
             'hello world',
@@ -101,7 +101,7 @@ async function runTests() {
     // Test 5: Generation
     console.log('\n🔧 Test 5: Generation');
     try {
-        const puts = new ProductionUnifiedTokenizationSystem();
+        const puts = new UnifiedTokenizationSystem();
 
         const trainingData = [
             'abcdef', 'bcdefg', 'cdefgh', 'defghi',
@@ -126,12 +126,12 @@ async function runTests() {
     // Test 6: Analysis
     console.log('\n🔧 Test 6: Analysis');
     try {
-        const puts = new ProductionUnifiedTokenizationSystem();
+        const puts = new UnifiedTokenizationSystem();
         await puts.train(['hello world', 'world hello']);
 
         const analysis = puts.analyze('hello world hello');
 
-        assert(analysis.length === 17, `Analyzed length: ${analysis.length}`);
+        assert(tokens.length === 17, `Analyzed length: ${tokens.length}`);
         assert(analysis.entropy >= 0, `Entropy calculated: ${analysis.entropy.toFixed(4)}`);
         assert(analysis.patterns !== undefined, 'Pattern detection works');
     } catch (e) {
@@ -142,7 +142,7 @@ async function runTests() {
     // Test 7: Validation
     console.log('\n🔧 Test 7: Validation');
     try {
-        const puts = new ProductionUnifiedTokenizationSystem();
+        const puts = new UnifiedTokenizationSystem();
         await puts.train(['test data']);
 
         const validation = puts.validate();
@@ -158,7 +158,7 @@ async function runTests() {
     // Test 8: Serialization
     console.log('\n🔧 Test 8: Serialization');
     try {
-        const puts = new ProductionUnifiedTokenizationSystem();
+        const puts = new UnifiedTokenizationSystem();
         await puts.train(['serialize test']);
 
         const serialized = puts.serialize();
@@ -168,7 +168,7 @@ async function runTests() {
         assert(Array.isArray(serialized.vocabulary), 'Vocabulary serialized');
 
         // Test deserialization
-        const restored = ProductionUnifiedTokenizationSystem.deserialize(serialized);
+        const restored = UnifiedTokenizationSystem.deserialize(serialized);
         assert(restored.isTrained, 'Restored system is trained');
         assert(restored.vocabulary.size > 0, 'Vocabulary restored');
     } catch (e) {
@@ -179,7 +179,7 @@ async function runTests() {
     // Test 9: Cache system
     console.log('\n🔧 Test 9: Cache System');
     try {
-        const puts = new ProductionUnifiedTokenizationSystem();
+        const puts = new UnifiedTokenizationSystem();
         await puts.train(['abc', 'bcd', 'cde']);
 
         // Generate twice to test caching
@@ -197,7 +197,7 @@ async function runTests() {
     // Test 10: Energy management
     console.log('\n🔧 Test 10: Energy Management');
     try {
-        const puts = new ProductionUnifiedTokenizationSystem();
+        const puts = new UnifiedTokenizationSystem();
         await puts.train(['test']);
 
         const status = puts.energyManager.getConvergenceStatus();
