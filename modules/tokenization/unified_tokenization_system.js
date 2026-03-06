@@ -1184,7 +1184,7 @@ class IntegratedMAR {
     for (const [name, agent] of this.agents) {
       if (agent.stamina <= 0) continue;
       
-      const token = agent.generator(context, () => (this.energyManager.uts && this.energyManager.uts._rng) ? this.energyManager.uts._rng() : Math.random());
+      const token = agent.generator(context, (this.energyManager.uts && this.energyManager.uts.getRng) ? this.energyManager.uts.getRng() : Math.random);
       if (!token) continue;
       
       const quality = this._calculateTokenQuality(token, context);
@@ -1497,6 +1497,7 @@ class IntegratedMCG {
  * Economic resource allocation with synergy-based pricing
  */
 class IntegratedCBF {
+  getRng() { return (this.energyManager && this.energyManager.uts && this.energyManager.uts.getRng) ? this.energyManager.uts.getRng() : Math.random; }
   constructor(config) {
     this.config = config;
     this.ledger = new Map();
@@ -1566,7 +1567,7 @@ class IntegratedCBF {
     }
 
     // Backfill remaining positions
-    this._backfillRemaining(lattice, capital);
+    this._backfillRemaining(lattice, capital, this.getRng());
 
     return lattice.map(x => x || '_').join('');
   }
@@ -1702,7 +1703,7 @@ class IntegratedCBF {
     return cv < this.config.convergenceThreshold;
   }
 
-  _backfillRemaining(lattice, capital) {
+  _backfillRemaining(lattice, capital, rng = Math.random) {
     const probs = new Map();
     const total = Array.from(this.counts.values()).reduce((a, b) => a + b, 0);
     
@@ -1715,7 +1716,7 @@ class IntegratedCBF {
         // Weighted random selection
         const tokens = Array.from(probs.entries());
         const totalProb = tokens.reduce((sum, [, p]) => sum + p, 0);
-        let r = Math.random() * totalProb;
+        let r = rng() * totalProb;
         
         for (const [token, prob] of tokens) {
           r -= prob;
@@ -1914,6 +1915,14 @@ class UnifiedTokenizationSystem {
     this.config = { ...UTS_CONFIG, ...customConfig };
     
     // Validate configuration
+    // Validate model weights
+    if (this.config.modelWeights) {
+      for (const modelName of Object.keys(this.config.modelWeights)) {
+        if (!['rcw', 'ced', 'mar', 'mcg', 'cbf', 'rsb'].includes(modelName)) {
+          throw new Error(`Invalid model name in weights: ${modelName}`);
+        }
+      }
+    }
     const errors = ConfigValidator.validate(this.config);
     if (errors.length > 0) {
       throw new Error(`Configuration validation failed: ${errors.join(', ')}`);
@@ -2098,7 +2107,7 @@ class UnifiedTokenizationSystem {
     const startTime = performance.now();
     
     const {
-      seed = '',
+      seed = "",
       length = 100,
       temperature = 1.0,
       topK = null,
@@ -2106,6 +2115,9 @@ class UnifiedTokenizationSystem {
       strategy = 'ensemble', // 'ensemble', 'best', 'weighted'
       onToken = null
     } = options;
+
+    if (length < 0) throw new Error('Generation length must be non-negative');
+    if (length > 10000) throw new Error('Generation length exceeds maximum allowed');
 
     let output = seed;
     let context = seed;
@@ -2193,10 +2205,14 @@ class UnifiedTokenizationSystem {
               break;
             case 'cbf':
               const cbfResult = model.generate(1, context[context.length - 1]);
-              // CBF generate might return seed + token or just tokens depending on implementation
-              // Looking at CBF.generate: it fills a lattice of 'length'.
-              // Since we call it with length 1, it should be 1 char.
-              prediction = cbfResult[0] === context[context.length - 1] ? cbfResult.slice(1) : cbfResult;
+              // Safe extraction: only slice if length > 1 and it starts with the seed
+              if (cbfResult.length > 1 && cbfResult[0] === context[context.length - 1]) {
+                prediction = cbfResult.slice(1);
+              } else {
+                prediction = cbfResult;
+              }
+              // Prevent falsy/empty results
+              if (!prediction) prediction = " ";
               break;
             case 'rsb':
               const rsbResult = model.generate(context[context.length - 1] || ' ', 1);

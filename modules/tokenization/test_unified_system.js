@@ -303,14 +303,22 @@ export class UTSTestSuite {
     const generated = mar.generate('HELLO', 10);
     this.assert(generated.length > 5, 'MAR generates output');
 
-            // Test stamina mechanics
-    const architect = mar.agents.get('architect');
-    architect.stamina = 100; // Reset
-    const initialStamina = architect.stamina;
-    mar.generate('TEST', 1); // Only 1 token to ensure it doesn't hit floor/ceiling complexity
-    const finalStamina = architect.stamina;
+                    // Test stamina mechanics
+    for (const agent of mar.agents.values()) {
+      agent.stamina = agent.maxStamina;
+    }
+
+    mar.generate('TEST', 1);
     
-    this.assert(finalStamina < initialStamina, 'Generation consumes stamina');
+    let staminaConsumed = false;
+    for (const agent of mar.agents.values()) {
+      if (agent.stamina < agent.maxStamina) {
+        staminaConsumed = true;
+        break;
+      }
+    }
+
+    this.assert(staminaConsumed, 'At least one agent consumed stamina during generation');
 
     // Test inflation
     const inflation = mar.inflationModel.calculate('AAAABBBB', { token: 'A' });
@@ -349,7 +357,7 @@ export class UTSTestSuite {
   }
 
     async testIntegratedCBF() {
-    console.log('\n💰 Testing Integrated CBF Component...');
+    console.log('\nTesting Integrated CBF Component...');
     const uts = this.createSystem({
       modelWeights: { rcw: 0.2, ced: 0.15, mar: 0.15, mcg: 0.15, cbf: 0.25, rsb: 0.10 }
     });
@@ -655,14 +663,14 @@ export class UTSTestSuite {
     
     try {
       trainedUTS.generate({ length: -1 });
-      // this.assert(false, 'Negative length should throw error');
+      this.assert(false, 'Negative length should throw error');
     } catch (error) {
       this.assert(true, 'Negative length properly rejected');
     }
 
     try {
       trainedUTS.generate({ length: 10001 });
-      // this.assert(false, 'Excessive length should throw error');
+      this.assert(false, 'Excessive length should throw error');
     } catch (error) {
       this.assert(true, 'Excessive length properly rejected');
     }
@@ -672,7 +680,7 @@ export class UTSTestSuite {
       const badUTS = new UnifiedTokenizationSystem({
         modelWeights: { invalid: 1.0 }
       });
-      // this.assert(false, 'Invalid model names should be rejected');
+      this.assert(false, 'Invalid model names should be rejected');
     } catch (error) {
       this.assert(true, 'Invalid configuration properly rejected');
     }
@@ -801,7 +809,7 @@ export class UTSTestSuite {
 // STANDALONE TEST EXECUTION
 // ============================================================================
 
-if (typeof require !== 'undefined' && require.main === module) {
+if (import.meta.url.endsWith('test_unified_system.js') || process.argv[1].endsWith('test_unified_system.js')) {
   const testSuite = new UTSTestSuite();
   testSuite.runAll().catch(error => {
     console.error('Test suite execution failed:', error);

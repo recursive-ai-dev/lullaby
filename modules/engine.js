@@ -29,7 +29,7 @@ export class ResonanceEngine {
             h ^= this.seed.charCodeAt(i);
             h = Math.imul(h, 0x01000193);
         }
-        this._state = h >>> 0;
+        this._state = (h >>> 0) || 0x1337beef;
 
         // Primary model (trained)
         this.model = new NanoTransformer(this.tokenizer.vocabSize, 64, 4);
@@ -93,6 +93,7 @@ export class ResonanceEngine {
 
         // Deterministic PRNG (Lullaby-Standard)
     _rng() {
+        if (this._state === 0) this._state = 0x811c9dc5;
         this._state ^= this._state << 13;
         this._state ^= this._state >>> 17;
         this._state ^= this._state << 5;
@@ -335,8 +336,8 @@ export class ResonanceEngine {
         // UTS learns statistical patterns while neural network learns deep features
         if (this.uts && this.useHybridMode) {
             this.utsTrainingBuffer.push(text);
-            // Batch train UTS every 10 samples for efficiency
-            if (this.utsTrainingBuffer.length >= 10) {
+            // Batch train UTS every 10 samples, or immediately if not locked
+            if (this.utsTrainingBuffer.length >= 10 || !this.utsTrainingLock) {
                 this._trainUTS();
             }
         }
@@ -451,9 +452,10 @@ export class ResonanceEngine {
             console.warn('[Engine] UTS training error:', err.message);
         } finally {
             this.utsTrainingLock = false;
-            // If more samples arrived during training, trigger another run
-            if (this.utsTrainingBuffer.length >= 10) {
-                this._trainUTS();
+            // Process any samples stranded or arrived during the last run
+            if (this.utsTrainingBuffer.length > 0) {
+                // Small delay to prevent thrashing
+                setTimeout(() => this._trainUTS(), 100);
             }
         }
     }
