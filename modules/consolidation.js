@@ -16,7 +16,9 @@ export class ConsolidationEngine {
         const params = this.model.parameters();
         for (const p of params) {
             this.fisher.push(new Float32Array(p.data.length));
-            this.optimalParams.push(new Float32Array(p.data.length));
+            const optimal = new Float32Array(p.data.length);
+            optimal.set(p.data);
+            this.optimalParams.push(optimal);
         }
     }
 
@@ -30,6 +32,9 @@ export class ConsolidationEngine {
             if (!grads[i]) continue;
             const f = this.fisher[i];
             const g = grads[i];
+            if (g.length !== f.length) {
+                throw new Error(`Gradient shape mismatch at index ${i}: expected ${f.length}, got ${g.length}`);
+            }
             for (let j = 0; j < f.length; j++) {
                 // Online estimate with decay (0.99 momentum)
                 f[j] = 0.99 * f[j] + 0.01 * (g[j] * g[j]);
@@ -82,8 +87,20 @@ export class ConsolidationEngine {
 
     loadState(state) {
         if (!state) return;
-        this.lambda = state.lambda || 10.0;
-        if (state.fisher) state.fisher.forEach((f, i) => { if (this.fisher[i]) this.fisher[i].set(f); });
-        if (state.optimalParams) state.optimalParams.forEach((o, i) => { if (this.optimalParams[i]) this.optimalParams[i].set(o); });
+        this.lambda = (state.lambda !== undefined && state.lambda !== null) ? state.lambda : 10.0;
+        if (state.fisher) {
+            state.fisher.forEach((f, i) => {
+                if (this.fisher[i] && f.length === this.fisher[i].length) {
+                    this.fisher[i].set(f);
+                }
+            });
+        }
+        if (state.optimalParams) {
+            state.optimalParams.forEach((o, i) => {
+                if (this.optimalParams[i] && o.length === this.optimalParams[i].length) {
+                    this.optimalParams[i].set(o);
+                }
+            });
+        }
     }
 }
