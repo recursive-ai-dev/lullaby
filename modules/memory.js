@@ -13,7 +13,7 @@ export class PrioritizedReplayBuffer {
      */
     constructor(maxSize = 100, alpha = 0.6, beta = 0.4) {
         this.maxSize = maxSize;
-        this.alpha = alpha;
+        this.alpha = (Number.isFinite(alpha) && alpha > 0) ? alpha : 0.6;
         this.beta = beta;
         this.buffer = []; // {text, priority}
         this.epsilon = 1e-6;
@@ -26,9 +26,17 @@ export class PrioritizedReplayBuffer {
      * @param {number} uncertainty - Bayesian uncertainty boost
      */
     add(text, loss = 1.0, uncertainty = 0.0) {
+        if (!Number.isFinite(loss)) loss = 1.0;
+        if (!Number.isFinite(uncertainty) || uncertainty < 0) uncertainty = 0.0;
+
         const priority = Math.pow(Math.abs(loss) + uncertainty + this.epsilon, this.alpha);
+
+        if (!Number.isFinite(priority) || priority <= 0) {
+            return; // Skip invalid entries
+        }
+
         this.buffer.push({ text, priority });
-        
+
         // Maintenance: sort and prune
         this.buffer.sort((a, b) => b.priority - a.priority);
         if (this.buffer.length > this.maxSize) {
@@ -52,10 +60,18 @@ export class PrioritizedReplayBuffer {
                 const weight = Math.pow(this.buffer.length * prob, -this.beta);
                 return {
                     text: this.buffer[i].text,
+                    priority: this.buffer[i].priority,
                     importanceWeight: Math.min(weight, 10.0) // Clamp weight
                 };
             }
         }
-        return this.buffer[0];
+        // Fallback: return first element with consistent shape
+        const prob = this.buffer[0].priority / total;
+        const weight = Math.pow(this.buffer.length * prob, -this.beta);
+        return {
+            text: this.buffer[0].text,
+            priority: this.buffer[0].priority,
+            importanceWeight: Math.min(weight, 10.0)
+        };
     }
 }
