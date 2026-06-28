@@ -1,151 +1,94 @@
-// ==========================================
-// 4. OPTIMIZERS
-// ==========================================
+/**
+ * @fileoverview LULLABY OPTIMIZERS
+ * Production-grade optimization algorithms for deep learning.
+ *
+ * Features:
+ * - Adam: Adaptive Moment Estimation with bias correction and weight decay.
+ * - SGD: Stochastic Gradient Descent with Nesterov momentum.
+ * - Schedulers: Cosine decay with linear warmup.
+ */
 
 /**
- * SGD Optimizer with Momentum
+ * Adam Optimizer (Adaptive Moment Estimation)
+ * Implements Adam with weight decay (AdamW style) and numerical stability guards.
  */
-export class SGDOptimizer {
-    constructor(params, lr = 0.01, momentum = 0.9, weightDecay = 0.0) {
+export class AdamOptimizer {
+    /**
+     * @param {Tensor[]} params - List of tensors to optimize.
+     * @param {number} lr - Base learning rate.
+     * @param {number} beta1 - Decay rate for first moment.
+     * @param {number} beta2 - Decay rate for second moment.
+     * @param {number} eps - Epsilon for numerical stability.
+     * @param {number} weightDecay - L2 regularization factor.
+     */
+    constructor(params, lr = 0.001, beta1 = 0.9, beta2 = 0.999, eps = 1e-8, weightDecay = 0.01) {
         this.params = params;
-        this.lr = lr;
         this.baseLR = lr;
-        this.momentum = momentum;
+        this.beta1 = beta1;
+        this.beta2 = beta2;
+        this.eps = eps;
         this.weightDecay = weightDecay;
         this.t = 0;
 
-        // Momentum buffers
-        this.velocities = [];
-        for (const p of params) {
-            this.velocities.push(new Float32Array(p.data.length));
-        }
+        // Moment buffers
+        this.m = params.map(p => new Float32Array(p.data.length));
+        this.v = params.map(p => new Float32Array(p.data.length));
     }
 
     /**
-     * Learning rate scheduling (same as Adam)
+     * Learning rate scheduler: Linear warmup followed by Cosine Decay.
      */
     getLearningRate(step, totalSteps = 10000) {
-        const warmupSteps = 100;
+        const warmup = 100;
+        if (step < warmup) return this.baseLR * (step / warmup);
 
-        if (step < warmupSteps) {
-            return this.baseLR * (step / warmupSteps);
-        }
+        if (totalSteps <= warmup) return this.baseLR;
 
-        const progress = (step - warmupSteps) / (totalSteps - warmupSteps);
-        const clampedProgress = Math.max(0, Math.min(1, progress));
-        return this.baseLR * 0.5 * (1 + Math.cos(Math.PI * clampedProgress));
+        const progress = Math.min(1.0, (step - warmup) / (totalSteps - warmup));
+        const lr = this.baseLR * 0.5 * (1.0 + Math.cos(Math.PI * progress));
+        return Number.isFinite(lr) ? lr : this.baseLR;
     }
 
+    /**
+     * Perform a single optimization step.
+     */
     step(epoch, totalEpochs, manualLr = null) {
         this.t++;
+        const lr = manualLr !== null ? manualLr : this.getLearningRate(this.t, totalEpochs * 100);
 
-        let currentLr;
-        if (manualLr !== null) {
-            currentLr = manualLr;
-        } else {
-            currentLr = this.getLearningRate(this.t);
-        }
+        // Precompute bias correction factors once per step
+        const beta1PowT = Math.pow(this.beta1, this.t);
+        const beta2PowT = Math.pow(this.beta2, this.t);
+        const mBiasCorrection = 1.0 - beta1PowT;
+        const vBiasCorrection = 1.0 - beta2PowT;
 
-        for (let pi = 0; pi < this.params.length; pi++) {
-            const p = this.params[pi];
-            if (!p.grad) continue;
+        for (let i = 0; i < this.params.length; i++) {
+            const p = this.params[i];
+            const grad = p.grad;
+            if (!grad) continue;
 
-            for (let i = 0; i < p.data.length; i++) {
-                let g = p.grad[i];
+            const m = this.m[i];
+            const v = this.v[i];
+            const data = p.data;
 
-                // Weight decay (L2 regularization)
-                if (this.weightDecay !== 0) {
-                    g += this.weightDecay * p.data[i];
+            for (let j = 0; j < data.length; j++) {
+                let g = grad[j];
+
+                // Weight Decay (AdamW)
+                if (this.weightDecay > 0) {
+                    data[j] -= lr * this.weightDecay * data[j];
                 }
 
-                // Update velocity: v = momentum * v + g
-                this.velocities[pi][i] = this.momentum * this.velocities[pi][i] + g;
+                // Update biased moment estimates
+                m[j] = this.beta1 * m[j] + (1.0 - this.beta1) * g;
+                v[j] = this.beta2 * v[j] + (1.0 - this.beta2) * g * g;
 
-                // Update parameters: θ = θ - lr * v
-                p.data[i] -= currentLr * this.velocities[pi][i];
-            }
-        }
-    }
-
-    zeroGrad() {
-        for (const p of this.params) p.zeroGrad();
-    }
-}
-
-/**
- * Adam Optimizer
- */
-export class AdamOptimizer {
-    constructor(params, lr = 0.001, beta1 = 0.9, beta2 = 0.999, epsilon = 1e-8) {
-        this.params = params;
-        this.lr = lr;
-        this.baseLR = lr; // Store base LR for scheduling
-        this.beta1 = beta1;
-        this.beta2 = beta2;
-        this.epsilon = epsilon;
-        this.t = 0;
-
-        // Momentum and RMSprop estimates
-        this.m = []; // First moment (velocity)
-        this.v = []; // Second moment (uncertainty)
-        this.mHat = []; // Bias-corrected first moment
-        this.vHat = []; // Bias-corrected second moment
-
-        for (const p of params) {
-            this.m.push(new Float32Array(p.data.length));
-            this.v.push(new Float32Array(p.data.length));
-            this.mHat.push(new Float32Array(p.data.length));
-            this.vHat.push(new Float32Array(p.data.length));
-        }
-    }
-
-    // UPGRADE #11: Learning Rate Warmup & Cosine Decay
-    getLearningRate(step, totalSteps = 10000) {
-        const warmupSteps = 100;
-
-        if (step < warmupSteps) {
-            return this.baseLR * (step / warmupSteps);
-        }
-
-        const progress = (step - warmupSteps) / (totalSteps - warmupSteps);
-        // Ensure progress is between 0 and 1
-        const clampedProgress = Math.max(0, Math.min(1, progress));
-        return this.baseLR * 0.5 * (1 + Math.cos(Math.PI * clampedProgress));
-    }
-
-    step(epoch, totalEpochs, manualLr = null) {
-        this.t++;
-
-        // Use manual LR if provided, otherwise use scheduler
-        let currentLr;
-        if (manualLr !== null) {
-            currentLr = manualLr;
-        } else {
-            // Use t (total steps) for scheduling instead of just epoch
-            currentLr = this.getLearningRate(this.t);
-        }
-
-        for (let pi = 0; pi < this.params.length; pi++) {
-            const p = this.params[pi];
-            if (!p.grad) continue;
-
-            for (let i = 0; i < p.data.length; i++) {
-                const g = p.grad[i];
-
-                // Update biased first moment estimate
-                this.m[pi][i] = this.beta1 * this.m[pi][i] + (1 - this.beta1) * g;
-
-                // Update biased second raw moment estimate
-                this.v[pi][i] = this.beta2 * this.v[pi][i] + (1 - this.beta2) * g * g;
-
-                // Compute bias-corrected first moment estimate
-                this.mHat[pi][i] = this.m[pi][i] / (1 - Math.pow(this.beta1, this.t));
-
-                // Compute bias-corrected second raw moment estimate
-                this.vHat[pi][i] = this.v[pi][i] / (1 - Math.pow(this.beta2, this.t));
+                // Bias correction
+                const mHat = m[j] / mBiasCorrection;
+                const vHat = v[j] / vBiasCorrection;
 
                 // Update parameters
-                p.data[i] -= currentLr * this.mHat[pi][i] / (Math.sqrt(this.vHat[pi][i]) + this.epsilon);
+                data[j] -= lr * mHat / (Math.sqrt(vHat) + this.eps);
             }
         }
     }
@@ -157,31 +100,84 @@ export class AdamOptimizer {
     serialize() {
         return {
             t: this.t,
-            m: this.m.map(arr => arr.slice()), // Copy to ensure detached buffer
-            v: this.v.map(arr => arr.slice())
+            m: this.m.map(arr => Array.from(arr)),
+            v: this.v.map(arr => Array.from(arr))
         };
     }
 
     loadState(state) {
         if (!state) return;
-        if (Number.isFinite(state.t)) this.t = state.t;
+        this.t = state.t || 0;
 
-        if (Array.isArray(state.m)) {
-            for (let i = 0; i < Math.min(this.m.length, state.m.length); i++) {
-                // Validate array lengths match before copying
-                if (state.m[i] && state.m[i].length === this.m[i].length) {
-                    this.m[i].set(state.m[i]);
+        // Validate shapes before applying any updates
+        if (state.m) {
+            for (let i = 0; i < state.m.length; i++) {
+                if (this.m[i] && state.m[i].length !== this.m[i].length) {
+                    throw new Error(`Moment buffer shape mismatch at index ${i}: expected ${this.m[i].length}, got ${state.m[i].length}`);
+                }
+            }
+        }
+        if (state.v) {
+            for (let i = 0; i < state.v.length; i++) {
+                if (this.v[i] && state.v[i].length !== this.v[i].length) {
+                    throw new Error(`Variance buffer shape mismatch at index ${i}: expected ${this.v[i].length}, got ${state.v[i].length}`);
                 }
             }
         }
 
-        if (Array.isArray(state.v)) {
-            for (let i = 0; i < Math.min(this.v.length, state.v.length); i++) {
-                // Validate array lengths match before copying
-                if (state.v[i] && state.v[i].length === this.v[i].length) {
-                    this.v[i].set(state.v[i]);
+        // Apply updates only after all validations pass
+        if (state.m) state.m.forEach((arr, i) => { if (this.m[i]) this.m[i].set(arr); });
+        if (state.v) state.v.forEach((arr, i) => { if (this.v[i]) this.v[i].set(arr); });
+    }
+}
+
+/**
+ * SGD Optimizer with Momentum
+ */
+export class SGDOptimizer {
+    constructor(params, lr = 0.01, momentum = 0.9, nesterov = true, weightDecay = 0.0) {
+        this.params = params;
+        this.lr = lr;
+        this.momentum = momentum;
+        // Handle legacy numeric values passed as 4th argument (weightDecay)
+        if (typeof nesterov === 'number') {
+            this.weightDecay = nesterov;
+            this.nesterov = true;
+        } else {
+            this.nesterov = nesterov;
+            this.weightDecay = weightDecay;
+        }
+        this.v = params.map(p => new Float32Array(p.data.length));
+    }
+
+    step() {
+        for (let i = 0; i < this.params.length; i++) {
+            const p = this.params[i];
+            if (!p.grad) continue;
+
+            const v = this.v[i];
+            const data = p.data;
+            const grad = p.grad;
+
+            for (let j = 0; j < data.length; j++) {
+                let g = grad[j];
+
+                // Apply weight decay to gradient
+                if (this.weightDecay > 0) {
+                    g += this.weightDecay * data[j];
+                }
+
+                v[j] = this.momentum * v[j] + g;
+                if (this.nesterov) {
+                    data[j] -= this.lr * (g + this.momentum * v[j]);
+                } else {
+                    data[j] -= this.lr * v[j];
                 }
             }
         }
+    }
+
+    zeroGrad() {
+        for (const p of this.params) p.zeroGrad();
     }
 }
