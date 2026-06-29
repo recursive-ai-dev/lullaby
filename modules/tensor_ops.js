@@ -163,12 +163,6 @@ export class TensorOps {
     }
 
     static variance(tensor, axis = null, keepDims = false, ddof = 0) {
-        const mean = this.sum(tensor, axis, true).scale(1 / (axis === null ? tensor.data.length : tensor.shape[axis < 0 ? axis + tensor.shape.length : axis]));
-        const diff = tensor.sub(mean);
-        const sqDiff = diff.mul(diff);
-        const sumSqDiff = this.sum(sqDiff, axis, keepDims);
-        const n = (axis === null ? tensor.data.length : tensor.shape[axis < 0 ? axis + tensor.shape.length : axis]);
-        return sumSqDiff.scale(1 / (n - ddof));
         if (axis === null) {
             // Variance of all elements
             const n = tensor.data.length;
