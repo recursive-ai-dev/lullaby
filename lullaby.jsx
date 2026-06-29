@@ -1,3 +1,4 @@
+const DEBUG_MODE = false;
 import React, { useState, useEffect, useRef } from 'react';
 import { LineChart, Line, ResponsiveContainer, YAxis, Tooltip } from 'recharts';
 import { MessageCircle, Activity, Cpu, Database, Wifi, Zap, Heart, Sparkles, Lock, Unlock, Eye, Moon, Save, Layers, Download, Upload, Star, Flame, ChevronDown, ChevronUp, Eraser, Fingerprint, X } from 'lucide-react';
@@ -63,7 +64,7 @@ export default function NeuralTerminal() {
     const [dbMode, setDbMode] = useState(() => {
         try {
             return localStorage.getItem('lullaby.dbMode') || 'checkpoints';
-        } catch {
+        } catch (e) { if (DEBUG_MODE) console.warn(e);
             return 'checkpoints';
         }
     });
@@ -73,7 +74,7 @@ export default function NeuralTerminal() {
     const [profileKey, setProfileKey] = useState(() => {
         try {
             return localStorage.getItem('lullaby.profileKey') || 'latest';
-        } catch {
+        } catch (e) { if (DEBUG_MODE) console.warn(e);
             return 'latest';
         }
     });
@@ -86,14 +87,14 @@ export default function NeuralTerminal() {
             const raw = localStorage.getItem('lullaby.customDatasets');
             const parsed = raw ? JSON.parse(raw) : [];
             return Array.isArray(parsed) ? parsed : [];
-        } catch {
+        } catch (e) { if (DEBUG_MODE) console.warn(e);
             return [];
         }
     });
     const [selectedDatasetId, setSelectedDatasetId] = useState(() => {
         try {
             return localStorage.getItem('lullaby.selectedDatasetId') || '';
-        } catch {
+        } catch (e) { if (DEBUG_MODE) console.warn(e);
             return '';
         }
     });
@@ -102,7 +103,7 @@ export default function NeuralTerminal() {
     const [seedTargetName, setSeedTargetName] = useState(() => {
         try {
             return localStorage.getItem('lullaby.seedTargetName') || 'Emma';
-        } catch {
+        } catch (e) { if (DEBUG_MODE) console.warn(e);
             return 'Emma';
         }
     });
@@ -111,7 +112,7 @@ export default function NeuralTerminal() {
             const raw = localStorage.getItem('lullaby.datasetsPanelOpen');
             if (raw === null) return false; // default minimized
             return raw === 'true';
-        } catch {
+        } catch (e) { if (DEBUG_MODE) console.warn(e);
             return false;
         }
     });
@@ -156,7 +157,7 @@ export default function NeuralTerminal() {
             const list = await store.listConversations(db, { limit: 50 });
             setThreads(Array.isArray(list) ? list : []);
             setActiveConversationId(conversationId || null);
-        } catch {
+        } catch (e) { if (DEBUG_MODE) console.warn(e);
             setThreads([]);
             setActiveConversationId(conversationId || null);
         }
@@ -191,7 +192,7 @@ export default function NeuralTerminal() {
             await store.renameConversation(db, id, title);
             cancelRenameConversation();
             await refreshThreads();
-        } catch {
+        } catch (e) { if (DEBUG_MODE) console.warn(e);
             addLog('sys', 'FAILED TO RENAME CONVERSATION.');
             pushToast('error', 'Failed to rename conversation.');
         }
@@ -228,7 +229,7 @@ export default function NeuralTerminal() {
 
             cancelRenameConversation();
             await refreshThreads();
-        } catch {
+        } catch (e) { if (DEBUG_MODE) console.warn(e);
             addLog('sys', 'FAILED TO DELETE CONVERSATION.');
             pushToast('error', 'Failed to delete conversation.');
         }
@@ -255,7 +256,7 @@ export default function NeuralTerminal() {
 
             setThreadsOpen(false);
             await refreshThreads();
-        } catch {
+        } catch (e) { if (DEBUG_MODE) console.warn(e);
             addLog('sys', 'FAILED TO SWITCH CONVERSATIONS.');
             pushToast('error', 'Failed to switch conversations.');
         }
@@ -273,7 +274,7 @@ export default function NeuralTerminal() {
             setLogs([]);
             setThreadsOpen(false);
             await refreshThreads();
-        } catch {
+        } catch (e) { if (DEBUG_MODE) console.warn(e);
             addLog('sys', 'FAILED TO CREATE CONVERSATION.');
             pushToast('error', 'Failed to create conversation.');
         }
@@ -364,7 +365,7 @@ export default function NeuralTerminal() {
                 case 'PROFILE_SET':
                     if (payload?.profileKey) {
                         setProfileKey(payload.profileKey);
-                        try { localStorage.setItem('lullaby.profileKey', payload.profileKey); } catch { }
+                        try { localStorage.setItem('lullaby.profileKey', payload.profileKey); } catch (e) { if (DEBUG_MODE) console.warn(e);  }
                     }
                     addLog('sys', `PROFILE SET: ${payload?.profileKey || 'latest'} (${payload?.loaded ? 'LOADED' : 'EMPTY'})`);
                     break;
@@ -372,7 +373,7 @@ export default function NeuralTerminal() {
                 case 'PROFILE_RESET':
                     if (payload?.profileKey) {
                         setProfileKey(payload.profileKey);
-                        try { localStorage.setItem('lullaby.profileKey', payload.profileKey); } catch { }
+                        try { localStorage.setItem('lullaby.profileKey', payload.profileKey); } catch (e) { if (DEBUG_MODE) console.warn(e);  }
                     }
                     addLog('sys', `PROFILE RESET: ${payload?.profileKey || 'latest'} (${payload?.deleted ? 'CLEARED' : 'NOOP'})`);
                     break;
@@ -414,6 +415,11 @@ export default function NeuralTerminal() {
                     setMemoriesStatusTransient('saved');
                     break;
 
+                case 'SAVE_ERROR':
+                    pushToast('error', payload?.message || 'Save failed');
+                    addLog('sys', `SAVE FAILED: ${payload?.message}`);
+                    break;
+
                 case 'EXPORT_COMPLETE':
                     // Create download link
                     {
@@ -447,7 +453,7 @@ export default function NeuralTerminal() {
 
     const restartCore = () => {
         pushToast('info', 'Restarting AI core…', { ms: 1800 });
-        try { workerRef.current?.terminate(); } catch { }
+        try { workerRef.current?.terminate(); } catch (e) { if (DEBUG_MODE) console.warn(e);  }
         setIsBooting(true);
         setIsComputing(false);
         lastGenerateRequestIdRef.current = null;
@@ -459,19 +465,19 @@ export default function NeuralTerminal() {
     };
 
     useEffect(() => {
-        try { localStorage.setItem('lullaby.customDatasets', JSON.stringify(customDatasets)); } catch { }
+        try { localStorage.setItem('lullaby.customDatasets', JSON.stringify(customDatasets)); } catch (e) { if (DEBUG_MODE) console.warn(e);  }
     }, [customDatasets]);
 
     useEffect(() => {
-        try { localStorage.setItem('lullaby.selectedDatasetId', selectedDatasetId || ''); } catch { }
+        try { localStorage.setItem('lullaby.selectedDatasetId', selectedDatasetId || ''); } catch (e) { if (DEBUG_MODE) console.warn(e);  }
     }, [selectedDatasetId]);
 
     useEffect(() => {
-        try { localStorage.setItem('lullaby.seedTargetName', seedTargetName || ''); } catch { }
+        try { localStorage.setItem('lullaby.seedTargetName', seedTargetName || ''); } catch (e) { if (DEBUG_MODE) console.warn(e);  }
     }, [seedTargetName]);
 
     useEffect(() => {
-        try { localStorage.setItem('lullaby.datasetsPanelOpen', String(Boolean(datasetsPanelOpen))); } catch { }
+        try { localStorage.setItem('lullaby.datasetsPanelOpen', String(Boolean(datasetsPanelOpen))); } catch (e) { if (DEBUG_MODE) console.warn(e);  }
     }, [datasetsPanelOpen]);
 
     const parseDatasetLines = (text) => {
@@ -546,7 +552,7 @@ export default function NeuralTerminal() {
                     const s = String(candidate || '').trim();
                     if (s) out.push(s.slice(0, 200));
                 }
-            } catch {
+            } catch (e) { if (DEBUG_MODE) console.warn(e);
                 // Ignore invalid JSON line.
             }
         }
@@ -565,7 +571,7 @@ export default function NeuralTerminal() {
     const handleDatasetImportFile = async (e) => {
         const file = e.target.files?.[0];
         // Allow importing the same file twice.
-        try { e.target.value = ''; } catch { }
+        try { e.target.value = ''; } catch (e) { if (DEBUG_MODE) console.warn(e);  }
         if (!file) return;
 
         try {
@@ -696,7 +702,7 @@ export default function NeuralTerminal() {
                     }
 
                     await refreshThreads();
-                } catch {
+                } catch (e) { if (DEBUG_MODE) console.warn(e);
                     // If convo store fails, keep running raw.
                 }
             }
@@ -725,7 +731,7 @@ export default function NeuralTerminal() {
 
     // Persist UI settings
     useEffect(() => {
-        try { localStorage.setItem('lullaby.dbMode', dbMode); } catch { }
+        try { localStorage.setItem('lullaby.dbMode', dbMode); } catch (e) { if (DEBUG_MODE) console.warn(e);  }
     }, [dbMode]);
 
     // --- AUTO-SCROLL ---
@@ -770,7 +776,7 @@ export default function NeuralTerminal() {
                 conversationRef.current.conversationId = conversationId;
                 setActiveConversationId(conversationId);
                 await refreshThreads();
-            } catch {
+            } catch (e) { if (DEBUG_MODE) console.warn(e);
                 addLog('sys', 'CONVERSATION STORE INIT FAILED. FALLING BACK TO RAW.');
                 setDbMode('off');
                 setThreads([]);

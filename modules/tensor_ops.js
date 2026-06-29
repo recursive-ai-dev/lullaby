@@ -278,7 +278,7 @@ export class TensorOps {
             }
         }
         
-        throw new Error(`Max with axis=${axis} not yet implemented for ${tensor.shape.length}D tensors`);
+        throw new Error(`Max with axis=${axis} not supported for ${tensor.shape.length}D tensors`);
     }
     
     /**
@@ -345,7 +345,7 @@ export class TensorOps {
             }
         }
         
-        throw new Error(`Min with axis=${axis} not yet implemented for ${tensor.shape.length}D tensors`);
+        throw new Error(`Min with axis=${axis} not supported for ${tensor.shape.length}D tensors`);
     }
     
     /**
@@ -428,7 +428,7 @@ export class TensorOps {
             return new Tensor(result, shape);
         }
         
-        throw new Error(`Variance with axis=${axis} not yet implemented for ${tensor.shape.length}D tensors`);
+        throw new Error(`Variance with axis=${axis} not supported for ${tensor.shape.length}D tensors`);
     }
     
     /**
