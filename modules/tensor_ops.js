@@ -130,6 +130,8 @@ export class TensorOps {
             if (tensor.data[i] > outData[outIdx]) outData[outIdx] = tensor.data[i];
         }
         return new Tensor(outData, outShape);
+        
+        throw new Error(`Max with axis=${axis} not supported for ${tensor.shape.length}D tensors`);
     }
 
     static min(tensor, axis = null, keepDims = false) {
@@ -156,6 +158,8 @@ export class TensorOps {
             if (tensor.data[i] < outData[outIdx]) outData[outIdx] = tensor.data[i];
         }
         return new Tensor(outData, outShape);
+        
+        throw new Error(`Min with axis=${axis} not supported for ${tensor.shape.length}D tensors`);
     }
 
     static variance(tensor, axis = null, keepDims = false, ddof = 0) {
@@ -165,6 +169,71 @@ export class TensorOps {
         const sumSqDiff = this.sum(sqDiff, axis, keepDims);
         const n = (axis === null ? tensor.data.length : tensor.shape[axis < 0 ? axis + tensor.shape.length : axis]);
         return sumSqDiff.scale(1 / (n - ddof));
+        if (axis === null) {
+            // Variance of all elements
+            const n = tensor.data.length;
+            if (n <= ddof) {
+                throw new Error(`Insufficient data points (${n}) for variance with ddof=${ddof}`);
+            }
+            
+            // Use Welford's online algorithm for numerical stability
+            let mean = 0;
+            let M2 = 0;
+            let count = 0;
+            
+            for (let i = 0; i < n; i++) {
+                const val = tensor.data[i];
+                if (Number.isFinite(val)) {
+                    count++;
+                    const delta = val - mean;
+                    mean += delta / count;
+                    const delta2 = val - mean;
+                    M2 += delta * delta2;
+                }
+            }
+            
+            if (count <= ddof) {
+                return NaN;
+            }
+            
+            return M2 / (count - ddof);
+        }
+        
+        // Axis-specific variance for 2D tensors
+        if (tensor.shape.length === 2 && axis === 1) {
+            const [rows, cols] = tensor.shape;
+            const result = new Float32Array(rows);
+            
+            for (let r = 0; r < rows; r++) {
+                if (cols <= ddof) {
+                    result[r] = NaN;
+                    continue;
+                }
+                
+                // Use Welford's algorithm for each row
+                let mean = 0;
+                let M2 = 0;
+                let count = 0;
+                
+                for (let c = 0; c < cols; c++) {
+                    const val = tensor.data[r * cols + c];
+                    if (Number.isFinite(val)) {
+                        count++;
+                        const delta = val - mean;
+                        mean += delta / count;
+                        const delta2 = val - mean;
+                        M2 += delta * delta2;
+                    }
+                }
+                
+                result[r] = (count > ddof) ? M2 / (count - ddof) : NaN;
+            }
+            
+            const shape = keepDims ? [rows, 1] : [rows];
+            return new Tensor(result, shape);
+        }
+        
+        throw new Error(`Variance with axis=${axis} not supported for ${tensor.shape.length}D tensors`);
     }
 
     static map(tensor, fn) {

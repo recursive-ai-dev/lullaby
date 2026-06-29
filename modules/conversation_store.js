@@ -1,3 +1,4 @@
+const DEBUG_MODE = false;
 // Conversation persistence (optional): localStorage or IndexedDB.
 // UI-only module.
 
@@ -14,7 +15,7 @@ function nowMs() {
 function safeJsonParse(str, fallback) {
     try {
         return JSON.parse(str);
-    } catch {
+    } catch (e) { if (DEBUG_MODE) console.warn(e);
         return fallback;
     }
 }
@@ -112,7 +113,7 @@ function openIdb() {
                     if (store && !store.indexNames.contains('byConversationCreatedAt')) {
                         store.createIndex('byConversationCreatedAt', ['conversationId', 'createdAt'], { unique: false });
                     }
-                } catch {
+                } catch (e) { if (DEBUG_MODE) console.warn(e);
                     // Best-effort: if the store isn't available here, ignore.
                 }
             }
@@ -125,7 +126,7 @@ function openIdb() {
             try {
                 const meta = ev.target.transaction.objectStore('meta');
                 meta.put({ key: 'schemaVersion', value: STORE_SCHEMA_VERSION, updatedAt: nowMs() });
-            } catch {
+            } catch (e) { if (DEBUG_MODE) console.warn(e);
                 // ignore
             }
         };
@@ -223,7 +224,7 @@ async function idbDeleteConversation(db, conversationId) {
                 cursor.delete();
                 cursor.continue();
             };
-        } catch {
+        } catch (e) { if (DEBUG_MODE) console.warn(e);
             // ignore
         }
 
@@ -314,7 +315,7 @@ function localEnsureConversation({ conversationId } = {}) {
             const parsed = safeJsonParse(localStorage.getItem(key) || 'null', null);
             const normalized = normalizeStoredMessages(id, parsed);
             localStorage.setItem(key, JSON.stringify(normalized));
-        } catch {
+        } catch (e) { if (DEBUG_MODE) console.warn(e);
             // ignore
         }
     }
@@ -332,7 +333,7 @@ function localEnsureConversation({ conversationId } = {}) {
             index.conversations.unshift(normalizeConversationMeta({ id }));
         }
         localStorage.setItem(LOCAL_INDEX_KEY, JSON.stringify(index));
-    } catch {
+    } catch (e) { if (DEBUG_MODE) console.warn(e);
         // ignore
     }
 
@@ -383,7 +384,7 @@ function localDeleteConversation(conversationId) {
     // Remove message payload.
     try {
         localStorage.removeItem(`lullaby.convo.${id}`);
-    } catch {
+    } catch (e) { if (DEBUG_MODE) console.warn(e);
         // ignore
     }
 
@@ -392,7 +393,7 @@ function localDeleteConversation(conversationId) {
         const index = localLoadConversationIndex();
         const filtered = index.conversations.filter((c) => c && c.id !== id);
         localSaveConversationIndex({ conversations: filtered });
-    } catch {
+    } catch (e) { if (DEBUG_MODE) console.warn(e);
         // ignore
     }
 
@@ -453,7 +454,7 @@ function localAppendMessage(conversationId, { role, text, timestamp, createdAt }
     // Update index updatedAt.
     try {
         localUpsertConversationMeta({ id: conversationId, updatedAt: msg.createdAt });
-    } catch {
+    } catch (e) { if (DEBUG_MODE) console.warn(e);
         // ignore
     }
 }
@@ -473,7 +474,7 @@ function localLoadMessages(conversationId, { limit = 500 } = {}) {
         if (needsMigration) {
             localStorage.setItem(key, JSON.stringify(normalizedStore));
         }
-    } catch {
+    } catch (e) { if (DEBUG_MODE) console.warn(e);
         // ignore
     }
     const msgs = normalizedStore.messages;
