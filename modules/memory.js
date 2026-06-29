@@ -1,4 +1,9 @@
 /**
+ * LULLABY MEMORY SYSTEMS (VERSION 3.0)
+ * Specialized storage and retrieval for experience replay.
+ */
+
+/**
  * Prioritized Experience Replay Buffer
  * 
  * DESIGN:
@@ -7,7 +12,7 @@
  */
 export class PrioritizedReplayBuffer {
     /**
-     * @param {number} maxSize
+     * @param {number} maxSize - Maximum buffer capacity
      * @param {number} alpha - Priority exponent (0=uniform, 1=proportional)
      * @param {number} beta - Importance sampling exponent
      */
@@ -21,7 +26,7 @@ export class PrioritizedReplayBuffer {
 
     /**
      * Adds an experience to the buffer.
-     * @param {string} text
+     * @param {string} text - The sample content
      * @param {number} loss - magnitude of TD-error
      * @param {number} uncertainty - Bayesian uncertainty boost
      */
@@ -37,7 +42,7 @@ export class PrioritizedReplayBuffer {
 
         this.buffer.push({ text, priority });
 
-        // Maintenance: sort and prune
+        // Maintenance: sort and prune (fixed capacity)
         this.buffer.sort((a, b) => b.priority - a.priority);
         if (this.buffer.length > this.maxSize) {
             this.buffer.pop();
@@ -65,7 +70,8 @@ export class PrioritizedReplayBuffer {
                 };
             }
         }
-        // Fallback: return first element with consistent shape
+
+        // Fallback: return first element
         const prob = this.buffer[0].priority / total;
         const weight = Math.pow(this.buffer.length * prob, -this.beta);
         return {

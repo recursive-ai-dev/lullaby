@@ -1,17 +1,20 @@
 /**
- * @fileoverview LULLABY CONSOLIDATION ENGINE
- * Implements Elastic Weight Consolidation (EWC) to prevent catastrophic forgetting.
+ * LULLABY CONSOLIDATION ENGINE (VERSION 3.0)
+ * Implements Elastic Weight Consolidation (EWC) for continual learning.
+ *
+ * This engine tracks Fisher Information to identify which parameters
+ * are critical for previous knowledge and penalizes their modification.
  */
 
 export class ConsolidationEngine {
     /**
-     * @param {NanoTransformer} model - The model to manage retention for.
+     * @param {NanoTransformer} model - Model to consolidate
      */
     constructor(model) {
         this.model = model;
-        this.fisher = []; // Diagonal Fisher Information Matrix
-        this.optimalParams = []; // Optimal parameters from previous tasks
-        this.lambda = 10.0; // Consolidation strength
+        this.fisher = [];
+        this.optimalParams = [];
+        this.lambda = 15.0; // Consolidation strength
 
         const params = this.model.parameters();
         for (const p of params) {
@@ -23,53 +26,50 @@ export class ConsolidationEngine {
     }
 
     /**
-     * Updates the diagonal Fisher Information estimate using current gradients.
+     * Updates the diagonal Fisher Information estimate using gradients.
      * F = E[ (dL/dtheta)^2 ]
-     * @param {Float32Array[]} grads
      */
-    updateFisher(grads) {
-        for (let i = 0; i < grads.length; i++) {
-            if (!grads[i]) continue;
+    updateFisher() {
+        const params = this.model.parameters();
+        for (let i = 0; i < params.length; i++) {
+            const p = params[i];
+            if (!p.grad) continue;
+
             const f = this.fisher[i];
-            const g = grads[i];
-            if (g.length !== f.length) {
-                throw new Error(`Gradient shape mismatch at index ${i}: expected ${f.length}, got ${g.length}`);
-            }
+            const g = p.grad;
+
+            // Numerical stability: online estimation with momentum
             for (let j = 0; j < f.length; j++) {
-                // Online estimate with decay (0.99 momentum)
-                f[j] = 0.99 * f[j] + 0.01 * (g[j] * g[j]);
+                f[j] = 0.95 * f[j] + 0.05 * (g[j] * g[j]);
             }
         }
     }
 
     /**
-     * Computes the consolidation loss (EWC penalty).
+     * Computes the EWC consolidation loss.
      * Loss = sum_i (lambda/2 * Fisher_i * (theta_i - theta_optimal_i)^2)
      */
     computeConsolidationLoss() {
         let totalLoss = 0;
         const params = this.model.parameters();
         for (let i = 0; i < params.length; i++) {
-            const p = params[i].data;
+            const p = params[i];
             const f = this.fisher[i];
             const opt = this.optimalParams[i];
-            const grad = params[i].grad;
 
-            for (let j = 0; j < p.length; j++) {
-                const diff = p[j] - opt[j];
+            for (let j = 0; j < p.data.length; j++) {
+                const diff = p.data[j] - opt[j];
                 const penalty = this.lambda * f[j] * diff;
                 totalLoss += 0.5 * penalty * diff;
                 
-                // Add penalty directly to gradient during training
-                if (grad) grad[j] += penalty;
+                // Add penalty directly to gradient if gradient buffer exists
+                if (p.grad) p.grad[j] += penalty;
             }
         }
         return totalLoss;
     }
 
-    /**
-     * Finalize current task parameters as optimal for future tasks.
-     */
+    /** Finalize current parameters as the new 'optimal' state */
     consolidate() {
         const params = this.model.parameters();
         for (let i = 0; i < params.length; i++) {
@@ -87,19 +87,15 @@ export class ConsolidationEngine {
 
     loadState(state) {
         if (!state) return;
-        this.lambda = (state.lambda !== undefined && state.lambda !== null) ? state.lambda : 10.0;
+        this.lambda = state.lambda || 15.0;
         if (state.fisher) {
             state.fisher.forEach((f, i) => {
-                if (this.fisher[i] && f.length === this.fisher[i].length) {
-                    this.fisher[i].set(f);
-                }
+                if (this.fisher[i] && f.length === this.fisher[i].length) this.fisher[i].set(f);
             });
         }
         if (state.optimalParams) {
             state.optimalParams.forEach((o, i) => {
-                if (this.optimalParams[i] && o.length === this.optimalParams[i].length) {
-                    this.optimalParams[i].set(o);
-                }
+                if (this.optimalParams[i] && o.length === this.optimalParams[i].length) this.optimalParams[i].set(o);
             });
         }
     }

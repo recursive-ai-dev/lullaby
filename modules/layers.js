@@ -1,637 +1,388 @@
 import { Tensor } from './tensor.js';
+import { TensorOps } from './tensor_ops.js';
 
-// ==========================================
-// 2. NEURAL LAYERS
-// ==========================================
+/**
+ * LULLABY NEURAL LAYERS (VERSION 3.1)
+ * High-performance, production-grade implementations of transformer components.
+ */
+
 export class Linear {
-    constructor(inFeat, outFeat) {
-        this.weights = Tensor.randn([inFeat, outFeat], 0.0, 0.05);
-        this.bias = Tensor.zeros([outFeat]);
+    constructor(inDim, outDim) {
+        this.inDim = inDim;
+        this.outDim = outDim;
+        // Kaiming initialization
+        this.weight = Tensor.randn([inDim, outDim]).scale(Math.sqrt(2 / inDim));
+        this.bias = Tensor.zeros([outDim]);
         this.lastInput = null;
     }
-    parameters() { return [this.weights, this.bias]; }
+
+    parameters() {
+        return [this.weight, this.bias];
+    }
 
     forward(x) {
         this.lastInput = x;
-        let out = x.matmul(this.weights);
-        return out.addBroadcast(this.bias);
+        // Supports [..., inDim] @ [inDim, outDim]
+        return x.matmul(this.weight).addBroadcast(this.bias);
     }
 
     backward(gradOutput) {
-        const gradInput = gradOutput.matmul(this.weights.transpose());
-        const gradWeights = this.lastInput.transpose().matmul(gradOutput);
-
-        this.weights.zeroGrad();
-        this.bias.zeroGrad();
-
-        const len = this.weights.grad.length;
-        const totalLen = gradWeights.data.length;
-        for (let i = 0; i < totalLen; i++) this.weights.grad[i % len] += gradWeights.data[i];
-
-        const outDim = this.bias.shape[0];
-        const rows = gradOutput.data.length / outDim;
-        for (let r = 0; r < rows; r++) {
-            const offset = r * outDim;
-            for (let i = 0; i < outDim; i++) {
-                this.bias.grad[i] += gradOutput.data[offset + i];
-            }
-        }
-        return gradInput;
-    }
-}
-
-export class LayerNorm {
-    constructor(dim, eps = 1e-5) {
-        // Validation: ensure dimension is positive integer
-        if (!Number.isInteger(dim) || dim <= 0) {
-            throw new Error(`LayerNorm dimension must be a positive integer, got ${dim}`);
-        }
-        // Validation: ensure epsilon is positive for numerical stability
-        if (!(eps > 0) || !Number.isFinite(eps)) {
-            throw new Error(`LayerNorm epsilon must be positive and finite, got ${eps}`);
-        }
+        // dL/dW = Input^T * gradOutput
+        // Reshape input to 2D [Batch*Seq, inDim] for clean matmul
+        const flatX = this.lastInput.reshape([-1, this.inDim]);
+        const flatGrad = gradOutput.reshape([-1, this.outDim]);
         
-        this.gamma = Tensor.zeros([dim]);
-        for (let i = 0; i < dim; i++) this.gamma.data[i] = 1.0;
-        this.beta = Tensor.zeros([dim]);
-        this.eps = eps;
-        this.dim = dim;
-        this.lastXHat = null;
-        this.lastInvStd = null;
-    }
-
-    parameters() { return [this.gamma, this.beta]; }
-
-    forward(x) {
-        // Validation: check input is not null/undefined
-        if (!x || !x.data) {
-            throw new Error('LayerNorm.forward: input tensor is null or invalid');
-        }
+        const gradWeight = flatX.transpose().matmul(flatGrad);
         
-        // Validation: check input length is divisible by dimension
-        if (x.data.length % this.dim !== 0) {
-            throw new Error(`LayerNorm.forward: input size ${x.data.length} not divisible by dimension ${this.dim}`);
-        }
-        
-        const res = new Float32Array(x.data.length);
-        const rows = x.data.length / this.dim;
-        this.lastXHat = new Float32Array(x.data.length);
-        this.lastInvStd = new Float32Array(rows);
+        // dL/dB = sum over all dimensions except the last one
+        const gradBias = TensorOps.sum(flatGrad, 0);
 
-        for (let r = 0; r < rows; r++) {
-            const offset = r * this.dim;
-            
-            // Compute mean with Kahan summation for numerical accuracy
-            let mean = 0;
-            let compensation = 0;
-            for (let i = 0; i < this.dim; i++) {
-                const y = x.data[offset + i] - compensation;
-                const t = mean + y;
-                compensation = (t - mean) - y;
-                mean = t;
-            }
-            mean /= this.dim;
-            
-            // Compute variance with numerical stability
-            let sqSum = 0;
-            for (let i = 0; i < this.dim; i++) {
-                const d = x.data[offset + i] - mean;
-                sqSum += d * d;
-            }
-            
-            // Add epsilon before sqrt for numerical stability (prevents division by zero)
-            const variance = (sqSum / this.dim) + this.eps;
-            const invStd = 1.0 / Math.sqrt(variance);
-            
-            // Validate invStd is finite (detects NaN/Inf propagation early)
-            if (!Number.isFinite(invStd)) {
-                throw new Error(`LayerNorm: non-finite invStd detected at row ${r}. Variance: ${variance}, sqSum: ${sqSum}`);
-            }
-            
-            this.lastInvStd[r] = invStd;
-            for (let i = 0; i < this.dim; i++) {
-                const norm = (x.data[offset + i] - mean) * invStd;
-                this.lastXHat[offset + i] = norm;
-                res[offset + i] = norm * this.gamma.data[i] + this.beta.data[i];
-            }
-        }
-        return new Tensor(res, [...x.shape]);
-    }
+        this.weight.grad = gradWeight.data;
+        this.bias.grad = gradBias.data;
 
-    backward(gradOutput) {
-        // dL/dgamma = sum(dL/dy * x_hat)
-        // dL/dbeta = sum(dL/dy)
-        this.gamma.zeroGrad();
-        this.beta.zeroGrad();
-        const rows = gradOutput.data.length / this.dim;
-        const gradInput = Tensor.zeros(gradOutput.shape);
-
-        // N = dim
-        const N = this.dim;
-
-        for (let r = 0; r < rows; r++) {
-            const offset = r * this.dim;
-            const invStd = this.lastInvStd[r];
-
-            let sumDxHat = 0.0;
-            let sumDxHatXHat = 0.0;
-
-            // 1. Compute gradients for Gamma/Beta and intermediate sums
-            for (let i = 0; i < this.dim; i++) {
-                const dout = gradOutput.data[offset + i];
-                // Accumulate parameter gradients
-                this.gamma.grad[i] += dout * this.lastXHat[offset + i];
-                this.beta.grad[i] += dout;
-
-                // dx_hat = dout * gamma
-                const dxHat = dout * this.gamma.data[i];
-                sumDxHat += dxHat;
-                sumDxHatXHat += dxHat * this.lastXHat[offset + i];
-            }
-
-            // 2. Compute gradient wrt Input X
-            // Formula: dx = (1/N) * invStd * (N * dxHat - sum(dxHat) - xHat * sum(dxHat * xHat))
-            for (let i = 0; i < this.dim; i++) {
-                const dout = gradOutput.data[offset + i];
-                const dxHat = dout * this.gamma.data[i];
-                const xHat = this.lastXHat[offset + i];
-
-                const term = (N * dxHat - sumDxHat - xHat * sumDxHatXHat);
-                gradInput.data[offset + i] = (1.0 / N) * invStd * term;
-            }
-        }
-        return gradInput;
+        // dL/dX = gradOutput * W^T
+        const dX = gradOutput.matmul(this.weight.transpose());
+        return dX;
     }
 }
 
 export class Embedding {
     constructor(vocabSize, dModel) {
-        this.weights = Tensor.randn([vocabSize, dModel], 0.0, 0.1);
+        this.vocabSize = vocabSize;
         this.dModel = dModel;
+        this.weight = Tensor.randn([vocabSize, dModel]).scale(0.02);
         this.lastIndices = null;
     }
-    parameters() { return [this.weights]; }
+
+    parameters() {
+        return [this.weight];
+    }
 
     forwardIndices(indices) {
-        this.lastIndices = indices;
-        const count = indices.length;
-        const res = Tensor.zeros([1, count, this.dModel]);
-        for (let i = 0; i < count; i++) {
-            const idx = indices[i] % this.weights.shape[0];
-            const wOffset = idx * this.dModel;
-            const rOffset = i * this.dModel;
-            for (let j = 0; j < this.dModel; j++) {
-                res.data[rOffset + j] = this.weights.data[wOffset + j];
+        // indices can be [batch, seq] or [seq]
+        const data = indices.data || indices;
+        const shape = indices.shape || [data.length];
+
+        this.lastIndices = data;
+        this.lastShape = shape;
+
+        const outData = new Float32Array(data.length * this.dModel);
+        for (let i = 0; i < data.length; i++) {
+            const idx = Math.floor(data[i]);
+            if (idx < 0 || idx >= this.vocabSize) {
+                // Safety: out of bounds indices set to zero
+                continue;
             }
+            outData.set(this.weight.data.subarray(idx * this.dModel, (idx + 1) * this.dModel), i * this.dModel);
         }
-        return res;
+
+        return new Tensor(outData, [...shape, this.dModel]);
     }
 
     backward(gradOutput) {
-        this.weights.zeroGrad();
-        const count = this.lastIndices.length;
-        for (let i = 0; i < count; i++) {
-            const idx = this.lastIndices[i] % this.weights.shape[0];
-            const rOffset = i * this.dModel;
-            const wOffset = idx * this.dModel;
+        if (!this.weight.grad) this.weight.zeroGrad();
+
+        const flatGrad = gradOutput.data;
+        for (let i = 0; i < this.lastIndices.length; i++) {
+            const vocabIdx = Math.floor(this.lastIndices[i]);
+            if (vocabIdx < 0 || vocabIdx >= this.vocabSize) continue;
+
+            const gradRow = flatGrad.subarray(i * this.dModel, (i + 1) * this.dModel);
             for (let j = 0; j < this.dModel; j++) {
-                this.weights.grad[wOffset + j] += gradOutput.data[rOffset + j];
+                this.weight.grad[vocabIdx * this.dModel + j] += gradRow[j];
             }
         }
-        return null;
+    }
+}
+
+export class LayerNorm {
+    constructor(dModel, eps = 1e-5) {
+        this.dModel = dModel;
+        this.eps = eps;
+        this.gamma = Tensor.ones([dModel]);
+        this.beta = Tensor.zeros([dModel]);
+        this.lastX = null;
+        this.lastMean = null;
+        this.lastInvVar = null;
+    }
+
+    parameters() {
+        return [this.gamma, this.beta];
+    }
+
+    forward(x) {
+        this.lastX = x;
+        const shape = x.shape;
+        const lastDim = shape[shape.length - 1];
+        const flatX = x.reshape([-1, lastDim]);
+        const n = flatX.shape[0];
+
+        const mean = TensorOps.sum(flatX, 1, true).scale(1 / lastDim);
+        const diff = flatX.sub(mean);
+        const var_ = TensorOps.sum(diff.mul(diff), 1, true).scale(1 / lastDim);
+        const invVar = TensorOps.map(var_, v => 1.0 / Math.sqrt(v + this.eps));
+
+        this.lastMean = mean;
+        this.lastInvVar = invVar;
+
+        const xHat = diff.mul(invVar);
+        const out = xHat.mul(this.gamma.reshape([1, lastDim])).addBroadcast(this.beta);
+
+        return out.reshape(shape);
+    }
+
+    backward(gradOutput) {
+        const shape = gradOutput.shape;
+        const D = shape[shape.length - 1];
+        const flatGrad = gradOutput.reshape([-1, D]);
+        const flatX = this.lastX.reshape([-1, D]);
+        const N = flatGrad.shape[0];
+
+        const xHat = flatX.sub(this.lastMean).mul(this.lastInvVar);
+
+        // Gamma and Beta gradients
+        const dGamma = TensorOps.sum(flatGrad.mul(xHat), 0);
+        const dBeta = TensorOps.sum(flatGrad, 0);
+
+        this.gamma.grad = dGamma.data;
+        this.beta.grad = dBeta.data;
+
+        // Input gradient
+        // dL/dx = (1/D) * gamma * invVar * [D * dL/dy - sum(dL/dy) - xHat * sum(dL/dy * xHat)]
+        const term1 = flatGrad.mul(this.gamma.reshape([1, D]));
+        const sum_dy = TensorOps.sum(term1, 1, true);
+        const sum_dy_xhat = TensorOps.sum(term1.mul(xHat), 1, true);
+
+        const dxHat = term1.scale(D).sub(sum_dy).sub(xHat.mul(sum_dy_xhat));
+        const dX = dxHat.mul(this.lastInvVar).scale(1.0 / D);
+
+        return dX.reshape(shape);
     }
 }
 
 export class BayesianLinear {
-    constructor(inFeat, outFeat) {
-        // We learn parameters for the distribution: Mu (mean) and Rho (uncertainty)
-        this.w_mu = Tensor.randn([inFeat, outFeat], 0.0, 0.05);
-        this.w_rho = Tensor.randn([inFeat, outFeat], -3.0, 0.1); // Init rho small for low initial variance
-
-        this.bias_mu = Tensor.zeros([outFeat]);
-        this.bias_rho = Tensor.randn([outFeat], -3.0, 0.1);
+    constructor(inDim, outDim) {
+        this.inDim = inDim;
+        this.outDim = outDim;
+        // Mu: Weights, Rho: Parametrizes variance via softplus
+        this.w_mu = Tensor.randn([inDim, outDim]).scale(Math.sqrt(2 / inDim));
+        this.w_rho = Tensor.ones([inDim, outDim]).scale(-3.0);
+        this.bias_mu = Tensor.zeros([outDim]);
+        this.bias_rho = Tensor.ones([outDim]).scale(-3.0);
 
         this.lastInput = null;
         this.lastEpsilonW = null;
         this.lastEpsilonB = null;
-        this.lastSigmaW = null;
     }
 
     parameters() {
-        // Returns variational parameters to be optimized
         return [this.w_mu, this.w_rho, this.bias_mu, this.bias_rho];
+    }
+
+    softplus(x) {
+        return TensorOps.map(x, v => (v > 20) ? v : Math.log(1 + Math.exp(v)));
     }
 
     forward(x) {
         this.lastInput = x;
+        const sigmaW = this.softplus(this.w_rho);
+        const sigmaB = this.softplus(this.bias_rho);
 
-        // 1. Sample Epsilon ~ N(0, 1)
-        this.lastEpsilonW = Tensor.randn(this.w_mu.shape, 0, 1);
-        this.lastEpsilonB = Tensor.randn(this.bias_mu.shape, 0, 1);
+        this.lastEpsilonW = Tensor.randn(this.w_mu.shape);
+        this.lastEpsilonB = Tensor.randn(this.bias_mu.shape);
 
-        // 2. Calculate Sigma = log(1 + exp(rho)) (Softplus approximation)
-        const sigmaW = this.computeSoftplus(this.w_rho);
-        const sigmaB = this.computeSoftplus(this.bias_rho);
-        this.lastSigmaW = sigmaW; // Cache for backward
+        const W = this.w_mu.add(sigmaW.mul(this.lastEpsilonW));
+        const B = this.bias_mu.add(sigmaB.mul(this.lastEpsilonB));
 
-        // 3. Reparameterization: w = mu + sigma * epsilon
-        // We manually implement element-wise ops here for the specific sampling
-        const weightsSample = this.sample(this.w_mu, sigmaW, this.lastEpsilonW);
-        const biasSample = this.sample(this.bias_mu, sigmaB, this.lastEpsilonB);
-
-        // 4. Standard Forward with sampled weights
-        let out = x.matmul(weightsSample);
-        return out.addBroadcast(biasSample);
-    }
-
-    /**
-     * Softplus: log(1 + exp(x)) with numerical stability
-     * 
-     * Mathematical properties:
-     * - softplus(x) ≈ x for large x (x > 20)
-     * - softplus(x) ≈ exp(x) for very negative x (x < -20)
-     * - Smooth approximation to ReLU: lim(x→∞) softplus(x) = x
-     * 
-     * Numerical stability bounds:
-     * - For x > 20: exp(x) >> 1, so log(1 + exp(x)) ≈ x
-     * - For x < -20: exp(x) ≈ 0, so log(1 + exp(x)) ≈ log(1) = 0
-     * - For -20 <= x <= 20: use standard formula
-     */
-    computeSoftplus(tensor) {
-        const res = new Float32Array(tensor.data.length);
-        for (let i = 0; i < tensor.data.length; i++) {
-            const x = tensor.data[i];
-            // Numerical stability: softplus(x) ≈ x for x > 20
-            if (x > 20) {
-                res[i] = x;
-            } else if (x < -20) {
-                res[i] = Math.exp(x); // softplus(x) ≈ e^x for x < -20
-            } else {
-                // Use log1p for better numerical stability (HIGH FIX #6)
-                res[i] = Math.log1p(Math.exp(x)); // log1p(y) = log(1 + y)
-            }
-        }
-        return new Tensor(res, tensor.shape);
-    }
-
-    // Helper: w = mu + sigma * eps
-    sample(mu, sigma, eps) {
-        const res = new Float32Array(mu.data.length);
-        for (let i = 0; i < mu.data.length; i++) {
-            res[i] = mu.data[i] + (sigma.data[i] * eps.data[i]);
-        }
-        return new Tensor(res, mu.shape);
-    }
-
-    klDivergence() {
-        // KL[q(w)||p(w)] where q(w) ~ N(μ_q, σ_q²) and p(w) ~ N(0, 1)
-        // Formula: KL = 0.5 * (σ_q² + μ_q² - 1 - log(σ_q²))
-        //         = 0.5 * (σ_q² + μ_q² - 1 - 2*log(σ_q))
-        const sigmaW = this.computeSoftplus(this.w_rho);
-        const sigmaB = this.computeSoftplus(this.bias_rho);
-
-        let kl = 0.0;
-        // For weights (HIGH FIX #7: Improved numerical stability)
-        for (let i = 0; i < this.w_mu.data.length; i++) {
-            const mu = this.w_mu.data[i];
-            const sigma = Math.max(sigmaW.data[i], 1e-6); // Increased epsilon
-            const logSigma = Math.log(sigma); // Compute once
-            const mu2 = mu * mu;
-            // KL = 0.5 * (σ² + μ² - 1 - 2*log(σ))
-            kl += 0.5 * (sigma * sigma + mu2 - 1.0 - 2.0 * logSigma);
-        }
-        // For bias
-        for (let i = 0; i < this.bias_mu.data.length; i++) {
-            const mu = this.bias_mu.data[i];
-            const sigma = Math.max(sigmaB.data[i], 1e-6); // Increased epsilon
-            const logSigma = Math.log(sigma);
-            const mu2 = mu * mu;
-            kl += 0.5 * (sigma * sigma + mu2 - 1.0 - 2.0 * logSigma);
-        }
-        return kl;
-    }
-
-    klGradient(scale = 1.0) {
-        // Calculate gradients for KL divergence term:
-        // dKL/dMu = mu * scale
-        // dKL/dRho = (sigma - 1/sigma) * sigmoid(rho) * scale
-
-        const sigmaW = this.computeSoftplus(this.w_rho);
-        const sigmaB = this.computeSoftplus(this.bias_rho);
-
-        // For weights
-        for (let i = 0; i < this.w_mu.data.length; i++) {
-            const mu = this.w_mu.data[i];
-            const rho = this.w_rho.data[i];
-            const sigma = Math.max(sigmaW.data[i], 1e-6);
-
-            // dKL/dMu = mu
-            this.w_mu.grad[i] += mu * scale;
-
-            // dKL/dRho = (sigma - 1/sigma) * sigmoid(rho)
-            const dKL_dSigma = sigma - (1.0 / sigma);
-            const sigmoid = 1.0 / (1.0 + Math.exp(-rho));
-            this.w_rho.grad[i] += dKL_dSigma * sigmoid * scale;
-        }
-
-        // For bias
-        for (let i = 0; i < this.bias_mu.data.length; i++) {
-            const mu = this.bias_mu.data[i];
-            const rho = this.bias_rho.data[i];
-            const sigma = Math.max(sigmaB.data[i], 1e-6);
-
-            // dKL/dMu = mu
-            this.bias_mu.grad[i] += mu * scale;
-
-            // dKL/dRho = (sigma - 1/sigma) * sigmoid(rho)
-            const dKL_dSigma = sigma - (1.0 / sigma);
-            const sigmoid = 1.0 / (1.0 + Math.exp(-rho));
-            this.bias_rho.grad[i] += dKL_dSigma * sigmoid * scale;
-        }
+        return x.matmul(W).addBroadcast(B);
     }
 
     backward(gradOutput) {
-        // Backward pass for Bayesian Linear Layer
-        // dLoss/dMu = dLoss/dW (direct gradient)
-        // dLoss/dRho = dLoss/dW * epsilon * d(softplus)/dRho
-        // where d(softplus)/dRho = sigmoid(rho) = 1/(1 + e^(-rho))
+        const sigmaW = this.softplus(this.w_rho);
+        const sigmaB = this.softplus(this.bias_rho);
+        const W = this.w_mu.add(sigmaW.mul(this.lastEpsilonW));
 
-        // 1. Get gradient wrt the sampled weights (standard backprop)
-        const sigmaW = this.computeSoftplus(this.w_rho);
-        const sigmaB = this.computeSoftplus(this.bias_rho);
-        const wSample = this.sample(this.w_mu, sigmaW, this.lastEpsilonW);
+        const flatX = this.lastInput.reshape([-1, this.inDim]);
+        const flatGrad = gradOutput.reshape([-1, this.outDim]);
 
-        const gradInput = gradOutput.matmul(wSample.transpose());
-        const gradWeightsSample = this.lastInput.transpose().matmul(gradOutput);
+        const gradW = flatX.transpose().matmul(flatGrad);
+        const gradB = TensorOps.sum(flatGrad, 0);
 
-        this.w_mu.zeroGrad();
-        this.w_rho.zeroGrad();
-        this.bias_mu.zeroGrad();
-        this.bias_rho.zeroGrad();
+        // Mu gradients
+        this.w_mu.grad = gradW.data;
+        this.bias_mu.grad = gradB.data;
 
-        // 2. Distribute gradients to weight parameters (Mu and Rho)
-        // 2. Distribute gradients to weight parameters (Mu and Rho)
-        // BUG FIX: Handle batched gradients by accumulating over total length
-        const paramLen = this.w_mu.data.length;
-        const totalLen = gradWeightsSample.data.length;
+        // Rho gradients: dL/drho = dL/dw * epsilon * sigmoid(rho)
+        const sigmoid = (v) => 1.0 / (1.0 + Math.exp(-v));
 
-        for (let i = 0; i < totalLen; i++) {
-            const idx = i % paramLen;
-            const dW = gradWeightsSample.data[i];
+        const gradRhoW = gradW.mul(this.lastEpsilonW).mul(TensorOps.map(this.w_rho, sigmoid));
+        this.w_rho.grad = gradRhoW.data;
 
-            // Gradient wrt Mu: ∂L/∂μ = ∂L/∂w
-            this.w_mu.grad[idx] += dW;
+        const gradRhoB = gradB.mul(this.lastEpsilonB).mul(TensorOps.map(this.bias_rho, sigmoid));
+        this.bias_rho.grad = gradRhoB.data;
 
-            // Gradient wrt Rho: ∂L/∂ρ = ∂L/∂w * ε * ∂σ/∂ρ
-            // where ∂σ/∂ρ = sigmoid(ρ) for softplus
-            const rho = this.w_rho.data[idx];
-            const sigmoid = 1.0 / (1.0 + Math.exp(-rho));
-            this.w_rho.grad[idx] += dW * this.lastEpsilonW.data[idx] * sigmoid;
-        }
-
-        // 3. Distribute gradients to bias parameters (Mu and Rho)
-        const outDim = this.bias_mu.shape[0];
-        const rows = gradOutput.data.length / outDim;
-
-        for (let r = 0; r < rows; r++) {
-            const offset = r * outDim;
-            for (let i = 0; i < outDim; i++) {
-                const dB = gradOutput.data[offset + i];
-
-                // Gradient wrt bias Mu
-                this.bias_mu.grad[i] += dB;
-
-                // Gradient wrt bias Rho
-                const rho = this.bias_rho.data[i];
-                const sigmoid = 1.0 / (1.0 + Math.exp(-rho));
-                this.bias_rho.grad[i] += dB * this.lastEpsilonB.data[i] * sigmoid;
-            }
-        }
-
-        return gradInput;
+        return gradOutput.matmul(W.transpose());
     }
 }
-
-
 
 export class MultiHeadAttention {
     constructor(dModel, numHeads) {
         this.dModel = dModel;
         this.numHeads = numHeads;
         this.dHead = Math.floor(dModel / numHeads);
+        this.scale = 1.0 / Math.sqrt(this.dHead);
 
         this.wQ = new Linear(dModel, dModel);
         this.wK = new Linear(dModel, dModel);
         this.wV = new Linear(dModel, dModel);
         this.wO = new Linear(dModel, dModel);
-        this.scale = 1.0 / Math.sqrt(this.dHead);
 
-        // Precompute RoPE frequencies
         this.cacheTheta = new Float32Array(this.dHead / 2);
         for (let i = 0; i < this.dHead / 2; i++) {
             this.cacheTheta[i] = 1.0 / Math.pow(10000, (2.0 * i) / this.dHead);
         }
 
-        // Cache for backward pass
-        this.lastAttnWeights = null;
-        this.lastQRotated = null;
-        this.lastKRotated = null;
+        this.lastQRot = null;
+        this.lastKRot = null;
         this.lastVHeads = null;
-        this.lastScores = null; // Pre-softmax
-        this.lastAttn = null;   // Post-softmax
+        this.lastAttn = null;
     }
 
     parameters() {
         return [...this.wQ.parameters(), ...this.wK.parameters(), ...this.wV.parameters(), ...this.wO.parameters()];
     }
 
+    applyRoPE(tensor, inverse = false) {
+        // tensor: [seqLen, dHead]
+        const [seqLen, d] = tensor.shape;
+        const out = Tensor.zeros(tensor.shape);
+        const halfD = Math.floor(d / 2);
+
+        for (let t = 0; t < seqLen; t++) {
+            const off = t * d;
+            for (let i = 0; i < halfD; i++) {
+                const theta = this.cacheTheta[i];
+                const angle = inverse ? -(t * theta) : (t * theta);
+                const cos = Math.cos(angle);
+                const sin = Math.sin(angle);
+
+                const v1 = tensor.data[off + 2 * i];
+                const v2 = tensor.data[off + 2 * i + 1];
+
+                out.data[off + 2 * i] = v1 * cos - v2 * sin;
+                out.data[off + 2 * i + 1] = v1 * sin + v2 * cos;
+            }
+            if (d % 2 === 1) out.data[off + d - 1] = tensor.data[off + d - 1];
+        }
+        return out;
+    }
+
     forward(x) {
+        const [batch, seqLen, dModel] = x.shape;
         const Q = this.wQ.forward(x);
         const K = this.wK.forward(x);
         const V = this.wV.forward(x);
-        const seqLen = x.shape[1];
 
-        // Prepare storage for backward pass
-        this.lastQRotated = [];
-        this.lastKRotated = [];
+        this.lastQRot = [];
+        this.lastKRot = [];
         this.lastVHeads = [];
         this.lastAttn = [];
 
-        const batchOut = Tensor.zeros([1, seqLen, this.dModel]);
+        const batchOut = Tensor.zeros([batch, seqLen, dModel]);
 
-        // Store attention weights for visualization (first head)
-        this.lastAttnWeights = null;
+        for (let b = 0; b < batch; b++) {
+            for (let h = 0; h < this.numHeads; h++) {
+                let qH = this.extractHead(Q, b, h, seqLen);
+                let kH = this.extractHead(K, b, h, seqLen);
+                const vH = this.extractHead(V, b, h, seqLen);
 
-        for (let h = 0; h < this.numHeads; h++) {
-            let qH = this.extractHead(Q, h, seqLen);
-            let kH = this.extractHead(K, h, seqLen);
-            const vH = this.extractHead(V, h, seqLen);
+                qH = this.applyRoPE(qH);
+                kH = this.applyRoPE(kH);
 
-            // UPGRADE #9: Apply RoPE to Q and K
-            qH = this.applyRoPE(qH, seqLen, false);
-            kH = this.applyRoPE(kH, seqLen, false);
+                this.lastQRot.push(qH);
+                this.lastKRot.push(kH);
+                this.lastVHeads.push(vH);
 
-            // Cache for backward
-            this.lastQRotated.push(qH);
-            this.lastKRotated.push(kH);
-            this.lastVHeads.push(vH);
+                let scores = qH.matmul(kH.transpose()).scale(this.scale);
+                // Causal mask
+                for (let r = 0; r < seqLen; r++) {
+                    for (let c = r + 1; c < seqLen; c++) {
+                        scores.data[r * seqLen + c] = -1e9;
+                    }
+                }
 
-            // Attention Scores
-            let scores = qH.matmul(kH.transpose());
-            scores = scores.scale(this.scale);
-            this.applyMask(scores, seqLen);
+                const attn = scores.softmax();
+                this.lastAttn.push(attn);
 
-            const attn = scores.softmax();
-            this.lastAttn.push(attn);
-
-            if (h === 0) {
-                this.lastAttnWeights = Array.from(attn.data);
+                const headOut = attn.matmul(vH);
+                this.insertHead(batchOut, headOut, b, h, seqLen);
             }
-
-            const headOut = attn.matmul(vH);
-            this.insertHead(batchOut, headOut, h, seqLen);
         }
         return this.wO.forward(batchOut);
     }
 
     backward(gradOutput) {
-        // 1. Backprop through Output Projection
+        const [batch, seqLen, dModel] = gradOutput.shape;
         const dHeads = this.wO.backward(gradOutput);
-        const seqLen = gradOutput.shape[1];
 
-        // Gradients for Q, K, V (accumulated across heads)
-        const dQTotal = Tensor.zeros([1, seqLen, this.dModel]);
-        const dKTotal = Tensor.zeros([1, seqLen, this.dModel]);
-        const dVTotal = Tensor.zeros([1, seqLen, this.dModel]);
+        const dQTotal = Tensor.zeros([batch, seqLen, dModel]);
+        const dKTotal = Tensor.zeros([batch, seqLen, dModel]);
+        const dVTotal = Tensor.zeros([batch, seqLen, dModel]);
 
-        for (let h = 0; h < this.numHeads; h++) {
-            const dHeadOut = this.extractHead(dHeads, h, seqLen);
-            const vH = this.lastVHeads[h];
-            const attn = this.lastAttn[h];
-            const qRotated = this.lastQRotated[h];
-            const kRotated = this.lastKRotated[h];
+        let idx = 0;
+        for (let b = 0; b < batch; b++) {
+            for (let h = 0; h < this.numHeads; h++) {
+                const dHeadOut = this.extractHead(dHeads, b, h, seqLen);
+                const vH = this.lastVHeads[idx];
+                const attn = this.lastAttn[idx];
+                const qRot = this.lastQRot[idx];
+                const kRot = this.lastKRot[idx];
 
-            // dV = Attn^T @ dHeadOut
-            const dV_H = attn.transpose().matmul(dHeadOut);
-            this.insertHead(dVTotal, dV_H, h, seqLen);
+                // dV = Attn^T * dHeadOut
+                const dV_H = attn.transpose().matmul(dHeadOut);
+                this.insertHead(dVTotal, dV_H, b, h, seqLen);
 
-            // dAttn = dHeadOut @ V^T
-            const dAttn = dHeadOut.matmul(vH.transpose());
+                // dAttn = dHeadOut * V^T
+                const dAttn = dHeadOut.matmul(vH.transpose());
+                const dScores = attn.softmaxBackward(dAttn).scale(this.scale);
 
-            // dScores = dSoftmax(dAttn) * scale
-            // We use the new softmaxBackward method on the Softmax Output (attn)
-            const dScores = attn.softmaxBackward(dAttn).scale(this.scale);
+                // dQRot = dScores * kRot
+                let dQ_rot = dScores.matmul(kRot);
+                // dKRot = dScores^T * qRot
+                let dK_rot = dScores.transpose().matmul(qRot);
 
-            // dQ_rotated = dScores @ K_rotated
-            let dQ_rot = dScores.matmul(kRotated);
+                const dQ_H = this.applyRoPE(dQ_rot, true);
+                const dK_H = this.applyRoPE(dK_rot, true);
 
-            // dK_rotated = dScores^T @ Q_rotated
-            let dK_rot = dScores.transpose().matmul(qRotated);
+                this.insertHead(dQTotal, dQ_H, b, h, seqLen);
+                this.insertHead(dKTotal, dK_H, b, h, seqLen);
 
-            // Backprop through RoPE (Inverse Rotation)
-            const dQ_H = this.applyRoPE(dQ_rot, seqLen, true);
-            const dK_H = this.applyRoPE(dK_rot, seqLen, true);
-
-            this.insertHead(dQTotal, dQ_H, h, seqLen);
-            this.insertHead(dKTotal, dK_H, h, seqLen);
+                idx++;
+            }
         }
 
-        // 2. Backprop through Projections
-        // We must sum the gradients flowing back to the input from Q, K, and V paths
-        const dInputQ = this.wQ.backward(dQTotal);
-        const dInputK = this.wK.backward(dKTotal);
-        const dInputV = this.wV.backward(dVTotal);
-
-        // dInput = dInputQ + dInputK + dInputV
-        return dInputQ.add(dInputK).add(dInputV);
+        return this.wQ.backward(dQTotal)
+            .add(this.wK.backward(dKTotal))
+            .add(this.wV.backward(dVTotal));
     }
 
-    extractHead(tensor, headIdx, seqLen) {
+    extractHead(tensor, batchIdx, headIdx, seqLen) {
         const out = Tensor.zeros([seqLen, this.dHead]);
-        const offset = headIdx * this.dHead;
+        const bOff = batchIdx * seqLen * this.dModel;
+        const hOff = headIdx * this.dHead;
         for (let s = 0; s < seqLen; s++) {
-            for (let d = 0; d < this.dHead; d++) {
-                out.data[s * this.dHead + d] = tensor.data[s * this.dModel + (offset + d)];
-            }
+            const rowOff = bOff + s * this.dModel + hOff;
+            out.data.set(tensor.data.subarray(rowOff, rowOff + this.dHead), s * this.dHead);
         }
         return out;
     }
 
-    insertHead(target, source, headIdx, seqLen) {
-        const offset = headIdx * this.dHead;
+    insertHead(target, source, batchIdx, headIdx, seqLen) {
+        const bOff = batchIdx * seqLen * this.dModel;
+        const hOff = headIdx * this.dHead;
         for (let s = 0; s < seqLen; s++) {
-            for (let d = 0; d < this.dHead; d++) {
-                target.data[s * this.dModel + (offset + d)] = source.data[s * this.dHead + d];
-            }
+            const rowOff = bOff + s * this.dModel + hOff;
+            target.data.set(source.data.subarray(s * this.dHead, (s + 1) * this.dHead), rowOff);
         }
-    }
-
-    /**
-     * Apply causal attention mask
-     * 
-     * Mathematical purpose: Prevent attention from future tokens in autoregressive models
-     * Sets scores[i][j] = -∞ for j > i (future positions)
-     * 
-     * Implementation uses -1e9 instead of -Infinity because:
-     * 1. exp(-1e9) ≈ 0 in float32 precision
-     * 2. Avoids NaN propagation that can occur with -Infinity
-     * 3. Maintains numerical stability in softmax computation
-     */
-    applyMask(scores, seqLen) {
-        // Large negative value that softmax will treat as ~0 probability
-        // Using -1e9 instead of -Infinity for numerical stability
-        const MASK_VALUE = -1e9;
-        
-        for (let r = 0; r < seqLen; r++) {
-            for (let c = 0; c < seqLen; c++) {
-                if (c > r) {
-                    scores.data[r * seqLen + c] = MASK_VALUE;
-                }
-            }
-        }
-    }
-
-    // UPGRADE #9: Rotary Position Embeddings (RoPE)
-    // Formula: theta_i = 10000^(-2i/d) where i ∈ [0, d/2)
-    // Rotation matrix: [[cos(m*theta), -sin(m*theta)], [sin(m*theta), cos(m*theta)]]
-    applyRoPE(tensor, seqLen, inverse = false) {
-        const out = Tensor.zeros(tensor.shape);
-        const d = this.dHead;
-        const halfD = Math.floor(d / 2);
-
-        // Validate tensor size
-        const expectedSize = seqLen * d;
-        if (tensor.data.length !== expectedSize) {
-            throw new Error(`RoPE: Expected tensor size ${expectedSize}, got ${tensor.data.length}`);
-        }
-
-        for (let t = 0; t < seqLen; t++) {
-            const offset = t * d;
-            for (let i = 0; i < halfD; i++) {
-                // Use cached theta
-                const theta = this.cacheTheta[i];
-                const angle = t * theta;
-                const finalAngle = inverse ? -angle : angle;
-
-                const cos = Math.cos(finalAngle);
-                const sin = Math.sin(finalAngle);
-
-                const idx1 = offset + 2 * i;
-                const idx2 = offset + 2 * i + 1;
-
-                const val1 = tensor.data[idx1];
-                const val2 = tensor.data[idx2];
-
-                // Apply 2D rotation matrix
-                out.data[idx1] = val1 * cos - val2 * sin;
-                out.data[idx2] = val1 * sin + val2 * cos;
-            }
-
-            // Handle odd dimensions
-            if (d % 2 === 1) {
-                out.data[offset + d - 1] = tensor.data[offset + d - 1];
-            }
-        }
-        return out;
     }
 }

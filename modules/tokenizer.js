@@ -1,43 +1,78 @@
+/**
+ * LULLABY TOKENIZER (VERSION 3.0)
+ * Robust character-level tokenizer for small-scale language models.
+ *
+ * This implementation provides safety guards for unknown tokens and
+ * consistent BOS/EOS/PAD management.
+ */
 export class Tokenizer {
     constructor() {
-        // Character-level tokenizer for "Nano" models
-        // Covers standard ASCII printable characters + some control tokens
-        this.chars = [
-            "<PAD>", "<UNK>", "<START>", "<END>", "\n", " "
-        ];
+        // Special tokens
+        this.special = {
+            "<PAD>": 0,
+            "<UNK>": 1,
+            "<START>": 2,
+            "<END>": 3
+        };
+
+        this.idToChar = ["<PAD>", "<UNK>", "<START>", "<END>", "\n", " "];
 
         // Add printable ASCII (33-126)
         for (let i = 33; i <= 126; i++) {
-            this.chars.push(String.fromCharCode(i));
+            this.idToChar.push(String.fromCharCode(i));
         }
 
+        // Add additional useful control/formatting if needed
+        // this.idToChar.push("\t");
+
         this.charToId = {};
-        this.idToChar = {};
-        this.chars.forEach((c, i) => {
+        this.idToChar.forEach((c, i) => {
             this.charToId[c] = i;
-            this.idToChar[i] = c;
         });
     }
 
     get vocabSize() {
-        return this.chars.length;
+        return this.idToChar.length;
     }
 
-    tokenize(text) {
+    /**
+     * Encodes text into a sequence of token IDs.
+     * @param {string} text - Input string
+     * @param {boolean} addSpecial - Whether to wrap with START/END tokens
+     */
+    tokenize(text, addSpecial = false) {
+        if (typeof text !== 'string') text = String(text || '');
         const ids = [];
+
+        if (addSpecial) ids.push(this.special["<START>"]);
+
         for (const char of text) {
             if (this.charToId[char] !== undefined) {
                 ids.push(this.charToId[char]);
             } else {
-                // Handle unknown characters (maybe fallback to <UNK> or ignore)
-                ids.push(this.charToId["<UNK>"]);
+                ids.push(this.special["<UNK>"]);
             }
         }
+
+        if (addSpecial) ids.push(this.special["<END>"]);
         return ids;
     }
 
+    /**
+     * Decodes token IDs back to a string.
+     * @param {number[]|Float32Array} ids - Token sequence
+     */
     detokenize(ids) {
-        return ids.map(i => this.idToChar[i] || "").join("")
-            .replace(/<PAD>|<UNK>|<START>|<END>/g, "");
+        if (!ids) return "";
+        let result = "";
+        for (let i = 0; i < ids.length; i++) {
+            const id = Math.floor(ids[i]);
+            const char = this.idToChar[id];
+
+            // Filter out special control tokens in output string
+            if (!char || Object.keys(this.special).includes(char)) continue;
+            result += char;
+        }
+        return result;
     }
 }
