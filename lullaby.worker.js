@@ -198,7 +198,7 @@ self.onmessage = async (e) => {
 self.addEventListener('error', (ev) => {
     try {
         postError(ev?.message || 'Worker error', { requestId: null, v: PROTOCOL_VERSION, originalType: null });
-    } catch (e) { if (DEBUG_MODE) console.warn(e);
+    } catch (e) { console.error("Worker unhandled error:", e);
         // ignore
     }
 });
@@ -208,7 +208,7 @@ self.addEventListener('unhandledrejection', (ev) => {
         const reason = ev?.reason;
         const msg = (reason && typeof reason === 'object' && 'message' in reason) ? reason.message : String(reason || 'Unhandled rejection');
         postError(msg, { requestId: null, v: PROTOCOL_VERSION, originalType: null });
-    } catch (e) { if (DEBUG_MODE) console.warn(e);
+    } catch (e) { console.error("Worker unhandled error:", e);
         // ignore
     }
 });

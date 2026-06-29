@@ -17,7 +17,8 @@
     "train:mentor": "node train.js --pack mentor",
     "train:creative": "node train.js --pack creative",
     "train:stoic": "node train.js --pack stoic",
-    "training": "npm run train && npm run dev"
+    "training": "npm run train && npm run dev",
+    "test": "vitest run"
   },
   "dependencies": {
     "lucide-react": "^0.542.0",
@@ -31,16 +32,20 @@
     "@capacitor/core": "^7.4.3",
     "@capacitor/ios": "^7.4.3",
     "@tailwindcss/postcss": "^4.1.18",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.23",
     "concurrently": "^9.2.1",
     "electron": "^37.4.0",
     "electron-builder": "^26.0.12",
     "hyparquet": "^1.23.3",
+    "jsdom": "^29.1.1",
     "pdf-parse": "^2.4.5",
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.18",
     "vite": "^7.2.7",
+    "vitest": "^4.1.9",
     "wait-on": "^8.0.5"
   },
   "build": {
