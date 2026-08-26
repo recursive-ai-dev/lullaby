@@ -77,16 +77,17 @@ export class Tensor {
     }
 
     reshape(newShape) {
+        const targetShape = [...newShape];
         const oldSize = this.data.length;
-        const negIdx = newShape.indexOf(-1);
+        const negIdx = targetShape.indexOf(-1);
         if (negIdx !== -1) {
             let others = 1;
-            for (let i = 0; i < newShape.length; i++) if (i !== negIdx) others *= newShape[i];
-            newShape[negIdx] = Math.floor(oldSize / others);
+            for (let i = 0; i < targetShape.length; i++) if (i !== negIdx) others *= targetShape[i];
+            targetShape[negIdx] = Math.floor(oldSize / others);
         }
-        const newSize = newShape.reduce((a, b) => a * b, 1);
-        if (oldSize !== newSize) throw new Error(`Shape mismatch in reshape: ${this.shape} to ${newShape}`);
-        return new Tensor(this.data, newShape);
+        const newSize = targetShape.reduce((a, b) => a * b, 1);
+        if (oldSize !== newSize) throw new Error(`Shape mismatch in reshape: ${this.shape} to ${targetShape}`);
+        return new Tensor(this.data, targetShape);
     }
 
     zeroGrad() {

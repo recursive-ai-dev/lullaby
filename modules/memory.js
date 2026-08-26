@@ -16,12 +16,13 @@ export class PrioritizedReplayBuffer {
      * @param {number} alpha - Priority exponent (0=uniform, 1=proportional)
      * @param {number} beta - Importance sampling exponent
      */
-    constructor(maxSize = 100, alpha = 0.6, beta = 0.4) {
+    constructor(maxSize = 100, alpha = 0.6, beta = 0.4, prng) {
         this.maxSize = maxSize;
         this.alpha = (Number.isFinite(alpha) && alpha > 0) ? alpha : 0.6;
         this.beta = beta;
         this.buffer = []; // {text, priority}
         this.epsilon = 1e-6;
+        this.prng = prng || { random: () => Math.random() };
     }
 
     /**
@@ -56,7 +57,7 @@ export class PrioritizedReplayBuffer {
         if (this.buffer.length === 0) return null;
         
         const total = this.buffer.reduce((s, x) => s + x.priority, 0);
-        let r = Math.random() * total;
+        let r = this.prng.random() * total;
         
         for (let i = 0; i < this.buffer.length; i++) {
             r -= this.buffer[i].priority;

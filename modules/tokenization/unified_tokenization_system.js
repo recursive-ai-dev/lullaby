@@ -102,6 +102,7 @@ class MultiLevelCache {
     if (this.l2.has(key)) {
       this.stats.hits++;
       const val = this.l2.get(key).value;
+      this.l2.delete(key);
       this.set(key, val);
       return val;
     }
@@ -115,8 +116,8 @@ class MultiLevelCache {
       const firstKey = this.l1.keys().next().value;
       if (firstKey !== undefined) {
           const entry = this.l1.get(firstKey);
-          this.l2.set(firstKey, entry);
           this.l1.delete(firstKey);
+          this.l2.set(firstKey, entry);
           this.stats.evictions++;
       }
     }
@@ -224,7 +225,8 @@ class IntegratedRCW {
     }
   }
   predict(ctx) {
-    const counts = this.memory.get(ctx);
+    const key = Array.isArray(ctx) ? ctx.join('') : String(ctx);
+    const counts = this.memory.get(key);
     if (!counts) return null;
     let best = null, max = -1, total = 0;
     for (const [s, c] of counts) { total += c; if (c > max) { max = c; best = s; } }
@@ -232,11 +234,14 @@ class IntegratedRCW {
   }
   generate(seed, len = 1) {
     let out = seed;
+    let generated = "";
     for (let i = 0; i < len; i++) {
       const res = this.predict(out.slice(-4));
-      if (!res) break; out += res.token;
+      if (!res) break;
+      out += res.token;
+      generated += res.token;
     }
-    return out;
+    return generated;
   }
 }
 
@@ -274,16 +279,19 @@ class IntegratedMAR {
   initialize(em) { this.em = em; }
   predict(lastChar) {
     const v = "aeiou", c = "bcdfghjklmnpqrstvwxyz";
-    const next = v.includes(lastChar) ? c[Math.floor(this.prng.random() * c.length)] : v[Math.floor(this.prng.random() * v.length)];
+    const next = v.includes(lastChar) ? c[Math.min(c.length - 1, Math.floor(this.prng.random() * c.length))] : v[Math.min(v.length - 1, Math.floor(this.prng.random() * v.length))];
     return { token: next, confidence: 0.3 };
   }
   generate(ctx, len = 1) {
     let out = ctx;
+    let generated = "";
     for (let i = 0; i < len; i++) {
-      const res = this.predict(out[out.length - 1] || " "); out += res.token;
+      const res = this.predict(out[out.length - 1] || " ");
+      out += res.token;
+      generated += res.token;
       for (const a of this.agents.values()) a.stamina = Math.max(0, a.stamina - 0.01);
     }
-    return out;
+    return generated;
   }
 }
 

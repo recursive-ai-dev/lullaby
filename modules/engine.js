@@ -29,8 +29,8 @@ export class ResonanceEngine {
         this.uts = new UnifiedTokenizationSystem({ seed: this.config.seed });
 
         this.consolidation = new ConsolidationEngine(this.model);
-        this.replayBuffer = new PrioritizedReplayBuffer(100);
         this.prng = new SeededPRNG(this.config.seed);
+        this.replayBuffer = new PrioritizedReplayBuffer(100, 0.6, 0.4, this.prng);
 
         this.profileKey = this.config.profileKey;
         this.isTrained = false;
@@ -115,30 +115,30 @@ export class ResonanceEngine {
         const ids = this.tokenizer.tokenize(text);
         if (ids.length < 2) return 0;
 
-        this.optimizer.zeroGrad();
-        const input = Tensor.fromArray([ids.slice(0, -1)]);
-        const targets = ids.slice(1);
-
-        const logits = this.model.forward(input);
-        const loss = this.computeCrossEntropy(logits, targets);
-        const ewcLoss = this.consolidation.computeConsolidationLoss();
-
-        const grad = this.computeLossGradient(logits, targets);
-        this.model.backward(grad);
-        this.consolidation.updateFisher();
-
-        this.optimizer.step(epoch, totalEpochs);
-
         this.utsTrainingLock = true;
         try {
+            this.optimizer.zeroGrad();
+            const input = Tensor.fromArray([ids.slice(0, -1)]);
+            const targets = ids.slice(1);
+
+            const logits = this.model.forward(input);
+            const loss = this.computeCrossEntropy(logits, targets);
+            const ewcLoss = this.consolidation.computeConsolidationLoss();
+
+            const grad = this.computeLossGradient(logits, targets);
+            this.model.backward(grad);
+            this.consolidation.updateFisher();
+
+            this.optimizer.step(epoch, totalEpochs);
+
             await this.uts.train([text]);
+
+            this.isTrained = true;
+            this.klLoss = ewcLoss;
+            return loss + ewcLoss;
         } finally {
             this.utsTrainingLock = false;
         }
-
-        this.isTrained = true;
-        this.klLoss = ewcLoss;
-        return loss + ewcLoss;
     }
 
     addToReplay(text) {
@@ -204,8 +204,8 @@ export class ResonanceEngine {
         const padBytes = new Uint8Array(padLen);
         padBytes.fill(0x20);
         padBytes.set(jsonBytes);
-        const lenBuffer = new BigUint64Array(1);
-        lenBuffer[0] = BigInt(padLen);
+        const lenBuffer = new ArrayBuffer(8);
+        new DataView(lenBuffer).setBigUint64(0, BigInt(padLen), true);
         return new Blob([lenBuffer, padBytes, ...buffers], { type: 'application/octet-stream' });
     }
 

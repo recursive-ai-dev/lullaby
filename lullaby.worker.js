@@ -7,6 +7,7 @@ import { ResonanceEngine } from './modules/engine.js';
 let engine = null;
 let profileKey = 'latest';
 let persistenceEnabled = true;
+let isInitializing = false;
 
 const PROTOCOL_VERSION = 1;
 const canceledRequestIds = new Set();
@@ -69,12 +70,18 @@ self.onmessage = async (e) => {
             }
 
             case 'INIT': {
-                engine = new ResonanceEngine();
-                profileKey = String(payload?.profileKey || 'latest');
-                persistenceEnabled = Boolean(payload?.persistenceEnabled ?? true);
-                engine.setProfileKey(profileKey);
-                const loaded = persistenceEnabled ? await engine.loadCheckpoint(profileKey) : false;
-                post('INIT_COMPLETE', { loaded, profileKey, persistenceEnabled }, requestId, v);
+                if (isInitializing) return;
+                isInitializing = true;
+                try {
+                    engine = new ResonanceEngine();
+                    profileKey = String(payload?.profileKey || 'latest');
+                    persistenceEnabled = Boolean(payload?.persistenceEnabled ?? true);
+                    engine.setProfileKey(profileKey);
+                    const loaded = persistenceEnabled ? await engine.loadCheckpoint(profileKey) : false;
+                    post('INIT_COMPLETE', { loaded, profileKey, persistenceEnabled }, requestId, v);
+                } finally {
+                    isInitializing = false;
+                }
                 break;
             }
 
@@ -124,7 +131,7 @@ self.onmessage = async (e) => {
             case 'TRAIN': {
                 if (!engine) return;
                 if (isCanceled(requestId)) return;
-                const loss = engine.trainStep(payload.text, payload.epoch, payload.totalEpochs, payload.isGameplay);
+                const loss = await engine.trainStep(payload.text, payload.epoch, payload.totalEpochs, payload.isGameplay);
                 engine.addToReplay(payload.text);
 
                 // HIGH FIX #14: Properly handle checkpoint save errors
