@@ -37,8 +37,11 @@ export class Linear {
         // dL/dB = sum over all dimensions except the last one
         const gradBias = TensorOps.sum(flatGrad, 0);
 
-        this.weight.grad = gradWeight.data;
-        this.bias.grad = gradBias.data;
+        if (!this.weight.grad) this.weight.grad = new Float32Array(gradWeight.data.length);
+        for (let i = 0; i < gradWeight.data.length; i++) this.weight.grad[i] += gradWeight.data[i];
+
+        if (!this.bias.grad) this.bias.grad = new Float32Array(gradBias.data.length);
+        for (let i = 0; i < gradBias.data.length; i++) this.bias.grad[i] += gradBias.data[i];
 
         // dL/dX = gradOutput * W^T
         const dX = gradOutput.matmul(this.weight.transpose());
@@ -209,17 +212,22 @@ export class BayesianLinear {
         const gradB = TensorOps.sum(flatGrad, 0);
 
         // Mu gradients
-        this.w_mu.grad = gradW.data;
-        this.bias_mu.grad = gradB.data;
+        if (!this.w_mu.grad) this.w_mu.grad = new Float32Array(gradW.data.length);
+        for (let i = 0; i < gradW.data.length; i++) this.w_mu.grad[i] += gradW.data[i];
+
+        if (!this.bias_mu.grad) this.bias_mu.grad = new Float32Array(gradB.data.length);
+        for (let i = 0; i < gradB.data.length; i++) this.bias_mu.grad[i] += gradB.data[i];
 
         // Rho gradients: dL/drho = dL/dw * epsilon * sigmoid(rho)
         const sigmoid = (v) => 1.0 / (1.0 + Math.exp(-v));
 
         const gradRhoW = gradW.mul(this.lastEpsilonW).mul(TensorOps.map(this.w_rho, sigmoid));
-        this.w_rho.grad = gradRhoW.data;
+        if (!this.w_rho.grad) this.w_rho.grad = new Float32Array(gradRhoW.data.length);
+        for (let i = 0; i < gradRhoW.data.length; i++) this.w_rho.grad[i] += gradRhoW.data[i];
 
         const gradRhoB = gradB.mul(this.lastEpsilonB).mul(TensorOps.map(this.bias_rho, sigmoid));
-        this.bias_rho.grad = gradRhoB.data;
+        if (!this.bias_rho.grad) this.bias_rho.grad = new Float32Array(gradRhoB.data.length);
+        for (let i = 0; i < gradRhoB.data.length; i++) this.bias_rho.grad[i] += gradRhoB.data[i];
 
         return gradOutput.matmul(W.transpose());
     }
